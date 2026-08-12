@@ -1,0 +1,102 @@
+NAT5 READY MATHS — CLOUD V5 SETUP
+=================================
+
+Your live front end:
+https://felicitymj.github.io/mathsready/
+
+Firebase project:
+mathsready-5fa65
+
+WHAT V5 CHANGES
+---------------
+• Parent email/password accounts use Firebase Authentication.
+• Families and child progress are stored in Cloud Firestore.
+• Family codes work across different homes/devices.
+• Leaderboards are shared between opted-in children.
+• Maths Face-Off rooms are shared live through Firestore.
+• Course definitions are stored separately from learner progress, so publishing
+  a new course version does not rewrite old mastery records.
+
+STEP 1 — PUBLISH THE FIRESTORE RULES
+------------------------------------
+Firebase Console → Firestore Database → Rules.
+Replace the rules there with the contents of firestore.rules from this folder.
+Click Publish.
+
+Do this BEFORE testing V5. The app is expected to show "permission denied" if
+these rules have not been published.
+
+STEP 2 — UPLOAD V5 TO GITHUB
+----------------------------
+In the GitHub repository FelicityMJ/mathsready, replace the existing index.html
+with this V5 index.html and commit the change to main.
+
+GitHub Pages should redeploy automatically to:
+https://felicitymj.github.io/mathsready/
+
+STEP 3 — CREATE YOUR ONE-TIME OWNER LOGIN
+-----------------------------------------
+This is the only manual admin bootstrap.
+
+A. Firebase Console → Authentication → Users → Add user.
+   Add the email/password you want to use as the Nat5 Ready Maths owner.
+
+B. Copy that user's UID from the Authentication Users table.
+
+C. Firebase Console → Firestore Database → Data → Start collection.
+   Collection ID: users
+   Document ID: paste the Firebase UID
+
+   Add these fields:
+     uid         string   <paste the same UID>
+     email       string   <your owner email>
+     parentName  string   Felicity
+     role        string   owner
+
+   You can leave familyId absent at this stage.
+
+D. Open the GitHub Pages site and log in with that owner email/password.
+   The Admin tab will appear.
+
+E. In Admin, click "Create my family profile" if you want this same owner
+   account to hold your own children's profiles as well.
+
+STEP 4 — CREATE FRIEND CODES
+----------------------------
+Admin → Free codes → Create free code.
+Choose uses, child limit and optional expiry.
+Send the FREE-XXXXXXXX code plus the GitHub Pages URL to a friend.
+
+They choose "Create parent account", enter the code, email and password, and
+then add their children. Their learner records are private to their family.
+
+PRIVACY
+-------
+Leaderboards publish only the separate child nickname, level/board edition and
+mastered time. They do not publish real child name, email, school stage, errors
+or practice history.
+
+Face-Off is invite-code only, has no public room browser and no chat.
+
+IMPORTANT PILOT LIMITATION
+--------------------------
+This Spark-plan V5 is suitable for a trusted family/friends pilot, but the
+browser still submits leaderboard and Face-Off results. A technically skilled
+user could tamper with their own browser. Before public launch, move result
+validation and owner-only sensitive operations to Cloud Functions and enable
+Firebase App Check. Cloud Functions require Blaze billing to deploy.
+
+TROUBLESHOOTING
+---------------
+"Missing or insufficient permissions"
+  → Check Firestore → Rules contains the supplied V5 rules and they are Published.
+
+Login works but there is no Admin tab
+  → Check users/<your UID>/role is exactly the string: owner
+
+A friend says their code does not exist
+  → In Admin, check the code is Active, not expired and has uses remaining.
+
+Changes do not appear on GitHub Pages
+  → GitHub → Actions / Settings → Pages; wait for the Pages deployment to finish,
+    then hard-refresh the browser (Ctrl+F5).
