@@ -1,0 +1,32 @@
+NAT5 READY MATHS — V6 WORKSHEET DISPLAY REFINEMENT
+===================================================
+
+This is a drop-in replacement for the V6 index.html.
+
+UNCHANGED
+---------
+• Firebase project / Authentication / Firestore structure
+• Firestore security rules
+• Stable course IDs
+• Course versioning
+• Existing child progress and mastery records
+• Standard Mastery Times and question counts
+• Leaderboard editions
+• Face-Off
+
+REFINED
+-------
+• Official fluency mastery sets now show the whole set as a worksheet grid.
+• Children type answers into large boxes and submit once at the end.
+• No right/wrong feedback interrupts the set.
+• Timer is a colour-fill bar: green → yellow → orange → red as SMT approaches.
+• The exact elapsed time is shown after submission, not as a ticking clock during the set.
+• Going beyond SMT does not stop the sheet; the bar stays red and the child finishes accurately.
+• Review uses the same worksheet layout with ticks/crosses and correct answers for mistakes.
+• Added timed-practice worksheet mode that does not change official fluency mastery.
+• Parent Worksheet tab can open parent-overseen worksheet practice or create a printable fluency sheet.
+• Existing broader V6 printable skill worksheet remains available.
+
+DEPLOY
+------
+Replace the root index.html in GitHub repository FelicityMJ/mathsready with the index.html in this folder, then Commit changes. No Firebase rule update is required.

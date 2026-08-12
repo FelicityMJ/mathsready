@@ -49,6 +49,48 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:850px){.faceoff-grid{grid-template-columns:1fr}.faceoff-score{grid-template-columns:1fr 1fr}.live-row{grid-template-columns:1fr 100px}}
 @media(max-width:560px){.faceoff-score{grid-template-columns:1fr}.faceoff-clock{font-size:45px}.faceoff-q{font-size:46px}.player-row{grid-template-columns:36px 1fr}.player-row>:last-child{grid-column:2}.room-code{font-size:13px}}
 
+
+/* === V6 worksheet-display refinement: no course/data schema changes === */
+.mastery-session{max-width:1120px;margin:0 auto}
+.mastery-session-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
+.mastery-session-head h1{margin:3px 0 4px;font-size:clamp(27px,4vw,40px);letter-spacing:-.03em}
+.mastery-time-panel{position:sticky;top:8px;z-index:12;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:13px 15px;margin:12px 0 16px;box-shadow:0 8px 24px rgba(35,43,65,.08);backdrop-filter:blur(8px)}
+.mastery-time-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px;font-size:12px;font-weight:850;color:var(--muted)}
+.mastery-time-track{height:17px;border-radius:999px;background:#edf0f3;overflow:hidden;box-shadow:inset 0 1px 2px rgba(20,28,45,.08)}
+.mastery-time-fill{width:0;height:100%;border-radius:999px;background:hsl(125 62% 43%);transition:width .12s linear,background-color .3s linear}
+.mastery-time-panel.overtime .mastery-time-track{box-shadow:inset 0 0 0 2px rgba(190,48,48,.12)}
+.mastery-time-panel.overtime .mastery-time-status{color:var(--bad)}
+.mastery-sheet-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px 28px 24px;box-shadow:var(--shadow)}
+.mastery-sheet-note{text-align:center;color:var(--muted);font-size:12px;margin:0 0 22px}
+.mastery-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 34px;align-items:start}
+.mastery-q{text-align:center;position:relative;min-width:0}
+.mastery-expression{font-size:clamp(24px,3vw,34px);font-weight:850;letter-spacing:-.025em;line-height:1.15;margin-bottom:9px;white-space:nowrap}
+.mastery-answer{display:block;width:100%;max-width:165px;height:64px;margin:0 auto;border:2px solid #737a87;border-radius:3px;background:#fff;color:var(--ink);font-size:30px;font-weight:850;text-align:center;outline:none;padding:6px 8px}
+.mastery-answer:focus{border-color:var(--primary);box-shadow:0 0 0 4px #eeeaff}
+.mastery-answer.review-correct{border-color:#2f9b69;background:#f1fbf6}
+.mastery-answer.review-wrong{border-color:#cf4a4a;background:#fff4f4}
+.mastery-review-box{position:relative;max-width:165px;margin:0 auto}
+.mastery-review-mark{position:absolute;right:-9px;top:-12px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:950;font-size:17px;box-shadow:0 2px 5px rgba(0,0,0,.12)}
+.mastery-review-mark.ok{background:#239263}.mastery-review-mark.no{background:#c84141}
+.mastery-correct-answer{font-size:12px;color:#a33131;font-weight:850;margin-top:6px;min-height:16px}
+.mastery-submit-row{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;margin-top:30px}
+.mastery-answered{font-size:12px;color:var(--muted);font-weight:800}
+.mastery-review-summary{margin-bottom:16px}
+.mastery-review-heading{text-align:center;margin:20px 0 10px}
+.mastery-review-heading h2{margin:0 0 4px;font-size:28px}
+.mastery-practice-badge{display:inline-flex;border-radius:999px;background:#f1f4ff;color:#4757a8;padding:6px 10px;font-size:11px;font-weight:900}
+.mastery-print-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:20px}
+.mastery-print-lines{font-size:12px;color:#555;margin-top:8px}
+.worksheet-mode-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:7px}
+@media(max-width:800px){.mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px}.mastery-sheet-card{padding:22px 18px}.mastery-session-head{display:block}.mastery-session-head .back{margin-bottom:10px}.mastery-answer{height:60px}.mastery-time-panel{top:4px}}
+@media(max-width:390px){.mastery-grid{gap:20px 12px}.mastery-expression{font-size:23px}.mastery-answer{height:56px;font-size:27px}}
+@media print{
+ .mastery-time-panel,.mastery-submit-row,.mastery-session-head .back,.mastery-review-summary .button-row{display:none!important}
+ .mastery-session{max-width:none}.mastery-sheet-card{box-shadow:none;border:0;padding:8mm 5mm}.mastery-grid{grid-template-columns:repeat(4,1fr);gap:13mm 8mm}
+ .mastery-expression{font-size:18pt}.mastery-answer{height:15mm;max-width:37mm;border:1.5pt solid #555;font-size:18pt;background:#fff!important}
+ .mastery-review-mark{print-color-adjust:exact;-webkit-print-color-adjust:exact}.mastery-correct-answer{font-size:9pt}
+}
+
 </style></head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -1011,6 +1053,91 @@ ownerCourseV3=function(){const d=ensureDraftV3();return`<div class="section-head
 // Route cleanup for placement timer + V6 footer.
 shellV3=function(content,active='home'){cloudV5.route=active;const ch=activeChildV3(),has=!!ch&&!!state.profile;return `<div class="app"><header class="topbar"><div class="brand"><div class="logo">∑</div><span>Nat5 Ready Maths</span></div><nav class="nav"><button data-nav="home" class="${active==='home'?'active':''} ${!has?'locked':''}">Home</button><button data-nav="fluency" class="${active==='fluency'?'active':''} ${!has?'locked':''}">⚡ Fluency</button><button data-nav="practice" class="${active==='practice'?'active':''} ${!has?'locked':''}">Practise</button><button data-nav="faceoff" class="${active==='faceoff'?'active':''} ${!has?'locked':''}">⚔️ Face-Off</button><button data-nav="path" class="${active==='path'?'active':''} ${!has?'locked':''}">Maths path</button><button data-nav="leaderboard" class="${active==='leaderboard'?'active':''} ${!has?'locked':''}">🏆 Boards</button><button data-nav="parent" class="${active==='parent'?'active':''} ${!has?'locked':''}">Parent</button><button data-nav="family" class="${active==='family'?'active':''}">Family</button>${platformV3.ownerLocal?`<button data-nav="owner" class="${active==='owner'?'active':''}">Admin</button>`:''}</nav></header>${has?`<div class="child-switch no-print" style="margin:-5px 0 14px"><span class="top-chip">☁️ ${esc(state.profile.name)} • ${esc(state.profile.stage)}</span>${familyChildrenV3().length>1?'<button class="linklike" id="quickSwitch">Switch child</button>':''}<span class="top-chip">Saved online</span></div>`:''}${content}<div class="footer">Nat5 Ready Maths Cloud V6 • small-step fluency • stable learner records • published course v${currentCourseV3().version}</div></div>`};
 route=function(name){clearInterval(beatTimer);beatTimer=null;clearInterval(fluencyTimer);fluencyTimer=null;clearInterval(placementTimerV6);placementTimerV6=null;clearFaceoffTimerV4();if(name!=='faceoff')cloudStopFaceoffWatchV5();activeFluency=null;activePlacementV6=null;activeFaceoffV4=null;if(name==='home')activeChildV3()?renderHome():renderFamilyV3();if(name==='fluency')renderFluency();if(name==='practice')renderPractice();if(name==='faceoff')renderFaceoffV4();if(name==='path')renderPath();if(name==='leaderboard')renderLeaderboardsV3();if(name==='parent')renderParent();if(name==='family')renderFamilyV3();if(name==='owner')renderOwnerV3('codes')};
+
+
+/* === V6 worksheet-display refinement ===
+   Course IDs, SMTs, Firebase paths, mastery rules and learner records are unchanged.
+   Only the official/timed/parent worksheet interaction and printable display are refined.
+*/
+let lastWorksheetReviewV61=null;
+
+function timeHueV61(r){
+ r=Math.max(0,Math.min(1,r));
+ if(r<=.55)return 125-(r/.55)*20;          // green for most of the comfortable window
+ if(r<=.75)return 105-((r-.55)/.20)*50;   // green-yellow -> yellow
+ if(r<=.90)return 55-((r-.75)/.15)*25;    // yellow -> orange
+ return 30-((r-.90)/.10)*30;              // orange -> red
+}
+function updateWorksheetTimerV61(){
+ const a=activeFluency;if(!a||!a.worksheet||a.mode==='parentPractice')return;
+ const fill=document.getElementById('masteryTimeFill'),panel=document.getElementById('masteryTimePanel'),status=document.getElementById('masteryTimeStatus');if(!fill)return;
+ const sec=(performance.now()-a.started)/1000,target=a.courseSnapshot?.targetSec||fluencyTarget(a.level),r=target?sec/target:0;
+ fill.style.width=`${Math.min(100,r*100)}%`;fill.style.backgroundColor=`hsl(${timeHueV61(r)} 67% 43%)`;
+ if(panel)panel.classList.toggle('overtime',r>1);
+ if(status){status.textContent=r<.55?'Comfortable pace':r<.75?'Keep going':r<.90?'Time is moving on':r<=1?'Near the mastery time':'Target time passed — finish accurately';}
+}
+function worksheetModeTitleV61(mode){return mode==='mastery'?'Official mastery set':mode==='timedPractice'?'Timed practice':mode==='parentPractice'?'Parent-overseen practice':'Practice sheet'}
+function worksheetModeHelpV61(a){if(a.mode==='mastery')return 'Answer the whole sheet, then submit once. No marking appears until the end.';if(a.mode==='timedPractice')return 'Practise the same timed format without changing the official mastery record.';return 'Work through the whole sheet together. This practice does not unlock or remove mastery.'}
+
+startFluencySet=function(id){startWorksheetFluencyV61(id,'mastery','fluency')};
+function startTimedFluencyPracticeV61(id){startWorksheetFluencyV61(id,'timedPractice','fluency')}
+function startParentFluencyPracticeV61(id){startWorksheetFluencyV61(id,'parentPractice','parent')}
+function startWorksheetFluencyV61(id,mode='mastery',returnTo='fluency'){
+ const l=effectiveFluencyV3(id);if(!l)return;if(mode==='mastery'&&!fluencyUnlocked(l))return;
+ clearInterval(fluencyTimer);fluencyTimer=null;
+ const questions=makeFluencySet(l),now=performance.now();
+ activeFluency={level:l,questions,index:0,items:[],started:now,finished:false,courseVersion:currentCourseV3().version,courseSnapshot:{levelId:l.id,name:l.name,count:l.count,targetSec:fluencyTarget(l)},worksheet:true,mode,returnTo,responses:Array(questions.length).fill(''),answerTimes:{}};
+ if(mode!=='parentPractice')fluencyTimer=setInterval(updateWorksheetTimerV61,100);
+ renderFluencyWorksheetV61();
+}
+function renderFluencyWorksheetV61(){
+ const a=activeFluency;if(!a||!a.worksheet)return;const target=a.courseSnapshot.targetSec,count=a.questions.length,timed=a.mode!=='parentPractice';
+ render(`<div class="mastery-session"><div class="mastery-session-head no-print"><button class="back" id="masteryExit">← Exit</button><div style="flex:1"><div class="qmeta">${a.mode==='mastery'?'⚡':'📝'} ${worksheetModeTitleV61(a.mode)}</div><h1>${esc(a.level.name)}</h1><p class="tiny">${count} questions${timed?` • SMT ${fmtSec(target)}`:' • untimed'} • ${a.mode==='mastery'?'100% + SMT required to unlock the next step':'practice only — official mastery is unchanged'}</p></div></div>${timed?`<div class="mastery-time-panel no-print" id="masteryTimePanel"><div class="mastery-time-meta"><span class="mastery-time-status" id="masteryTimeStatus">Comfortable pace</span><span>SMT ${fmtSec(target)}</span></div><div class="mastery-time-track" role="progressbar" aria-label="Time used towards Standard Mastery Time" aria-valuemin="0" aria-valuemax="100"><div class="mastery-time-fill" id="masteryTimeFill"></div></div></div>`:''}<section class="mastery-sheet-card"><p class="mastery-sheet-note">${worksheetModeHelpV61(a)}</p><div class="mastery-grid">${a.questions.map((q,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><input class="mastery-answer" data-ws-answer="${i}" inputmode="numeric" autocomplete="off" aria-label="Question ${i+1}: ${esc(q.prompt)}"></div>`).join('')}</div><div class="mastery-submit-row no-print"><span class="mastery-answered" id="masteryAnswered">0/${count} answered</span><button class="cta" id="masterySubmit">Submit whole sheet</button></div></section></div>`,'fluency');
+ document.getElementById('masteryExit').onclick=()=>{clearInterval(fluencyTimer);fluencyTimer=null;const ret=a.returnTo;activeFluency=null;ret==='parent'?renderParent('worksheet'):renderFluency(a.level.op)};
+ const inputs=[...document.querySelectorAll('[data-ws-answer]')];
+ inputs.forEach((inp,pos)=>{const i=Number(inp.dataset.wsAnswer);inp.addEventListener('input',()=>{a.responses[i]=inp.value.trim();if(a.responses[i]!==''&&a.answerTimes[i]==null)a.answerTimes[i]=Math.max(1,Math.round(performance.now()-a.started));updateAnsweredV61()});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const next=inputs[pos+1];if(next)next.focus();else document.getElementById('masterySubmit').focus()}})});
+ document.getElementById('masterySubmit').onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();updateWorksheetTimerV61();
+}
+function updateAnsweredV61(){const a=activeFluency,el=document.getElementById('masteryAnswered');if(a&&el)el.textContent=`${a.responses.filter(x=>String(x).trim()!=='').length}/${a.questions.length} answered`}
+function estimateItemTimesV61(a){const pairs=Object.entries(a.answerTimes||{}).map(([i,t])=>({i:Number(i),t:Number(t)})).sort((x,y)=>x.t-y.t),ms={};let prev=0;for(const p of pairs){ms[p.i]=Math.max(150,p.t-prev);prev=p.t}const fallback=Math.max(500,Math.round((a.elapsedAtSubmit*1000)/Math.max(1,a.questions.length)));for(let i=0;i<a.questions.length;i++)if(ms[i]==null)ms[i]=fallback;return ms}
+function collectWorksheetItemsV61(a,updateLearning=true){const times=estimateItemTimesV61(a);return a.questions.map((q,i)=>{const raw=String(a.responses[i]??'').trim(),ok=raw!==''&&Number(raw)===Number(q.answer),ms=times[i];if(updateLearning){updateFactTiming(q,ok,ms);if(a.level.skillId&&BY_ID[a.level.skillId])updateMastery(a.level.skillId,ok,ms)}return{prompt:q.prompt,answer:q.answer,raw,correct:ok,ms,factKey:q.factKey,factLabel:q.factLabel}})}
+function submitWorksheetV61(){
+ const a=activeFluency;if(!a||!a.worksheet||a.finished)return;const blanks=a.responses.filter(x=>String(x).trim()==='').length;if(blanks&&!confirm(`${blanks} answer${blanks===1?' is':'s are'} blank. Submit the sheet anyway?`))return;
+ a.elapsedAtSubmit=(performance.now()-a.started)/1000;a.finished=true;clearInterval(fluencyTimer);fluencyTimer=null;a.items=collectWorksheetItemsV61(a,true);
+ if(a.mode==='mastery')finalizeMasteryWorksheetV61(a);else finalizePracticeWorksheetV61(a);
+}
+function masteryRecordUpdateV61(a){
+ const elapsed=a.elapsedAtSubmit,l=a.level,target=a.courseSnapshot.targetSec,count=a.courseSnapshot.count,correct=a.items.filter(x=>x.correct).length,perfect=correct===count,inTime=elapsed<=target,passed=perfect&&inTime,x=fluencyLevelState(l.id);
+ x.attempts++;x.lastSec=+elapsed.toFixed(1);x.lastCorrect=correct;x.lastDate=new Date().toISOString();x.bestCorrect=Math.max(x.bestCorrect||0,correct);if(perfect)x.bestPerfectSec=x.bestPerfectSec==null?+elapsed.toFixed(1):Math.min(x.bestPerfectSec,+elapsed.toFixed(1));
+ if(passed&&!x.mastered){x.mastered=true;x.masteredAt=new Date().toISOString();x.masteredCourseVersion=a.courseVersion;x.masteredTargetSec=target;x.masteredTimeSec=+elapsed.toFixed(1);x.masteredQuestionCount=count}else if(passed)x.mastered=true;
+ if(passed){const br=Number(l.boardRevision)||1;x.boardResults=x.boardResults||{};const old=x.boardResults[br],sec=+elapsed.toFixed(1);if(!old||sec<old.bestSec)x.boardResults[br]={boardRevision:br,bestSec:sec,questionCount:count,targetSec:target,achievedAt:new Date().toISOString(),courseVersion:a.courseVersion}}
+ state.fluency.history.unshift({date:new Date().toISOString(),levelId:l.id,operation:l.op,name:l.name,questions:count,correct,seconds:+elapsed.toFixed(1),targetSec:target,passed,courseVersion:a.courseVersion,boardRevision:Number(l.boardRevision)||1,bankVersion:Number(l.bankVersion)||1,displayMode:'worksheet'});state.fluency.history=state.fluency.history.slice(0,250);logSession('Fluency Mastery',a.items,Math.round(elapsed),{fluencyLevel:l.id,passed,targetSec:target,courseVersion:a.courseVersion,displayMode:'worksheet'});save();return{correct,perfect,inTime,passed,target,count,elapsed}
+}
+function finalizeMasteryWorksheetV61(a){const result=masteryRecordUpdateV61(a),review={mode:'mastery',level:a.level,items:a.items,result,returnTo:a.returnTo,courseVersion:a.courseVersion};lastWorksheetReviewV61=review;activeFluency=null;renderWorksheetReviewV61(review)}
+function finalizePracticeWorksheetV61(a){const correct=a.items.filter(x=>x.correct).length,count=a.items.length,elapsed=a.elapsedAtSubmit,target=a.courseSnapshot.targetSec,timed=a.mode==='timedPractice';logSession(a.mode==='timedPractice'?'Timed Fluency Practice':'Parent-overseen Fluency Practice',a.items,Math.round(elapsed),{fluencyLevel:a.level.id,targetSec:timed?target:null,practiceOnly:true,displayMode:'worksheet'});save();const result={correct,perfect:correct===count,inTime:!timed||elapsed<=target,passed:false,target,count,elapsed,practiceOnly:true};const review={mode:a.mode,level:a.level,items:a.items,result,returnTo:a.returnTo,courseVersion:a.courseVersion};lastWorksheetReviewV61=review;activeFluency=null;renderWorksheetReviewV61(review)}
+function renderWorksheetReviewV61(review){
+ const r=review.result,official=review.mode==='mastery',perfect=r.correct===r.count,passed=official&&r.passed;let heading,why,box;
+ if(official){box=passed?'passbox':perfect?'retrybox':'failbox';heading=passed?'Mastered! 🎉':perfect?'100% correct — now build more speed ⚡':'Review the mistakes, then repeat';why=passed?`All ${r.count} correct in ${fmtSec(r.elapsed)}. SMT was ${fmtSec(r.target)}.`:perfect?`All ${r.count} were correct. Your time was ${fmtSec(r.elapsed)}; SMT is ${fmtSec(r.target)}.`:`${r.correct}/${r.count} correct in ${fmtSec(r.elapsed)}. Official mastery still requires every answer correct.`}
+ else{box=perfect?'passbox':'retrybox';heading=perfect?'Practice sheet complete ✓':'Review the answers';why=`${r.correct}/${r.count} correct${review.mode==='timedPractice'?` in ${fmtSec(r.elapsed)} (SMT reference ${fmtSec(r.target)})`:''}. This practice result does not change the official mastery gate.`}
+ render(`<div class="mastery-session"><section class="mastery-review-summary ${box}"><div class="mastery-review-heading"><span class="mastery-practice-badge">${worksheetModeTitleV61(review.mode)}</span><h2>${heading}</h2><p>${why}</p><div class="set-stats"><div class="set-stat"><strong>${r.correct}/${r.count}</strong><span>correct</span></div>${review.mode!=='parentPractice'?`<div class="set-stat"><strong>${fmtSec(r.elapsed)}</strong><span>your time</span></div><div class="set-stat"><strong>${fmtSec(r.target)}</strong><span>SMT</span></div>`:''}</div></div></section><section class="mastery-sheet-card print-page"><div class="mastery-print-head"><div><div class="qmeta">Review sheet</div><h2 style="margin:3px 0">${esc(review.level.name)}</h2><div class="mastery-print-lines">${esc(state.profile.name)} • ${new Date().toLocaleDateString('en-GB')} • ${r.correct}/${r.count} correct${review.mode!=='parentPractice'?` • ${fmtSec(r.elapsed)}`:''}</div></div><button class="cta secondary small no-print" id="printReview">Print review</button></div><div class="mastery-grid">${review.items.map((it,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(it.prompt)}</div><div class="mastery-review-box"><input class="mastery-answer ${it.correct?'review-correct':'review-wrong'}" value="${esc(it.raw)}" readonly aria-label="Question ${i+1} ${it.correct?'correct':'incorrect'}"><span class="mastery-review-mark ${it.correct?'ok':'no'}">${it.correct?'✓':'×'}</span></div><div class="mastery-correct-answer">${it.correct?'':`Correct answer: ${esc(String(it.answer))}`}</div></div>`).join('')}</div></section><div class="button-row no-print" style="justify-content:center;margin-top:18px"><button class="cta" id="reviewAgain">${official?(passed?'Next small step':'Repeat this level'):'Practise again'}</button><button class="cta secondary" id="reviewBack">${review.returnTo==='parent'?'Back to parent worksheets':'Fluency ladder'}</button></div></div>`,'fluency');
+ document.getElementById('printReview').onclick=()=>window.print();document.getElementById('reviewAgain').onclick=()=>{if(official&&passed){const next=firstUnmastered(review.level.op);next?startFluencySet(next.id):renderFluency(review.level.op)}else if(review.mode==='timedPractice')startTimedFluencyPracticeV61(review.level.id);else if(review.mode==='parentPractice')startParentFluencyPracticeV61(review.level.id);else startFluencySet(review.level.id)};document.getElementById('reviewBack').onclick=()=>review.returnTo==='parent'?renderParent('worksheet'):renderFluency(review.level.op)
+}
+
+/* Add a practice-only button to unlocked fluency steps; official Start remains unchanged. */
+fluencyLevelCard=function(l,i,currentId){l=effectiveFluencyV3(l);const x=fluencyLevelState(l.id),unlocked=fluencyUnlocked(l),target=fluencyTarget(l),best=x.bestPerfectSec;let cls=x.mastered?'mastered':(!unlocked?'locked':(currentId===l.id?'current':''));let status=x.mastered?'✅ Mastered':!unlocked?'🔒 Locked':x.attempts?'🔁 Repeat until automatic':'▶ Ready';let reason='';if(!unlocked){const req=l.requires.filter(id=>{const rr=effectiveFluencyV3(id);return rr&&rr.active&&!fluencyLevelState(id).mastered}).map(id=>effectiveFluencyV3(id).name);reason=req.length?`Master ${req.join(' + ')} first.`:''}const legacy=x.masteredAt&&x.masteredCourseVersion&&x.masteredCourseVersion!==currentCourseV3().version?` • earned under v${x.masteredCourseVersion}`:'';return`<div class="mastery-card ${cls}"><div class="stepnum">${x.mastered?'✓':i+1}</div><div><h3>${esc(l.name)}</h3><p>${l.count} questions • 100% correct • SMT ${fmtSec(target)}${legacy}</p>${reason?`<div class="lock-reason">${esc(reason)}</div>`:''}</div><div class="result"><div class="best">${status}</div><div class="target">${best!=null?'Best perfect: '+fmtSec(best):x.attempts?`Last: ${x.lastCorrect}/${l.count} in ${fmtSec(x.lastSec)}`:'Not attempted'}</div>${unlocked?`<div class="worksheet-mode-actions"><button class="cta secondary small" data-start-fluency="${l.id}">${x.mastered?'Repeat mastery':'Start mastery'}</button><button class="copy-btn" data-practice-fluency="${l.id}">Timed practice</button></div>`:''}</div></div>`};
+const renderFluencyV61Base=renderFluency;
+renderFluency=function(op=activeFluencyOp){renderFluencyV61Base(op);document.querySelectorAll('[data-practice-fluency]').forEach(b=>b.onclick=()=>startTimedFluencyPracticeV61(b.dataset.practiceFluency))};
+
+/* Parent worksheet area: retain existing general worksheet, add official fluency print + supervised practice. */
+parentWorksheet=function(){
+ const fluencyOpts=FLUENCY_OPERATIONS.flatMap(o=>courseLevelsV3(o.id).filter(l=>fluencyUnlocked(l)||fluencyLevelState(l.id).mastered).map(l=>`<option value="${l.id}">${o.icon} ${esc(l.name)} — ${l.count} Q / SMT ${fmtSec(fluencyTarget(l))}</option>`)).join('');
+ const skillOpts=SKILLS.filter(s=>isUnlocked(s)&&levelIndex(s.level)<=Math.min(4,stageIndex()+1)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ return `<div class="section-head"><div><h2>Worksheet practice</h2><p>The same clean worksheet format can be used on-screen with a parent or printed for pencil-and-paper work.</p></div></div><section class="card no-print"><h3 style="margin-top:0">⚡ Fluency mastery-style worksheet</h3><div class="field"><label>Fluency set</label><select id="fluencySheetLevel">${fluencyOpts}</select></div><div class="button-row"><button class="cta" id="parentPracticeSheet">Open parent-overseen practice</button><button class="cta secondary" id="makeFluencyPrint">Create printable version</button></div><p class="note">Parent-overseen and printed practice do not unlock mastery. Official mastery is still completed from the Fluency ladder.</p></section><div id="fluencySheetOut"></div><div class="section-head"><div><h2>Other skill worksheet</h2><p>Keep the existing V6 printable worksheet generator for broader maths skills.</p></div></div><section class="card no-print"><div class="field"><label>Skill</label><select id="sheetSkill">${skillOpts}</select></div><div class="field"><label>Questions</label><select id="sheetCount"><option>10</option><option selected>20</option><option>30</option></select></div><button class="cta" id="makeSheet">Create worksheet</button></section><div id="sheetOut"></div>`
+};
+function makeFluencyPrintSheetV61(){const id=document.getElementById('fluencySheetLevel').value,l=effectiveFluencyV3(id),qs=makeFluencySet(l),out=document.getElementById('fluencySheetOut');out.innerHTML=`<section class="mastery-sheet-card print-page" style="margin-top:14px"><div class="mastery-print-head"><div><div class="qmeta">Fluency practice</div><h2 style="margin:3px 0">${esc(l.name)}</h2><div class="mastery-print-lines">Name: ____________________ &nbsp;&nbsp; Date: ______________ &nbsp;&nbsp; SMT reference: ${fmtSec(fluencyTarget(l))}</div></div><button class="cta secondary small no-print" id="printFluencySheet">Print</button></div><div class="mastery-grid">${qs.map(q=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><div class="mastery-answer" aria-hidden="true"></div></div>`).join('')}</div></section><section class="sheet no-print" style="margin-top:12px"><details><summary><strong>Answer key</strong></summary><div class="sheet-questions">${qs.map((q,i)=>`<div>${i+1}. ${esc(q.prompt)} = ${esc(String(q.answer))}</div>`).join('')}</div></details></section>`;document.getElementById('printFluencySheet').onclick=()=>window.print()}
+const bindParentActionsV61Base=bindParentActions;
+bindParentActions=function(tab){bindParentActionsV61Base(tab);if(tab==='worksheet'){const p=document.getElementById('parentPracticeSheet'),m=document.getElementById('makeFluencyPrint');if(p)p.onclick=()=>startParentFluencyPracticeV61(document.getElementById('fluencySheetLevel').value);if(m)m.onclick=makeFluencyPrintSheetV61}};
+
 
 // Start Cloud V6 instead of local V4 bootstrap.
 initCloudV5();

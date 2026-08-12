@@ -7,3 +7,5 @@ Files:
 - COURSE-V6.md     Summary of the new small-step mastery structure
 
 V6 focuses on automaticity: accuracy first, then speed, then progression.
+
+Worksheet refinement: see WORKSHEET-REFINEMENT.txt
