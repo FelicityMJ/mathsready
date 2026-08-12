@@ -1,0 +1,44 @@
+NAT5 READY MATHS — CLOUD V6 SMALL-STEP MASTERY
+=================================================
+
+LIVE SITE
+---------
+https://felicitymj.github.io/mathsready/
+
+WHAT CHANGED FROM V5
+--------------------
+• Fluency is now broken into much smaller steps for addition and subtraction:
+  +1, +2, +3, mixed checkpoints, +4, +5, and so on before larger calculations.
+• Multiplication and division keep table-by-table progression with mixed checkpoints.
+• Every official level still requires 100% accuracy AND the Standard Mastery Time (SMT).
+• Individual fact timing is retained so the parent view can identify which facts are slow.
+• Added a short Speed Starting-Point Check. It suggests where fluency starts to slow but
+  NEVER grants official mastery; full mastery sets are still required.
+• Parent users can see official SMTs but cannot change them. Only the course owner can
+  change set size/SMT, keeping shared leaderboards comparable.
+• Old learner records are not deleted. The new fluency steps use new stable IDs, so any
+  earlier attempts/mastery events remain preserved as historical records.
+• If set size, SMT or the question-bank version changes, the leaderboard edition changes
+  while the learner's old result remains intact.
+
+WHAT YOU NEED TO DO
+-------------------
+1. You have already published the V5 Firestore rules. V6 does NOT require a rules change.
+2. In GitHub repository FelicityMJ/mathsready, replace the root index.html with the
+   V6 index.html in this folder.
+3. Commit the change to main. GitHub Pages will redeploy automatically.
+4. Hard-refresh the live site (Ctrl+F5).
+
+FIRST OWNER LOGIN / COURSE
+--------------------------
+If you have not yet completed the owner bootstrap, follow the V5 owner-account steps.
+When the owner opens Course Studio, V6 merges the new built-in small-step levels into
+the course draft. Publish the draft when you want to create the next formal course
+version in Firestore. Until then, the V6 defaults are still used by the app.
+
+COPYRIGHT / COURSE DESIGN NOTE
+------------------------------
+The V6 question generators and level names are original MathsReady implementation.
+The uploaded learning table was used to inform the general mastery-learning principles
+of small increments and timed completion standards; no worksheet pages or proprietary
+question sets are copied into the app.

@@ -1,15 +1,9 @@
-Nat5 Ready Maths — Cloud V5
-
-Open SETUP-V5.txt first.
+Nat5 Ready Maths — Cloud V6
 
 Files:
-  index.html       Complete GitHub Pages app
-  firestore.rules Firestore security rules for the family/friends pilot
-  SETUP-V5.txt     One-time Firebase/GitHub setup
+- index.html       GitHub Pages app (replace your current root index.html with this)
+- firestore.rules  Same Firestore rules as V5; no republish needed if already done
+- SETUP-V6.txt     Upgrade notes
+- COURSE-V6.md     Summary of the new small-step mastery structure
 
-Firebase project baked into this build: mathsready-5fa65
-Public site expected: https://felicitymj.github.io/mathsready/
-
-Cloud V5 keeps the same learning engine and mastery-before-progression model as
-V4, while moving accounts/progress/leaderboards/Face-Off/course configuration
-to Firebase.
+V6 focuses on automaticity: accuracy first, then speed, then progression.
