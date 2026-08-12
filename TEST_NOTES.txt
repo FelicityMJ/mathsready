@@ -1,0 +1,8 @@
+V4 checks
+- Full HTML JavaScript syntax checked with Node.
+- Face-Off question generation is deterministic for a room/round and uses the existing published fluency level bank.
+- Ranking rule tested: correct answers descending, then time ascending.
+- Best-of-3 score logic tested: first to 2 wins; match ends no later than round 3.
+- Rematch resets match score/rounds while retaining room members and configuration.
+- Face-Off results are written only to child.faceoffHistory and room data; no mastery field is changed.
+- Existing V3 stable course IDs and learner progress storage are retained.
