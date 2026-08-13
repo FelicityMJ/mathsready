@@ -91,6 +91,22 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
  .mastery-review-mark{print-color-adjust:exact;-webkit-print-color-adjust:exact}.mastery-correct-answer{font-size:9pt}
 }
 
+
+/* V6.4 child-friendly Practice Zone */
+.practice-hero{display:flex;align-items:center;justify-content:space-between;gap:22px;background:linear-gradient(135deg,#fff,#f6f3ff)}
+.practice-hero h1{font-size:38px;margin:4px 0 8px}.practice-hero p{margin:0;color:var(--muted);max-width:700px;line-height:1.55}
+.practice-hero-badge{flex:0 0 auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 18px;color:var(--muted)}
+.practice-hero-badge strong{color:var(--ink);font-size:16px}.practice-modes{margin-top:14px}
+.fluency-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fluency-help-card{border:1px solid var(--line);background:#fff;border-radius:18px;padding:17px;box-shadow:0 5px 16px rgba(30,24,70,.04)}
+.fluency-help-card.ready-help{border-color:#cfc7ff;background:linear-gradient(180deg,#fff,#faf9ff)}.fluency-help-card.locked-help{opacity:.72;background:#fafafa}.fluency-help-card.complete-help{background:#f4fbf7}
+.fluency-help-top{display:flex;gap:11px;align-items:center}.fluency-help-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#f1efff;font-size:22px}.fluency-help-card h3{margin:2px 0 0;font-size:18px}.fluency-help-card p{color:var(--muted);font-size:13px;line-height:1.45}
+.fluency-help-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.practice-skill-note{font-size:12px;background:#f7f7fa;border-radius:10px;padding:8px 10px;color:var(--muted)}
+.practice-link{display:inline-flex;align-items:center;max-width:100%;font-size:11px;font-weight:850;padding:5px 8px;border-radius:999px;background:#f1efff;color:#594ac9;margin:5px 0 7px;white-space:normal;text-align:left}.practice-link.done{background:#e9f8f0;color:#167b55}.practice-link.neutral{background:#f3f4f6;color:#667085}
+.practice-skill-section{margin-top:12px}.practice-skill-section>h3{margin-top:0}.child-practice-chip{text-align:left;position:relative}.child-practice-chip strong{display:block}.child-practice-chip small{display:block}.chip-action{display:inline-block;margin-top:7px;color:#594ac9;font-size:12px;font-weight:900}.recommended-practice-v64{display:flex;justify-content:space-between;gap:18px;align-items:center}
+.helper-no-timer{font-size:18px;color:#167b55;margin:16px 0 4px}.helper-session-v64 .qmeta{color:#594ac9}
+@media(max-width:760px){.practice-hero{display:block}.practice-hero-badge{margin-top:14px}.fluency-help-grid{grid-template-columns:1fr}.recommended-practice-v64{display:block}.recommended-practice-v64 .button-row{margin-top:14px}}
+
 </style></head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -1268,6 +1284,136 @@ renderOwnerV3=function(tab='codes'){
   loadOwnerBoardsV63(ownerBoardOpV63);
  }else bindOwnerV5(tab)
 };
+
+
+/* === V6.4 CHILD-FRIENDLY PRACTICE ↔ FLUENCY LINKS ===
+   Practice now tells the learner exactly which Fluency mastery step it supports.
+   Each current Fluency goal also has a short untimed helper practice using the
+   same fact family, so Practice is preparation and Fluency remains the test.
+*/
+let activeFluencyHelperV64=null;
+
+function nextFluencyGoalV64(op){
+ const levels=courseLevelsV3(op);
+ return levels.find(l=>fluencyUnlocked(l)&&!fluencyLevelState(l.id).mastered)
+   || levels.find(l=>!fluencyLevelState(l.id).mastered)
+   || null;
+}
+function fluencyOpV64(op){return FLUENCY_OPERATIONS.find(o=>o.id===op)||{icon:'⚡',name:'Fluency'}}
+function fluencyMissingPrereqsV64(level){
+ if(!level)return[];
+ return (level.requires||[]).filter(id=>{const r=effectiveFluencyV3(id);return r&&r.active&&!fluencyLevelState(id).mastered}).map(id=>effectiveFluencyV3(id)?.name||id);
+}
+function fluencyLinkForSkillV64(skillId){
+ const linked=FLUENCY_OPERATIONS.flatMap(o=>courseLevelsV3(o.id)).filter(l=>l.active!==false&&l.skillId===skillId);
+ if(!linked.length)return null;
+ const next=linked.find(l=>!fluencyLevelState(l.id).mastered&&fluencyUnlocked(l))||linked.find(l=>!fluencyLevelState(l.id).mastered)||linked[linked.length-1];
+ const allDone=linked.every(l=>fluencyLevelState(l.id).mastered);
+ return{level:next,allDone};
+}
+function practiceFluencyLabelV64(skill){
+ const link=fluencyLinkForSkillV64(skill.id);
+ if(!link)return`<span class="practice-link neutral">🌱 Builds your maths path</span>`;
+ if(link.allDone)return`<span class="practice-link done">✓ Fluency link mastered</span>`;
+ return`<span class="practice-link">⚡ Helps with: ${esc(link.level.name)}</span>`;
+}
+function fluencyGoalCardV64(op){
+ const meta=fluencyOpV64(op),goal=nextFluencyGoalV64(op),levels=courseLevelsV3(op);
+ if(!goal)return`<div class="fluency-help-card complete-help"><div class="fluency-help-icon">${meta.icon}</div><div><strong>${esc(meta.name)} complete! 🏆</strong><p>Every current ${esc(meta.name.toLowerCase())} Fluency step is mastered.</p></div></div>`;
+ const unlocked=fluencyUnlocked(goal),missing=fluencyMissingPrereqsV64(goal),n=levels.findIndex(x=>x.id===goal.id)+1;
+ const skill=BY_ID[goal.skillId];
+ return`<div class="fluency-help-card ${unlocked?'ready-help':'locked-help'}">
+   <div class="fluency-help-top"><div class="fluency-help-icon">${meta.icon}</div><div><div class="tiny">YOUR NEXT ${esc(meta.name.toUpperCase())} FLUENCY STEP</div><h3>${esc(goal.name)}</h3></div></div>
+   <p>${unlocked?`Practise these facts slowly first. When they feel easy, try the timed Fluency set.`:`This step will open after ${esc(missing.join(' + ')||'the earlier Fluency step')}.`}</p>
+   ${skill?`<div class="practice-skill-note">🧩 Maths skill: <strong>${esc(skill.name)}</strong></div>`:''}
+   <div class="fluency-help-actions">${unlocked?`<button class="cta small" data-helper-fluency="${goal.id}">Practise for this step</button><button class="cta secondary small" data-master-fluency="${goal.id}">Try mastery</button>`:`<button class="cta secondary small" data-go-fluency-op="${op}">See what comes first</button>`}</div>
+   <div class="tiny" style="margin-top:9px">Fluency step ${n} of ${levels.length}${unlocked?` • mastery = 100% + SMT ${fmtSec(fluencyTarget(goal))}`:''}</div>
+ </div>`;
+}
+
+function bindPracticeV64(){
+ document.querySelectorAll('[data-helper-fluency]').forEach(b=>b.onclick=()=>startFluencyHelperV64(b.dataset.helperFluency));
+ document.querySelectorAll('[data-master-fluency]').forEach(b=>b.onclick=()=>startFluencySet(b.dataset.masterFluency));
+ document.querySelectorAll('[data-go-fluency-op]').forEach(b=>b.onclick=()=>renderFluency(b.dataset.goFluencyOp));
+}
+
+renderPractice=function(){
+ const r=recommendedSkill(),rLink=fluencyLinkForSkillV64(r.id);
+ render(`<section class="practice-hero card"><div><div class="pill">🌟 Practice Zone</div><h1>What do you want to get better at?</h1><p>Practice is where you learn and make mistakes. <strong>Fluency is where you show you can do it automatically.</strong></p></div><div class="practice-hero-badge">No pressure<br><strong>Just practise 💪</strong></div></section>
+ <div class="mode-grid practice-modes">
+  <button class="mode" id="dailyMode"><div class="ico">🎯</div><h3>Today's Mission</h3><p>A short mix chosen for you.</p></button>
+  <button class="mode" id="fluencyHelpMode"><div class="ico">⚡</div><h3>Help My Fluency</h3><p>Practise exactly what your next Fluency tests need.</p></button>
+  <button class="mode" id="skillMode"><div class="ico">🧩</div><h3>Choose a Skill</h3><p>Pick something you want more help with.</p></button>
+  <button class="mode" id="mixedMode"><div class="ico">🧠</div><h3>Mix It Up</h3><p>Bring older maths back so it stays strong.</p></button>
+ </div>
+ <div class="section-head" id="fluencyHelpersV64"><div><h2>⚡ Practice for your next Fluency steps</h2><p>These blocks use the same kinds of facts as the mastery level named on the card.</p></div></div>
+ <div class="fluency-help-grid">${FLUENCY_OPERATIONS.map(o=>fluencyGoalCardV64(o.id)).join('')}</div>
+ <div class="section-head"><div><h2>⭐ Best next practice for you</h2><p>Based on the maths path and your recent work.</p></div></div>
+ <section class="card recommended-practice-v64"><div><h3 style="margin:0 0 6px">${esc(r.name)}</h3>${practiceFluencyLabelV64(r)}<p class="muted" style="margin-bottom:0">${skillWhy(r)}</p></div><div class="button-row"><button class="cta" id="rec">Practise this skill</button>${rLink&&!rLink.allDone&&fluencyUnlocked(rLink.level)?`<button class="cta secondary" data-helper-fluency="${rLink.level.id}">Practise for ${esc(rLink.level.name)}</button>`:''}</div></section>
+ <div class="button-row" style="justify-content:center;margin-top:18px"><button class="cta secondary" id="goFluencyTests">Go to Fluency mastery tests →</button><button class="cta secondary" id="pathBtn">See my whole maths path</button></div>`,'practice');
+ document.getElementById('dailyMode').onclick=()=>startSession('Daily Mission',makeDailyQueue(state.settings.dailyQuestions));
+ document.getElementById('fluencyHelpMode').onclick=()=>document.getElementById('fluencyHelpersV64')?.scrollIntoView({behavior:'smooth',block:'start'});
+ document.getElementById('skillMode').onclick=renderSkillPicker;
+ document.getElementById('mixedMode').onclick=()=>startSession('Mixed Review',makeMixedQueue(state.settings.dailyQuestions));
+ document.getElementById('rec').onclick=()=>startSession('Skill Practice',makeSkillQueue(r.id,12),{fixedSkill:r.id});
+ document.getElementById('goFluencyTests').onclick=()=>renderFluency('add');
+ document.getElementById('pathBtn').onclick=renderPath;
+ bindPracticeV64();
+}
+
+renderSkillPicker=function(){
+ const eligible=SKILLS.filter(s=>isUnlocked(s)&&levelIndex(s.level)<=Math.min(4,stageIndex()+1));
+ const groups=[...new Set(eligible.map(s=>s.strand))];
+ render(`<div class="section-head"><div><h2>🧩 Choose a skill to practise</h2><p>Look for the ⚡ label to see which Fluency step a practice block helps you with.</p></div><button class="back" id="practiceZoneBack">← Practice Zone</button></div>
+ ${groups.map(g=>`<section class="card practice-skill-section"><h3>${esc(g)}</h3><div class="skill-chip-grid">${eligible.filter(s=>s.strand===g).map(s=>{const x=skillState(s.id),link=fluencyLinkForSkillV64(s.id);return`<button class="skill-chip child-practice-chip" data-skill-practice="${s.id}"><strong>${esc(s.name)}</strong>${practiceFluencyLabelV64(s)}<small>${x.attempts?`${accuracy(s.id)}% correct so far`:'Ready to practise'}</small><div class="mini"><span style="width:${x.mastery}%"></span></div>${link&&!link.allDone&&fluencyUnlocked(link.level)?`<span class="chip-action">Practise →</span>`:''}</button>`}).join('')}</div></section>`).join('')}`,'practice');
+ document.getElementById('practiceZoneBack').onclick=renderPractice;
+ document.querySelectorAll('[data-skill-practice]').forEach(b=>b.onclick=()=>{const id=b.dataset.skillPractice;startSession('Skill Practice',makeSkillQueue(id,12),{fixedSkill:id})});
+}
+
+function makeHelperQuestionsV64(level,count=12){
+ const bank=shuffle(makeFluencyBank(level));
+ if(bank.length>=count)return bank.slice(0,count).map(q=>({...q}));
+ const out=[];while(out.length<count&&bank.length)out.push({...bank[out.length%bank.length]});return shuffle(out);
+}
+function startFluencyHelperV64(levelId){
+ const level=effectiveFluencyV3(levelId);if(!level)return;
+ if(!fluencyUnlocked(level)){const missing=fluencyMissingPrereqsV64(level);return alert(`This Fluency step is not open yet. First master: ${missing.join(' + ')||'the earlier step'}.`)}
+ activeFluencyHelperV64={level,questions:makeHelperQuestionsV64(level,12),index:0,items:[],started:Date.now()};
+ window.scrollTo({top:0,behavior:'auto'});renderFluencyHelperQuestionV64();
+}
+function renderFluencyHelperQuestionV64(){
+ const a=activeFluencyHelperV64;if(!a)return;if(a.index>=a.questions.length)return finishFluencyHelperV64();
+ const q=a.questions[a.index],pct=Math.round(a.index/a.questions.length*100);a.q=q;a.qStarted=Date.now();
+ render(`<div class="question-wrap helper-session-v64"><div class="session-top"><button class="back" id="helperExit">← Exit</button><div class="progress"><span style="width:${pct}%"></span></div><div class="timer">${a.index+1}/${a.questions.length}</div></div><section class="card qcard"><div class="qmeta">🌱 PRACTICE FOR FLUENCY • ${esc(a.level.name)}</div><h2 class="helper-no-timer">No timer — learn it first</h2><div class="qprompt">${esc(q.prompt)}</div><div class="answer-row"><input id="helperAnswer" autocomplete="off" inputmode="numeric" aria-label="Answer"><button class="cta" id="helperCheck">Answer</button></div><div class="feedback" id="helperFeedback"></div><div class="hint">These are the same kinds of facts you will meet in <strong>${esc(a.level.name)}</strong>. Get comfortable here, then try mastery.</div></section></div>`,'practice');
+ document.getElementById('helperExit').onclick=()=>{activeFluencyHelperV64=null;renderPractice()};
+ const inp=document.getElementById('helperAnswer');inp.focus();inp.onkeydown=e=>{if(e.key==='Enter')submitFluencyHelperV64(inp.value)};document.getElementById('helperCheck').onclick=()=>submitFluencyHelperV64(inp.value);
+}
+function submitFluencyHelperV64(raw){
+ const a=activeFluencyHelperV64,q=a?.q;if(!a||!q)return;const ms=Date.now()-a.qStarted,ok=String(raw).trim()===String(q.answer);a.items.push({skill:a.level.skillId||null,correct:ok,ms,prompt:q.prompt,answer:q.display,raw});
+ const fb=document.getElementById('helperFeedback');fb.className='feedback '+(ok?'ok':'no');fb.textContent=ok?pick(['✓ Nice one!','✓ You’ve got it!','✓ Great — keep going!']):`Nearly — the answer is ${q.display}. This one will come back once.`;
+ document.getElementById('helperAnswer').disabled=true;document.getElementById('helperCheck').disabled=true;
+ if(!ok&&!q._retry)a.questions.push({...q,_retry:true});
+ setTimeout(()=>{a.index++;renderFluencyHelperQuestionV64()},ok?500:1050);
+}
+function finishFluencyHelperV64(){
+ const a=activeFluencyHelperV64;if(!a)return;const attempts=a.items.length,correct=a.items.filter(x=>x.correct).length,pct=Math.round(correct/Math.max(1,attempts)*100),level=a.level;logSession('Fluency Helper Practice',a.items,Math.round((Date.now()-a.started)/1000),{fluencyLevel:level.id,practiceOnly:true,helperPractice:true});save();activeFluencyHelperV64=null;
+ render(`<section class="card complete"><div class="score">${pct}%</div><h1>${pct===100?'That looked comfortable! 🌟':pct>=80?'Getting stronger! 💪':'Good practice — keep building 🌱'}</h1><p class="muted">You practised the facts that prepare you for <strong>${esc(level.name)}</strong>. Practice does not count as mastery, so there is no pressure here.</p><div class="button-row" style="justify-content:center"><button class="cta" id="helperAgain">Practise again</button><button class="cta secondary" id="helperMastery">Try ${esc(level.name)} mastery</button><button class="cta secondary" id="helperPracticeHome">Practice Zone</button></div></section>`,'practice');
+ document.getElementById('helperAgain').onclick=()=>startFluencyHelperV64(level.id);document.getElementById('helperMastery').onclick=()=>startFluencySet(level.id);document.getElementById('helperPracticeHome').onclick=renderPractice;
+}
+
+/* Add an untimed "Practise first" route anywhere a learner sees an unlocked Fluency set. */
+const renderFluencyV64Base=renderFluency;
+renderFluency=function(op=activeFluencyOp){
+ renderFluencyV64Base(op);
+ document.querySelectorAll('[data-start-fluency]').forEach(start=>{
+  const id=start.dataset.startFluency,l=effectiveFluencyV3(id);if(!l||fluencyLevelState(id).mastered||!fluencyUnlocked(l))return;
+  const holder=start.closest('.worksheet-mode-actions')||start.parentElement;if(holder&&!holder.querySelector(`[data-helper-fluency="${id}"]`)){const b=document.createElement('button');b.className='copy-btn';b.dataset.helperFluency=id;b.textContent='Practise first';holder.appendChild(b)}
+ });
+ const current=nextFluencyGoalV64(op),startCurrent=document.getElementById('startCurrent');
+ if(current&&startCurrent&&fluencyUnlocked(current)&&!document.getElementById('practiceCurrentV64')){const b=document.createElement('button');b.className='cta secondary';b.id='practiceCurrentV64';b.textContent='Practise this step first';startCurrent.insertAdjacentElement('afterend',b);b.style.marginTop='8px';b.onclick=()=>startFluencyHelperV64(current.id)}
+ bindPracticeV64();
+};
+
 
 // Start Cloud V6 instead of local V4 bootstrap.
 initCloudV5();
