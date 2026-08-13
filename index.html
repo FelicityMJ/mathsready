@@ -54,7 +54,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .mastery-session{max-width:1120px;margin:0 auto}
 .mastery-session-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:14px}
 .mastery-session-head h1{margin:3px 0 4px;font-size:clamp(27px,4vw,40px);letter-spacing:-.03em}
-.mastery-time-panel{position:sticky;top:8px;z-index:12;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:13px 15px;margin:12px 0 16px;box-shadow:0 8px 24px rgba(35,43,65,.08);backdrop-filter:blur(8px)}
+.mastery-time-panel{position:sticky;top:var(--mastery-sticky-top,76px);z-index:18;background:rgba(255,255,255,.985);border:1px solid var(--line);border-radius:18px;padding:11px 15px;margin:12px 0 18px;box-shadow:0 8px 24px rgba(35,43,65,.10);backdrop-filter:blur(8px)}
 .mastery-time-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px;font-size:12px;font-weight:850;color:var(--muted)}
 .mastery-time-track{height:17px;border-radius:999px;background:#edf0f3;overflow:hidden;box-shadow:inset 0 1px 2px rgba(20,28,45,.08)}
 .mastery-time-fill{width:0;height:100%;border-radius:999px;background:hsl(125 62% 43%);transition:width .12s linear,background-color .3s linear}
@@ -82,7 +82,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .mastery-print-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:20px}
 .mastery-print-lines{font-size:12px;color:#555;margin-top:8px}
 .worksheet-mode-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:7px}
-@media(max-width:800px){.mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px}.mastery-sheet-card{padding:22px 18px}.mastery-session-head{display:block}.mastery-session-head .back{margin-bottom:10px}.mastery-answer{height:60px}.mastery-time-panel{top:4px}}
+@media(max-width:800px){.mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px}.mastery-sheet-card{padding:22px 18px}.mastery-session-head{display:block}.mastery-session-head .back{margin-bottom:10px}.mastery-answer{height:60px}}
 @media(max-width:390px){.mastery-grid{gap:20px 12px}.mastery-expression{font-size:23px}.mastery-answer{height:56px;font-size:27px}}
 @media print{
  .mastery-time-panel,.mastery-submit-row,.mastery-session-head .back,.mastery-review-summary .button-row{display:none!important}
@@ -435,7 +435,26 @@ function makeQuestion(id){const s=BY_ID[id];if(!s)return Q('2 + 2',4,{skill:id})
   case'half':{let a=2*rand(1,Math.floor(p.max/2));q=Q(`Half of ${a}`,a/2,{words:true});break}
   case'sequence':{let step=rand(1,p.stepMax||5),a=rand(0,Math.max(1,p.max-step*4));q=Q(`${a}, ${a+step}, ${a+2*step}, ${a+3*step}, ?`,a+4*step);break}
   case'shape2d':{let options=[['triangle',3],['square',4],['pentagon',5],['hexagon',6]];let [name,sides]=pick(options);q=Q(`How many sides does a ${name} have?`,sides,{words:true});break}
-  case'place':{let n=rand(Math.min(10,p.max),p.max);let digits=String(n).length;let pos=rand(0,digits-1),pow=digits-1-pos;let digit=Number(String(n)[pos]);let place=10**pow;q=Q(`What is the value of the ${digit} in ${n}?`,digit*place,{words:true});break}
+  case'place':{
+   // Pick a non-zero digit that appears only once in the number. This avoids ambiguous
+   // prompts such as "What is the value of the 1 in 11?", where either 1 or 10 could be meant.
+   let n,chars,candidates=[],tries=0;
+   do{
+    n=rand(Math.min(10,p.max),p.max);chars=String(n).split('');
+    candidates=chars.map((ch,pos)=>({ch,pos})).filter(x=>x.ch!=='0'&&chars.filter(c=>c===x.ch).length===1);
+    tries++;
+   }while(!candidates.length&&tries<40);
+   if(!candidates.length){
+    // Extremely defensive fallback: name the place explicitly if a unique digit was not found.
+    const pos=0,pow=chars.length-1-pos,digit=Number(chars[pos]);
+    const placeName=pow===0?'ones':pow===1?'tens':pow===2?'hundreds':pow===3?'thousands':`${10**pow}s`;
+    q=Q(`What is the value of the ${digit} in the ${placeName} place of ${n}?`,digit*(10**pow),{words:true});
+   }else{
+    const chosen=pick(candidates),pow=chars.length-1-chosen.pos,digit=Number(chosen.ch),place=10**pow;
+    q=Q(`What is the value of the ${digit} in ${n}?`,digit*place,{words:true});
+   }
+   break
+  }
   case'timesFact':{let b=rand(1,12);q=Q(`${p.table} × ${b}`,p.table*b);break}
   case'divideFact':{let t=pick(p.tables),b=rand(1,12);q=Q(`${t*b} ÷ ${t}`,b);break}
   case'fractionOf':{let d=pick(p.denoms),unit=rand(1,Math.max(2,Math.floor(p.max/d))),amount=unit*d,num=rand(1,d-1);let ans=amount*num/d;q=Q(`${num}/${d} of ${amount}`,ans);break}
@@ -1055,7 +1074,7 @@ shellV3=function(content,active='home'){cloudV5.route=active;const ch=activeChil
 route=function(name){clearInterval(beatTimer);beatTimer=null;clearInterval(fluencyTimer);fluencyTimer=null;clearInterval(placementTimerV6);placementTimerV6=null;clearFaceoffTimerV4();if(name!=='faceoff')cloudStopFaceoffWatchV5();activeFluency=null;activePlacementV6=null;activeFaceoffV4=null;if(name==='home')activeChildV3()?renderHome():renderFamilyV3();if(name==='fluency')renderFluency();if(name==='practice')renderPractice();if(name==='faceoff')renderFaceoffV4();if(name==='path')renderPath();if(name==='leaderboard')renderLeaderboardsV3();if(name==='parent')renderParent();if(name==='family')renderFamilyV3();if(name==='owner')renderOwnerV3('codes')};
 
 
-/* === V6 worksheet-display refinement ===
+/* === V6.2 worksheet-display refinement (UX patch) ===
    Course IDs, SMTs, Firebase paths, mastery rules and learner records are unchanged.
    Only the official/timed/parent worksheet interaction and printable display are refined.
 */
@@ -1079,11 +1098,28 @@ function updateWorksheetTimerV61(){
 function worksheetModeTitleV61(mode){return mode==='mastery'?'Official mastery set':mode==='timedPractice'?'Timed practice':mode==='parentPractice'?'Parent-overseen practice':'Practice sheet'}
 function worksheetModeHelpV61(a){if(a.mode==='mastery')return 'Answer the whole sheet, then submit once. No marking appears until the end.';if(a.mode==='timedPractice')return 'Practise the same timed format without changing the official mastery record.';return 'Work through the whole sheet together. This practice does not unlock or remove mastery.'}
 
+/* V6.2 worksheet UX fixes: repeat starts at the top; timer docks below the sticky nav. */
+function scrollToTopInstantV62(){
+ const root=document.documentElement,old=root.style.scrollBehavior;
+ root.style.scrollBehavior='auto';window.scrollTo(0,0);root.style.scrollBehavior=old;
+}
+function syncMasteryStickyOffsetV62(){
+ const panel=document.getElementById('masteryTimePanel');if(!panel)return;
+ const bar=document.querySelector('.topbar');
+ if(!bar){panel.style.setProperty('--mastery-sticky-top','8px');return}
+ const pos=getComputedStyle(bar).position;
+ const top=pos==='sticky'?Math.ceil(bar.getBoundingClientRect().height)+8:8;
+ panel.style.setProperty('--mastery-sticky-top',`${top}px`);
+}
+window.addEventListener('resize',syncMasteryStickyOffsetV62);
+
 startFluencySet=function(id){startWorksheetFluencyV61(id,'mastery','fluency')};
 function startTimedFluencyPracticeV61(id){startWorksheetFluencyV61(id,'timedPractice','fluency')}
 function startParentFluencyPracticeV61(id){startWorksheetFluencyV61(id,'parentPractice','parent')}
 function startWorksheetFluencyV61(id,mode='mastery',returnTo='fluency'){
  const l=effectiveFluencyV3(id);if(!l)return;if(mode==='mastery'&&!fluencyUnlocked(l))return;
+ // Starting or repeating a worksheet should always begin at the top before the timer starts.
+ scrollToTopInstantV62();
  clearInterval(fluencyTimer);fluencyTimer=null;
  const questions=makeFluencySet(l),now=performance.now();
  activeFluency={level:l,questions,index:0,items:[],started:now,finished:false,courseVersion:currentCourseV3().version,courseSnapshot:{levelId:l.id,name:l.name,count:l.count,targetSec:fluencyTarget(l)},worksheet:true,mode,returnTo,responses:Array(questions.length).fill(''),answerTimes:{}};
@@ -1092,13 +1128,13 @@ function startWorksheetFluencyV61(id,mode='mastery',returnTo='fluency'){
 }
 function renderFluencyWorksheetV61(){
  const a=activeFluency;if(!a||!a.worksheet)return;const target=a.courseSnapshot.targetSec,count=a.questions.length,timed=a.mode!=='parentPractice';
- render(`<div class="mastery-session"><div class="mastery-session-head no-print"><button class="back" id="masteryExit">← Exit</button><div style="flex:1"><div class="qmeta">${a.mode==='mastery'?'⚡':'📝'} ${worksheetModeTitleV61(a.mode)}</div><h1>${esc(a.level.name)}</h1><p class="tiny">${count} questions${timed?` • SMT ${fmtSec(target)}`:' • untimed'} • ${a.mode==='mastery'?'100% + SMT required to unlock the next step':'practice only — official mastery is unchanged'}</p></div></div>${timed?`<div class="mastery-time-panel no-print" id="masteryTimePanel"><div class="mastery-time-meta"><span class="mastery-time-status" id="masteryTimeStatus">Comfortable pace</span><span>SMT ${fmtSec(target)}</span></div><div class="mastery-time-track" role="progressbar" aria-label="Time used towards Standard Mastery Time" aria-valuemin="0" aria-valuemax="100"><div class="mastery-time-fill" id="masteryTimeFill"></div></div></div>`:''}<section class="mastery-sheet-card"><p class="mastery-sheet-note">${worksheetModeHelpV61(a)}</p><div class="mastery-grid">${a.questions.map((q,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><input class="mastery-answer" data-ws-answer="${i}" inputmode="numeric" autocomplete="off" aria-label="Question ${i+1}: ${esc(q.prompt)}"></div>`).join('')}</div><div class="mastery-submit-row no-print"><span class="mastery-answered" id="masteryAnswered">0/${count} answered</span><button class="cta" id="masterySubmit">Submit whole sheet</button></div></section></div>`,'fluency');
+ render(`<div class="mastery-session"><div class="mastery-session-head no-print"><button class="back" id="masteryExit">← Exit</button><div style="flex:1"><div class="qmeta">${a.mode==='mastery'?'⚡':'📝'} ${worksheetModeTitleV61(a.mode)}</div><h1>${esc(a.level.name)}</h1><p class="tiny">${count} questions${timed?` • SMT ${fmtSec(target)}`:' • untimed'} • ${a.mode==='mastery'?'100% + SMT required to unlock the next step':'practice only — official mastery is unchanged'}</p></div></div>${timed?`<div class="mastery-time-panel no-print" id="masteryTimePanel"><div class="mastery-time-meta"><span class="mastery-time-status" id="masteryTimeStatus">Comfortable pace</span><span id="masteryStickyAnswered">0/${count} answered</span><span>SMT ${fmtSec(target)}</span></div><div class="mastery-time-track" role="progressbar" aria-label="Time used towards Standard Mastery Time" aria-valuemin="0" aria-valuemax="100"><div class="mastery-time-fill" id="masteryTimeFill"></div></div></div>`:''}<section class="mastery-sheet-card"><p class="mastery-sheet-note">${worksheetModeHelpV61(a)}</p><div class="mastery-grid">${a.questions.map((q,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><input class="mastery-answer" data-ws-answer="${i}" inputmode="numeric" autocomplete="off" aria-label="Question ${i+1}: ${esc(q.prompt)}"></div>`).join('')}</div><div class="mastery-submit-row no-print"><span class="mastery-answered" id="masteryAnswered">0/${count} answered</span><button class="cta" id="masterySubmit">Submit whole sheet</button></div></section></div>`,'fluency');
  document.getElementById('masteryExit').onclick=()=>{clearInterval(fluencyTimer);fluencyTimer=null;const ret=a.returnTo;activeFluency=null;ret==='parent'?renderParent('worksheet'):renderFluency(a.level.op)};
  const inputs=[...document.querySelectorAll('[data-ws-answer]')];
  inputs.forEach((inp,pos)=>{const i=Number(inp.dataset.wsAnswer);inp.addEventListener('input',()=>{a.responses[i]=inp.value.trim();if(a.responses[i]!==''&&a.answerTimes[i]==null)a.answerTimes[i]=Math.max(1,Math.round(performance.now()-a.started));updateAnsweredV61()});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const next=inputs[pos+1];if(next)next.focus();else document.getElementById('masterySubmit').focus()}})});
- document.getElementById('masterySubmit').onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();updateWorksheetTimerV61();
+ document.getElementById('masterySubmit').onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();syncMasteryStickyOffsetV62();updateAnsweredV61();updateWorksheetTimerV61();
 }
-function updateAnsweredV61(){const a=activeFluency,el=document.getElementById('masteryAnswered');if(a&&el)el.textContent=`${a.responses.filter(x=>String(x).trim()!=='').length}/${a.questions.length} answered`}
+function updateAnsweredV61(){const a=activeFluency;if(!a)return;const txt=`${a.responses.filter(x=>String(x).trim()!=='').length}/${a.questions.length} answered`,el=document.getElementById('masteryAnswered'),sticky=document.getElementById('masteryStickyAnswered');if(el)el.textContent=txt;if(sticky)sticky.textContent=txt}
 function estimateItemTimesV61(a){const pairs=Object.entries(a.answerTimes||{}).map(([i,t])=>({i:Number(i),t:Number(t)})).sort((x,y)=>x.t-y.t),ms={};let prev=0;for(const p of pairs){ms[p.i]=Math.max(150,p.t-prev);prev=p.t}const fallback=Math.max(500,Math.round((a.elapsedAtSubmit*1000)/Math.max(1,a.questions.length)));for(let i=0;i<a.questions.length;i++)if(ms[i]==null)ms[i]=fallback;return ms}
 function collectWorksheetItemsV61(a,updateLearning=true){const times=estimateItemTimesV61(a);return a.questions.map((q,i)=>{const raw=String(a.responses[i]??'').trim(),ok=raw!==''&&Number(raw)===Number(q.answer),ms=times[i];if(updateLearning){updateFactTiming(q,ok,ms);if(a.level.skillId&&BY_ID[a.level.skillId])updateMastery(a.level.skillId,ok,ms)}return{prompt:q.prompt,answer:q.answer,raw,correct:ok,ms,factKey:q.factKey,factLabel:q.factLabel}})}
 function submitWorksheetV61(){
