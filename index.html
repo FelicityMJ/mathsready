@@ -1175,6 +1175,100 @@ const bindParentActionsV61Base=bindParentActions;
 bindParentActions=function(tab){bindParentActionsV61Base(tab);if(tab==='worksheet'){const p=document.getElementById('parentPracticeSheet'),m=document.getElementById('makeFluencyPrint');if(p)p.onclick=()=>startParentFluencyPracticeV61(document.getElementById('fluencySheetLevel').value);if(m)m.onclick=makeFluencyPrintSheetV61}};
 
 
+
+/* === V6.3 ADMIN LEADERBOARD MODERATION ===
+   Owner can remove an invalid/assisted board result without removing mastery.
+   The board entry and that board-edition result inside the learner record are
+   cleared together, so the learner can earn a fresh legitimate board time.
+*/
+let ownerBoardOpV63='add';
+
+const cloudLoadLeaderboardV63Base=cloudLoadLeaderboardV5;
+cloudLoadLeaderboardV5=async function(level){
+ const {collection,getDocs}=cloudV5.mods,br=Number(level.boardRevision)||1,key=cloudBoardKeyV5(level.id,br);
+ try{
+  const s=await getDocs(collection(cloudV5.db,'leaderboards',key,'entries'));
+  cloudV5.leaderboards[key]=s.docs.map(d=>{const x=d.data();return{
+   childId:x.childId||d.id,
+   familyId:x.familyId||'',
+   alias:x.alias||'Maths Star',
+   sec:Number(x.bestSec),
+   masteredAt:cloudIsoV5(x.masteredAt)||x.masteredAt,
+   courseVersion:Number(x.courseVersion)||1,
+   boardRevision:br,
+   levelId:level.id
+  }})
+ }catch(e){console.warn(e);cloudV5.leaderboards[key]=[]}
+};
+
+function ownerBoardsShellV63(){
+ return `<div class="section-head"><div><h2>Board moderation</h2><p>Remove an assisted, accidental or otherwise invalid leaderboard time. This keeps the learner's mastery but clears this board result so they can earn a fresh time themselves.</p></div></div>
+ <section class="card"><div class="op-tabs">${FLUENCY_OPERATIONS.map(o=>`<button class="op-tab ${ownerBoardOpV63===o.id?'active':''}" data-admin-board-op="${o.id}"><span class="opico">${o.icon}</span>${esc(o.name)}</button>`).join('')}</div><div id="ownerBoardResultsV63"><div class="empty">Loading board results…</div></div></section>`
+}
+
+async function loadOwnerBoardsV63(op=ownerBoardOpV63){
+ ownerBoardOpV63=op;
+ document.querySelectorAll('[data-admin-board-op]').forEach(b=>b.classList.toggle('active',b.dataset.adminBoardOp===op));
+ const out=document.getElementById('ownerBoardResultsV63');if(!out)return;
+ out.innerHTML='<div class="empty">Loading board results…</div>';
+ const levels=courseLevelsV3(op);
+ await Promise.all(levels.map(cloudLoadLeaderboardV5));
+ const cards=levels.map(l=>{
+  const br=Number(l.boardRevision)||1,rows=cloudV5.leaderboards[cloudBoardKeyV5(l.id,br)]||[];
+  return `<div style="margin-top:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden">
+   <div class="leaderboard-head"><strong>${esc(l.name)}</strong><div class="tiny">${l.count} questions • SMT ${fmtSec(fluencyTarget(l))} • board ${br}</div></div>
+   ${rows.length?rows.sort((a,b)=>Number(a.sec)-Number(b.sec)).map((r,i)=>`<div class="leader-row" style="grid-template-columns:42px minmax(0,1fr) auto auto">
+    <div class="rank">#${i+1}</div>
+    <div><strong>${esc(r.alias)}</strong><div class="tiny">course v${r.courseVersion}${r.masteredAt?` • ${new Date(r.masteredAt).toLocaleDateString('en-GB')}`:''}</div></div>
+    <strong>${fmtSec(r.sec)}</strong>
+    <button class="cta danger small" data-remove-board-result="${esc(l.id)}" data-board-rev="${br}" data-child-id="${esc(r.childId)}" data-family-id="${esc(r.familyId||'')}" data-alias="${esc(r.alias)}" data-sec="${Number(r.sec)}">Remove</button>
+   </div>`).join(''):'<div class="empty">No results on this board.</div>'}
+  </div>`
+ }).join('');
+ out.innerHTML=cards||'<div class="empty">No boards in this operation.</div>';
+ document.querySelectorAll('[data-remove-board-result]').forEach(b=>b.onclick=()=>removeBoardResultV63(b));
+}
+
+async function removeBoardResultV63(btn){
+ if(!platformV3.ownerLocal)return alert('Owner/admin access is required.');
+ const levelId=btn.dataset.removeBoardResult,rev=Number(btn.dataset.boardRev)||1,childId=btn.dataset.childId,familyId=btn.dataset.familyId,alias=btn.dataset.alias,sec=Number(btn.dataset.sec),level=effectiveFluencyV3(levelId);
+ const ok=confirm(`Remove ${alias}'s ${fmtSec(sec)} result from “${level?.name||levelId}”?\n\nThis removes only this leaderboard result. Their mastery remains. They can repeat the mastery set to earn a new board time.`);if(!ok)return;
+ btn.disabled=true;btn.textContent='Removing…';
+ try{
+  const {doc,deleteDoc,getDoc,writeBatch,deleteField}=cloudV5.mods;
+  const boardRef=doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(levelId,rev),'entries',childId);
+  const batch=writeBatch(cloudV5.db);batch.delete(boardRef);
+  if(familyId){
+   const childRef=doc(cloudV5.db,'families',familyId,'children',childId),snap=await getDoc(childRef);
+   if(snap.exists()){
+    const field=`progress.fluency.levels.${levelId}.boardResults.${rev}`;
+    batch.update(childRef,{[field]:deleteField()});
+   }
+  }
+  await batch.commit();
+  const local=platformV3.children[childId];
+  if(local?.progress?.fluency?.levels?.[levelId]?.boardResults){delete local.progress.fluency.levels[levelId].boardResults[rev];if(platformV3.activeChildId===childId)state=local.progress}
+  const key=cloudBoardKeyV5(levelId,rev);cloudV5.leaderboards[key]=(cloudV5.leaderboards[key]||[]).filter(r=>r.childId!==childId);
+  toast('Leaderboard result removed');
+  await loadOwnerBoardsV63(ownerBoardOpV63);
+ }catch(e){btn.disabled=false;btn.textContent='Remove';alert(cloudErrV5(e))}
+}
+
+const renderOwnerV63Base=renderOwnerV3;
+renderOwnerV3=function(tab='codes'){
+ if(!platformV3.ownerLocal)return alert('This Firebase account is not an owner/admin account.');
+ const tabs=`<div class="tabs"><button data-atab="codes" class="${tab==='codes'?'active':''}">Free codes</button><button data-atab="course" class="${tab==='course'?'active':''}">Course studio</button><button data-atab="boards" class="${tab==='boards'?'active':''}">Board moderation</button><button data-atab="versions" class="${tab==='versions'?'active':''}">Versions & records</button></div>`;
+ const body=tab==='codes'?ownerCodesV3():tab==='course'?ownerCourseV3():tab==='boards'?ownerBoardsShellV63():ownerVersionsV3();
+ render(`<section class="card owner-banner"><div class="grid"><div class="span8"><div class="pill">Owner tools • Firebase Cloud</div><h1 style="font-size:40px;margin:0 0 8px">Platform administration</h1><p class="muted">Free codes, course versions and leaderboard moderation are shared across the pilot. Removing a board result does not remove the learner's mastery.</p></div><div class="span4">${activeFamilyV3()?'<button class="cta secondary" id="leaveOwner">My family</button>':'<button class="cta secondary" id="ownerMakeFamily">Create my family profile</button>'}</div></div></section><div style="margin-top:14px">${tabs}${body}</div>`,'owner');
+ document.querySelectorAll('[data-atab]').forEach(b=>b.onclick=()=>renderOwnerV3(b.dataset.atab));
+ const leave=document.getElementById('leaveOwner');if(leave)leave.onclick=renderFamilyV3;
+ const mk=document.getElementById('ownerMakeFamily');if(mk)mk.onclick=()=>cloudCreateOwnerFamilyV5().catch(e=>alert(cloudErrV5(e)));
+ if(tab==='boards'){
+  document.querySelectorAll('[data-admin-board-op]').forEach(b=>b.onclick=()=>loadOwnerBoardsV63(b.dataset.adminBoardOp));
+  loadOwnerBoardsV63(ownerBoardOpV63);
+ }else bindOwnerV5(tab)
+};
+
 // Start Cloud V6 instead of local V4 bootstrap.
 initCloudV5();
 
