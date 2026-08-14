@@ -107,6 +107,11 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .helper-no-timer{font-size:18px;color:#167b55;margin:16px 0 4px}.helper-session-v64 .qmeta{color:#594ac9}
 @media(max-width:760px){.practice-hero{display:block}.practice-hero-badge{margin-top:14px}.fluency-help-grid{grid-template-columns:1fr}.recommended-practice-v64{display:block}.recommended-practice-v64 .button-row{margin-top:14px}}
 
+
+/* V6.5 keyboard finish: keep the no-click hint compact inside the submit row. */
+.mastery-enter-hint{color:var(--muted);font-weight:700;white-space:nowrap}
+@media(max-width:700px){.mastery-enter-hint{width:100%;text-align:center;white-space:normal;order:3}}
+
 </style></head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -1134,21 +1139,32 @@ function startTimedFluencyPracticeV61(id){startWorksheetFluencyV61(id,'timedPrac
 function startParentFluencyPracticeV61(id){startWorksheetFluencyV61(id,'parentPractice','parent')}
 function startWorksheetFluencyV61(id,mode='mastery',returnTo='fluency'){
  const l=effectiveFluencyV3(id);if(!l)return;if(mode==='mastery'&&!fluencyUnlocked(l))return;
- // Starting or repeating a worksheet should always begin at the top before the timer starts.
- scrollToTopInstantV62();
  clearInterval(fluencyTimer);fluencyTimer=null;
- const questions=makeFluencySet(l),now=performance.now();
- activeFluency={level:l,questions,index:0,items:[],started:now,finished:false,courseVersion:currentCourseV3().version,courseSnapshot:{levelId:l.id,name:l.name,count:l.count,targetSec:fluencyTarget(l)},worksheet:true,mode,returnTo,responses:Array(questions.length).fill(''),answerTimes:{}};
- if(mode!=='parentPractice')fluencyTimer=setInterval(updateWorksheetTimerV61,100);
+ const questions=makeFluencySet(l);
+ // Build the new sheet first. The normal renderer uses smooth scrolling, so the
+ // mastery clock must not start until that movement has been cancelled.
+ activeFluency={level:l,questions,index:0,items:[],started:performance.now(),finished:false,courseVersion:currentCourseV3().version,courseSnapshot:{levelId:l.id,name:l.name,count:l.count,targetSec:fluencyTarget(l)},worksheet:true,mode,returnTo,responses:Array(questions.length).fill(''),answerTimes:{}};
  renderFluencyWorksheetV61();
+ // Snap to the very top after the new DOM exists, then start timing from zero.
+ scrollToTopInstantV62();
+ activeFluency.started=performance.now();
+ activeFluency.answerTimes={};
+ updateWorksheetTimerV61();
+ if(mode!=='parentPractice')fluencyTimer=setInterval(updateWorksheetTimerV61,100);
+ // A second instant snap on the next paint cancels any browser smooth-scroll still queued.
+ requestAnimationFrame(()=>{if(activeFluency&&activeFluency.worksheet){scrollToTopInstantV62();syncMasteryStickyOffsetV62();}});
 }
 function renderFluencyWorksheetV61(){
  const a=activeFluency;if(!a||!a.worksheet)return;const target=a.courseSnapshot.targetSec,count=a.questions.length,timed=a.mode!=='parentPractice';
- render(`<div class="mastery-session"><div class="mastery-session-head no-print"><button class="back" id="masteryExit">← Exit</button><div style="flex:1"><div class="qmeta">${a.mode==='mastery'?'⚡':'📝'} ${worksheetModeTitleV61(a.mode)}</div><h1>${esc(a.level.name)}</h1><p class="tiny">${count} questions${timed?` • SMT ${fmtSec(target)}`:' • untimed'} • ${a.mode==='mastery'?'100% + SMT required to unlock the next step':'practice only — official mastery is unchanged'}</p></div></div>${timed?`<div class="mastery-time-panel no-print" id="masteryTimePanel"><div class="mastery-time-meta"><span class="mastery-time-status" id="masteryTimeStatus">Comfortable pace</span><span id="masteryStickyAnswered">0/${count} answered</span><span>SMT ${fmtSec(target)}</span></div><div class="mastery-time-track" role="progressbar" aria-label="Time used towards Standard Mastery Time" aria-valuemin="0" aria-valuemax="100"><div class="mastery-time-fill" id="masteryTimeFill"></div></div></div>`:''}<section class="mastery-sheet-card"><p class="mastery-sheet-note">${worksheetModeHelpV61(a)}</p><div class="mastery-grid">${a.questions.map((q,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><input class="mastery-answer" data-ws-answer="${i}" inputmode="numeric" autocomplete="off" aria-label="Question ${i+1}: ${esc(q.prompt)}"></div>`).join('')}</div><div class="mastery-submit-row no-print"><span class="mastery-answered" id="masteryAnswered">0/${count} answered</span><button class="cta" id="masterySubmit">Submit whole sheet</button></div></section></div>`,'fluency');
+ render(`<div class="mastery-session"><div class="mastery-session-head no-print"><button class="back" id="masteryExit">← Exit</button><div style="flex:1"><div class="qmeta">${a.mode==='mastery'?'⚡':'📝'} ${worksheetModeTitleV61(a.mode)}</div><h1>${esc(a.level.name)}</h1><p class="tiny">${count} questions${timed?` • SMT ${fmtSec(target)}`:' • untimed'} • ${a.mode==='mastery'?'100% + SMT required to unlock the next step':'practice only — official mastery is unchanged'}</p></div></div>${timed?`<div class="mastery-time-panel no-print" id="masteryTimePanel"><div class="mastery-time-meta"><span class="mastery-time-status" id="masteryTimeStatus">Comfortable pace</span><span id="masteryStickyAnswered">0/${count} answered</span><span>SMT ${fmtSec(target)}</span></div><div class="mastery-time-track" role="progressbar" aria-label="Time used towards Standard Mastery Time" aria-valuemin="0" aria-valuemax="100"><div class="mastery-time-fill" id="masteryTimeFill"></div></div></div>`:''}<section class="mastery-sheet-card"><p class="mastery-sheet-note">${worksheetModeHelpV61(a)}</p><div class="mastery-grid">${a.questions.map((q,i)=>`<div class="mastery-q"><div class="mastery-expression">${esc(q.prompt)}</div><input class="mastery-answer" data-ws-answer="${i}" inputmode="numeric" autocomplete="off" aria-label="Question ${i+1}: ${esc(q.prompt)}"></div>`).join('')}</div><div class="mastery-submit-row no-print"><span class="mastery-answered" id="masteryAnswered">0/${count} answered</span><span class="tiny mastery-enter-hint">Final answer: Enter, Enter = submit</span><button class="cta" id="masterySubmit">Submit whole sheet</button></div></section></div>`,'fluency');
  document.getElementById('masteryExit').onclick=()=>{clearInterval(fluencyTimer);fluencyTimer=null;const ret=a.returnTo;activeFluency=null;ret==='parent'?renderParent('worksheet'):renderFluency(a.level.op)};
- const inputs=[...document.querySelectorAll('[data-ws-answer]')];
- inputs.forEach((inp,pos)=>{const i=Number(inp.dataset.wsAnswer);inp.addEventListener('input',()=>{a.responses[i]=inp.value.trim();if(a.responses[i]!==''&&a.answerTimes[i]==null)a.answerTimes[i]=Math.max(1,Math.round(performance.now()-a.started));updateAnsweredV61()});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const next=inputs[pos+1];if(next)next.focus();else document.getElementById('masterySubmit').focus()}})});
- document.getElementById('masterySubmit').onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();syncMasteryStickyOffsetV62();updateAnsweredV61();updateWorksheetTimerV61();
+ const inputs=[...document.querySelectorAll('[data-ws-answer]')],submitBtn=document.getElementById('masterySubmit');
+ const firstBlankInput=()=>inputs.find((x,j)=>String(a.responses[j]??'').trim()==='');
+ inputs.forEach((inp,pos)=>{const i=Number(inp.dataset.wsAnswer);inp.addEventListener('input',()=>{a.responses[i]=inp.value.trim();if(a.responses[i]!==''&&a.answerTimes[i]==null)a.answerTimes[i]=Math.max(1,Math.round(performance.now()-a.started));updateAnsweredV61()});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const next=inputs[pos+1];if(next){next.focus();return}const blank=firstBlankInput();if(blank){blank.focus();return}submitBtn.focus()}})});
+ // On the final answer the first Enter moves to Submit; the second Enter submits.
+ // Explicit handling makes this reliable across browsers and avoids a mouse-click time penalty.
+ submitBtn.addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const blank=firstBlankInput();if(blank){blank.focus();return}submitWorksheetV61()});
+ submitBtn.onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();syncMasteryStickyOffsetV62();updateAnsweredV61();updateWorksheetTimerV61();
 }
 function updateAnsweredV61(){const a=activeFluency;if(!a)return;const txt=`${a.responses.filter(x=>String(x).trim()!=='').length}/${a.questions.length} answered`,el=document.getElementById('masteryAnswered'),sticky=document.getElementById('masteryStickyAnswered');if(el)el.textContent=txt;if(sticky)sticky.textContent=txt}
 function estimateItemTimesV61(a){const pairs=Object.entries(a.answerTimes||{}).map(([i,t])=>({i:Number(i),t:Number(t)})).sort((x,y)=>x.t-y.t),ms={};let prev=0;for(const p of pairs){ms[p.i]=Math.max(150,p.t-prev);prev=p.t}const fallback=Math.max(500,Math.round((a.elapsedAtSubmit*1000)/Math.max(1,a.questions.length)));for(let i=0;i<a.questions.length;i++)if(ms[i]==null)ms[i]=fallback;return ms}
