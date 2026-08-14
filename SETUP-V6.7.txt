@@ -1,0 +1,58 @@
+MATHSREADY CLOUD V6.7 — PRIVATE LEADERBOARD CIRCLES
+===================================================
+
+WHAT THIS UPDATE ADDS
+---------------------
+• The existing wider leaderboard is now labelled “Everyone”.
+• Parents can create separate invite-only leaderboard circles such as:
+    - Cousins
+    - School friends
+    - Football friends
+• A family joins a circle once using its CIRCLE-xxxx-xxx invite code.
+• The parent then chooses exactly which child profiles appear in each circle.
+• A child can be in multiple circles at the same time (e.g. Cousins + Friends).
+• A child can be in private circles without appearing on the Everyone board.
+• Circle boards store only competition nickname + mastered time/result metadata.
+• No real child name, school stage, email, practice history, chat or messaging is shared.
+• Admin removal of an invalid/assisted result clears that time from Everyone and
+  the child’s private circles while keeping their mastery record.
+
+IMPORTANT — TWO FILES MUST BE UPDATED
+-------------------------------------
+1. Firebase Console → Firestore Database → Rules
+   Replace the current rules with the contents of firestore.rules in this folder.
+   Click Publish.
+
+2. GitHub repository FelicityMJ/mathsready
+   Replace the root index.html with the index.html in this folder and commit to main.
+
+Publish the Firestore rules FIRST. If index.html is uploaded before the new rules,
+private circle creation/boards will show a permission error until the rules are published.
+
+HOW TO USE IT
+-------------
+Family → Leaderboard circles → Create circle
+Give it a name such as “Cousins” or “Friends”.
+Copy the CIRCLE invite code and send it to the other parent.
+
+The other parent:
+Family → Leaderboard circles → Join with code
+Enter the CIRCLE code.
+
+Then either parent can choose:
+Family → circle → Choose children
+or
+Family → child → Leaderboard settings
+
+Each child can independently have:
+• Everyone leaderboard ON/OFF
+• Cousins ON/OFF
+• Friends ON/OFF
+• any other private circle ON/OFF
+
+BOARD VIEW
+----------
+On Boards, children can switch between:
+🌍 Everyone | 👥 Cousins | 👥 Friends
+
+Only a signed-in family that joined a private circle can read its private boards.

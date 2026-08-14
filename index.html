@@ -112,6 +112,10 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .mastery-enter-hint{color:var(--muted);font-weight:700;white-space:nowrap}
 @media(max-width:700px){.mastery-enter-hint{width:100%;text-align:center;white-space:normal;order:3}}
 
+/* V6.7 private leaderboard circles */
+.circle-grid-v67{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:12px 0 22px}.circle-card-v67{padding:18px}.circle-card-v67 h3{margin:3px 0 2px;font-size:20px}.circle-icon-v67{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#f1efff;font-size:22px;margin-bottom:9px}.circle-code-v67{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;font-size:12px;font-weight:900;background:#f8f9fc;border:1px dashed #cfd5df;border-radius:10px;padding:9px 10px;margin:12px 0;color:#475467}.circle-public-v67{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;background:linear-gradient(135deg,#fff,#f8fbff)}.circle-public-v67 p{margin:4px 0 0}.circle-safe-v67{background:#f7f8fb;border:1px solid var(--line);border-radius:14px;padding:13px 14px;line-height:1.45}.circle-child-list-v67{display:grid;gap:9px}.circle-child-choice-v67{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff;cursor:pointer}.circle-child-choice-v67:hover{border-color:#c8c0ff;background:#fbfaff}.circle-child-choice-v67 input{width:auto;margin-top:3px;transform:scale(1.12)}.circle-child-choice-v67 span{display:block}.circle-child-choice-v67 strong{display:block}.circle-child-choice-v67 small{display:block;color:var(--muted);margin-top:3px;line-height:1.4}.board-scope-tabs-v67{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.board-scope-v67{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:900;color:var(--muted);cursor:pointer}.board-scope-v67.active{background:#f1efff;border-color:#c8c0ff;color:#594ac9}.danger-text-v67{color:#a93636}.competition-choice-v67{margin-top:10px}.circle-head-v67{align-items:flex-end}.circle-empty-v67{margin-bottom:20px}
+@media(max-width:760px){.circle-grid-v67{grid-template-columns:1fr}.circle-public-v67{display:block}.circle-public-v67 .privacy-pill{margin-top:10px}.circle-head-v67{align-items:flex-start;display:block}.circle-head-v67 .button-row{margin-top:10px}.board-scope-tabs-v67{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.board-scope-v67{white-space:nowrap}}
+
 </style></head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -875,7 +879,7 @@ function bootstrapV3(){if(platformV3.activeFamilyId&&activeFamilyV3()){const kid
    Leaderboard and Face-Off scoring are client-submitted in this pilot;
    move validation to Cloud Functions/App Check before a public launch.
    ================================================================ */
-const V5_VERSION='6.0.0-mastery-cloud';
+const V5_VERSION='6.7.0-circles';
 const FIREBASE_CONFIG_V5={
   apiKey:'AIzaSyC9JoRl_pOOr_s9L_-kwa0JmimLEGc9bIk',
   authDomain:'mathsready-5fa65.firebaseapp.com',
@@ -967,7 +971,7 @@ function renderCloudUnlinkedV5(user){bareV3(`<section class="card access-card"><
 function renderCloudAccountProblemV5(user,e){bareV3(`<section class="card access-card"><div class="pill">⚠️ Account loading</div><h1>We couldn't load this account.</h1><p class="muted">${esc(cloudErrV5(e))}</p><button class="cta secondary" id="problemLogout">Log out</button></section>`);document.getElementById('problemLogout').onclick=()=>cloudV5.mods.signOut(cloudV5.auth)}
 
 // Cloud-aware shell and gateway helpers.
-bareV3=function(content){document.getElementById('app').innerHTML=`<div class="platform-shell"><div class="platform-brand"><div class="logo">∑</div><div><strong style="font-size:21px">Nat5 Ready Maths</strong><div class="tiny">Cloud V6 • ${cloudV5.user?esc(cloudV5.user.email||'signed in'):'secure family access'}</div></div></div>${content}<div class="footer">Nat5 Ready Maths Cloud V6 • Firebase Authentication + Firestore • GitHub Pages front end</div></div>`;window.scrollTo({top:0,behavior:'smooth'})};
+bareV3=function(content){document.getElementById('app').innerHTML=`<div class="platform-shell"><div class="platform-brand"><div class="logo">∑</div><div><strong style="font-size:21px">Nat5 Ready Maths</strong><div class="tiny">Cloud V6.7 • ${cloudV5.user?esc(cloudV5.user.email||'signed in'):'secure family access'}</div></div></div>${content}<div class="footer">Nat5 Ready Maths Cloud V6.7 • Firebase Authentication + Firestore • GitHub Pages front end</div></div>`;window.scrollTo({top:0,behavior:'smooth'})};
 renderGatewayV3=renderCloudGatewayV5;
 logoutFamilyV3=async function(){try{await cloudFlushSaveV5();await cloudV5.mods.signOut(cloudV5.auth)}catch(e){alert(cloudErrV5(e))}};
 
@@ -1436,6 +1440,190 @@ renderFluency=function(op=activeFluencyOp){
  if(current&&startCurrent&&fluencyUnlocked(current)&&!document.getElementById('practiceCurrentV64')){const b=document.createElement('button');b.className='cta secondary';b.id='practiceCurrentV64';b.textContent='Practise this step first';startCurrent.insertAdjacentElement('afterend',b);b.style.marginTop='8px';b.onclick=()=>startFluencyHelperV64(current.id)}
  bindPracticeV64();
 };
+
+
+/* === V6.7 PRIVATE LEADERBOARD CIRCLES ===
+   Families can create separate invite-only circles (e.g. Cousins, Friends).
+   A family joins a circle once; the parent then chooses which child profiles
+   appear in each circle. The existing shared board becomes the optional
+   "Everyone" board and remains controlled per child.
+*/
+cloudV5.circles=cloudV5.circles||{};
+cloudV5.circleLeaderboards=cloudV5.circleLeaderboards||{};
+cloudV5.circleSyncSignatures=cloudV5.circleSyncSignatures||{};
+let activeBoardScopeV67='public';
+
+function familyCircleIdsV67(familyId=platformV3.activeFamilyId){
+ const f=platformV3.families[familyId];
+ return [...new Set(Array.isArray(f?.circleIds)?f.circleIds:[])];
+}
+function childCircleIdsV67(c){return [...new Set(Array.isArray(c?.leaderboardCircleIds)?c.leaderboardCircleIds:[])]}
+function circleInviteCodeV67(){
+ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=new Uint8Array(7);crypto.getRandomValues(bytes);
+ let s='';for(const b of bytes)s+=chars[b%chars.length];return`CIRCLE-${s.slice(0,4)}-${s.slice(4)}`;
+}
+function circleKeyV67(code){return cleanCode(code)}
+function circleDisplayCodeV67(circle){
+ if(circle?.displayCode)return circle.displayCode;
+ const id=String(circle?.id||circle?.circleId||'').replace(/^CIRCLE/,'');return id?`CIRCLE-${id.slice(0,4)}-${id.slice(4)}`:'';
+}
+function circleMetaV67(id){return cloudV5.circles?.[id]||null}
+function circleBoardCacheKeyV67(circleId,levelId,rev){return`${circleId}::${cloudBoardKeyV5(levelId,rev)}`}
+function circleBoardRefV67(circleId,levelId,rev,childId){return cloudV5.mods.doc(cloudV5.db,'circles',circleId,'boards',cloudBoardKeyV5(levelId,rev),'entries',childId)}
+function circleMemberRefV67(circleId,familyId){return cloudV5.mods.doc(cloudV5.db,'circles',circleId,'members',familyId)}
+
+async function cloudLoadFamilyCirclesV67(){
+ const f=activeFamilyV3();if(!f)return[];
+ const ids=familyCircleIdsV67(f.id);cloudV5.circles=cloudV5.circles||{};
+ await Promise.all(ids.map(async id=>{try{const s=await cloudV5.mods.getDoc(cloudV5.mods.doc(cloudV5.db,'circles',id));if(s.exists())cloudV5.circles[id]={id,...s.data()};else delete cloudV5.circles[id]}catch(e){console.warn('circle load',id,e)}}));
+ return ids.map(circleMetaV67).filter(Boolean);
+}
+
+function circleCompetitionSummaryV67(c){
+ const n=childCircleIdsV67(c).filter(id=>familyCircleIdsV67(c.familyId).includes(id)).length,parts=[];
+ if(c.leaderboardOptIn)parts.push('🌍 Everyone');if(n)parts.push(`👥 ${n} circle${n===1?'':'s'}`);
+ return parts.length?parts.join(' • '):'🔒 Private only';
+}
+function circleSyncSignatureV67(c){
+ const boards={};for(const [levelId,x] of Object.entries(c?.progress?.fluency?.levels||{})){for(const [rev,r] of Object.entries(x?.boardResults||{})){if(r?.bestSec!=null)boards[`${levelId}:${rev}`]=Number(r.bestSec)}}
+ return JSON.stringify({alias:c?.leaderboardAlias||'',circles:childCircleIdsV67(c).sort(),familyCircles:familyCircleIdsV67(c?.familyId).sort(),boards});
+}
+async function cloudSyncCircleLeaderboardsV67(c){
+ if(!cloudV5.ready||!c?.progress?.fluency?.levels)return;
+ const sig=circleSyncSignatureV67(c);if(cloudV5.circleSyncSignatures[c.id]===sig)return;
+ const familyCircles=familyCircleIdsV67(c.familyId),selected=new Set(childCircleIdsV67(c));
+ const {setDoc,deleteDoc}=cloudV5.mods;
+ try{
+  for(const circleId of familyCircles){
+   for(const [levelId,x] of Object.entries(c.progress.fluency.levels)){
+    for(const [rev,r] of Object.entries(x?.boardResults||{})){
+     const ref=circleBoardRefV67(circleId,levelId,rev,c.id);
+     if(selected.has(circleId)&&r?.bestSec!=null){
+      await setDoc(ref,{childId:c.id,familyId:c.familyId,alias:c.leaderboardAlias||'Maths Star',levelId,boardRevision:Number(rev),bestSec:Number(r.bestSec),masteredAt:r.achievedAt||new Date().toISOString(),courseVersion:Number(r.courseVersion)||1},{merge:true});
+     }else await deleteDoc(ref).catch(()=>{});
+    }
+   }
+  }
+  cloudV5.circleSyncSignatures[c.id]=sig;
+ }catch(e){console.warn('circle leaderboard sync',e)}
+}
+const cloudSyncLeaderboardsV67Base=cloudSyncLeaderboardsV5;
+cloudSyncLeaderboardsV5=async function(c){await cloudSyncLeaderboardsV67Base(c);await cloudSyncCircleLeaderboardsV67(c)};
+
+async function createCircleV67(name){
+ const f=activeFamilyV3();if(!f)throw new Error('Open your family account first.');
+ const cleanName=String(name||'').trim().slice(0,32);if(!cleanName)throw new Error('Give the circle a name, such as Cousins or Friends.');
+ let display,id,snap;for(let i=0;i<6;i++){display=circleInviteCodeV67();id=circleKeyV67(display);snap=await cloudV5.mods.getDoc(cloudV5.mods.doc(cloudV5.db,'circles',id));if(!snap.exists())break}
+ if(snap?.exists())throw new Error('Could not make a unique invite code. Try again.');
+ const rec={id,circleId:id,displayCode:display,name:cleanName,ownerFamilyId:f.id,active:true,createdAt:new Date().toISOString()};
+ const {doc,writeBatch,arrayUnion}=cloudV5.mods,b=writeBatch(cloudV5.db);
+ b.set(doc(cloudV5.db,'circles',id),rec);b.set(circleMemberRefV67(id,f.id),{familyId:f.id,joinedAt:new Date().toISOString(),role:'creator'});b.update(doc(cloudV5.db,'families',f.id),{circleIds:arrayUnion(id)});await b.commit();
+ f.circleIds=[...new Set([...(f.circleIds||[]),id])];cloudV5.circles[id]=rec;return rec;
+}
+async function joinCircleV67(raw){
+ const f=activeFamilyV3();if(!f)throw new Error('Open your family account first.');const id=circleKeyV67(raw);if(!id)throw new Error('Enter the circle invite code.');
+ const {doc,getDoc,writeBatch,arrayUnion}=cloudV5.mods,s=await getDoc(doc(cloudV5.db,'circles',id));if(!s.exists())throw new Error('That leaderboard circle was not found.');
+ const rec={id,...s.data()};if(rec.active===false)throw new Error('That leaderboard circle is closed.');
+ const b=writeBatch(cloudV5.db);b.set(circleMemberRefV67(id,f.id),{familyId:f.id,joinedAt:new Date().toISOString(),role:'member'},{merge:true});b.update(doc(cloudV5.db,'families',f.id),{circleIds:arrayUnion(id)});await b.commit();
+ f.circleIds=[...new Set([...(f.circleIds||[]),id])];cloudV5.circles[id]=rec;return rec;
+}
+async function leaveCircleV67(circleId){
+ const f=activeFamilyV3(),circle=circleMetaV67(circleId);if(!f||!circle)return;
+ if(circle.ownerFamilyId===f.id)return alert('You created this circle. Keep it for now; circle deletion/transfer can be added later.');
+ if(!confirm(`Leave “${circle.name}”?\n\nYour children will disappear from this private leaderboard circle, but their mastery results will stay in their own records.`))return;
+ const kids=familyChildrenV3(f.id);
+ for(const c of kids){if(childCircleIdsV67(c).includes(circleId)){c.leaderboardCircleIds=childCircleIdsV67(c).filter(id=>id!==circleId);delete cloudV5.circleSyncSignatures[c.id];await cloudWriteChildV5(c)}}
+ const {doc,writeBatch,arrayRemove}=cloudV5.mods,b=writeBatch(cloudV5.db);b.delete(circleMemberRefV67(circleId,f.id));b.update(doc(cloudV5.db,'families',f.id),{circleIds:arrayRemove(circleId)});await b.commit();
+ f.circleIds=familyCircleIdsV67(f.id).filter(id=>id!==circleId);delete cloudV5.circles[circleId];toast('Left leaderboard circle');renderFamilyV3();
+}
+
+function renderCreateCircleV67(){
+ bareV3(`<section class="card setup"><div class="pill">👥 Private leaderboard circle</div><h1>Create a circle.</h1><p class="muted">Make separate groups such as <strong>Cousins</strong>, <strong>School friends</strong> or <strong>Football friends</strong>. Families only join when you give them the invite code.</p><div class="field"><label>Circle name</label><input id="circleNameV67" maxlength="32" placeholder="e.g. Cousins"></div><div class="circle-safe-v67"><strong>🔒 What is shared?</strong><div class="tiny">Only each child's competition nickname and mastery time. No real child name, email, school stage, mistakes, chat or private messages.</div></div><div class="button-row"><button class="cta" id="createCircleNowV67">Create circle</button><button class="cta secondary" id="circleCancelV67">Cancel</button></div><div id="circleStatusV67" class="note"></div></section>`);
+ document.getElementById('circleCancelV67').onclick=renderFamilyV3;document.getElementById('createCircleNowV67').onclick=async()=>{const b=document.getElementById('createCircleNowV67'),s=document.getElementById('circleStatusV67');b.disabled=true;s.textContent='Creating private circle…';try{const c=await createCircleV67(document.getElementById('circleNameV67').value);alert(`${c.name} created.\n\nInvite code: ${c.displayCode}\n\nGive this code only to families you want in this circle.`);renderCircleChildrenV67(c.id)}catch(e){b.disabled=false;s.textContent=cloudErrV5(e)}};
+}
+function renderJoinCircleV67(){
+ bareV3(`<section class="card setup"><div class="pill">🔗 Join a private circle</div><h1>Enter the family invite code.</h1><p class="muted">This joins your <strong>family account</strong> to the circle. You choose which of your children actually appear on its leaderboard afterwards.</p><div class="field"><label>Circle invite code</label><input id="circleCodeV67" class="access-code" placeholder="CIRCLE-ABCD-123"></div><div class="button-row"><button class="cta" id="joinCircleNowV67">Join circle</button><button class="cta secondary" id="circleJoinCancelV67">Cancel</button></div><div id="circleJoinStatusV67" class="note"></div></section>`);
+ document.getElementById('circleJoinCancelV67').onclick=renderFamilyV3;document.getElementById('joinCircleNowV67').onclick=async()=>{const b=document.getElementById('joinCircleNowV67'),s=document.getElementById('circleJoinStatusV67');b.disabled=true;s.textContent='Checking invite…';try{const c=await joinCircleV67(document.getElementById('circleCodeV67').value);toast(`Joined ${c.name}`);renderCircleChildrenV67(c.id)}catch(e){b.disabled=false;s.textContent=cloudErrV5(e)}};
+}
+async function renderCircleChildrenV67(circleId){
+ await cloudLoadFamilyCirclesV67();const circle=circleMetaV67(circleId),kids=familyChildrenV3();if(!circle)return renderFamilyV3();
+ bareV3(`<section class="card setup"><div class="pill">👥 ${esc(circle.name)}</div><h1>Which children join this circle?</h1><p class="muted">This is how you can put one child in <strong>Friends</strong> while keeping siblings in <strong>Cousins</strong>, or include the same child in both.</p>${kids.length?`<div class="circle-child-list-v67">${kids.map(c=>`<label class="circle-child-choice-v67"><input type="checkbox" data-circle-child-v67="${esc(c.id)}" ${childCircleIdsV67(c).includes(circleId)?'checked':''}><span><strong>${esc(c.progress?.profile?.name||'Learner')}</strong><small>${esc(c.leaderboardAlias||'Maths Star')} will be shown on this circle's boards</small></span></label>`).join('')}</div>`:'<div class="empty">Add a child profile first.</div>'}<div class="button-row"><button class="cta" id="saveCircleChildrenV67">Save children</button><button class="cta secondary" id="circleChildrenBackV67">Back to family</button></div></section>`);
+ document.getElementById('circleChildrenBackV67').onclick=renderFamilyV3;document.getElementById('saveCircleChildrenV67').onclick=async()=>{const btn=document.getElementById('saveCircleChildrenV67');btn.disabled=true;btn.textContent='Saving…';try{for(const c of kids){const chosen=!!document.querySelector(`[data-circle-child-v67="${CSS.escape(c.id)}"]`)?.checked,set=new Set(childCircleIdsV67(c));if(chosen)set.add(circleId);else set.delete(circleId);c.leaderboardCircleIds=[...set];delete cloudV5.circleSyncSignatures[c.id];await cloudWriteChildV5(c)}toast('Circle children updated');renderFamilyV3()}catch(e){btn.disabled=false;btn.textContent='Save children';alert(cloudErrV5(e))}};
+}
+
+function familyCirclePanelHtmlV67(circles){
+ return `<div class="section-head circle-head-v67"><div><h2>👥 Leaderboard circles</h2><p>Keep cousins, friends and other groups completely separate.</p></div><div class="button-row"><button class="cta small" id="createCircleV67">+ Create circle</button><button class="cta secondary small" id="joinCircleV67">Join with code</button></div></div>
+ <section class="card circle-public-v67"><div><strong>🌍 Everyone leaderboard</strong><p class="tiny">Optional wider MathsReady board. Each child's parent can switch this on or off independently.</p></div><span class="privacy-pill">Parent controlled</span></section>
+ ${circles.length?`<div class="circle-grid-v67">${circles.map(c=>{const own=c.ownerFamilyId===activeFamilyV3()?.id;return`<section class="card circle-card-v67"><div class="circle-icon-v67">${/cousin/i.test(c.name)?'👨‍👩‍👧':/friend/i.test(c.name)?'🧑‍🤝‍🧑':'👥'}</div><div><h3>${esc(c.name)}</h3><p class="tiny">${own?'Created by your family':'Private linked-family circle'}</p></div><div class="circle-code-v67">${esc(circleDisplayCodeV67(c))}</div><div class="button-row"><button class="cta small" data-circle-children-v67="${esc(c.id)}">Choose children</button><button class="cta secondary small" data-circle-board-v67="${esc(c.id)}">View boards</button><button class="copy-btn" data-circle-copy-v67="${esc(circleDisplayCodeV67(c))}">Copy invite</button>${own?'':`<button class="copy-btn danger-text-v67" data-circle-leave-v67="${esc(c.id)}">Leave</button>`}</div></section>`}).join('')}</div>`:`<section class="card empty circle-empty-v67"><h3>No private circles yet</h3><p>Create <strong>Cousins</strong> and <strong>Friends</strong> as two different groups, then choose which children appear in each.</p></section>`}`;
+}
+async function refreshFamilyCirclePanelV67(){
+ const out=document.getElementById('familyCirclesV67');if(!out)return;const circles=await cloudLoadFamilyCirclesV67();if(!document.getElementById('familyCirclesV67'))return;out.innerHTML=familyCirclePanelHtmlV67(circles);bindFamilyCirclePanelV67();enhanceChildPrivacyPillsV67();
+}
+function bindFamilyCirclePanelV67(){
+ const cr=document.getElementById('createCircleV67'),jn=document.getElementById('joinCircleV67');if(cr)cr.onclick=renderCreateCircleV67;if(jn)jn.onclick=renderJoinCircleV67;
+ document.querySelectorAll('[data-circle-copy-v67]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.circleCopyV67);toast('Circle invite copied')}catch(_){alert(b.dataset.circleCopyV67)}});
+ document.querySelectorAll('[data-circle-children-v67]').forEach(b=>b.onclick=()=>renderCircleChildrenV67(b.dataset.circleChildrenV67));
+ document.querySelectorAll('[data-circle-board-v67]').forEach(b=>b.onclick=()=>{activeBoardScopeV67=b.dataset.circleBoardV67;const k=familyChildrenV3()[0];if(!k)return alert('Add a child first.');switchChildV3(k.id);renderLeaderboardsV3('add',null,activeBoardScopeV67)});
+ document.querySelectorAll('[data-circle-leave-v67]').forEach(b=>b.onclick=()=>leaveCircleV67(b.dataset.circleLeaveV67).catch(e=>alert(cloudErrV5(e))));
+}
+function enhanceChildPrivacyPillsV67(){
+ document.querySelectorAll('[data-child-privacy]').forEach(b=>{const c=platformV3.children[b.dataset.childPrivacy],card=b.closest('.child-card'),pill=card?.querySelector('.privacy-pill');if(!c||!pill)return;const txt=circleCompetitionSummaryV67(c);pill.textContent=txt;pill.classList.toggle('off',txt.startsWith('🔒'))});
+}
+const renderFamilyV67Base=renderFamilyV3;
+renderFamilyV3=function(){
+ const r=renderFamilyV67Base();const shell=document.querySelector('.platform-shell'),footer=shell?.querySelector('.footer');if(shell&&footer){const wrap=document.createElement('div');wrap.id='familyCirclesV67';wrap.innerHTML='<div class="section-head"><div><h2>👥 Leaderboard circles</h2><p>Loading your private groups…</p></div></div><section class="card empty">Loading circles…</section>';footer.before(wrap);refreshFamilyCirclePanelV67()}enhanceChildPrivacyPillsV67();return r;
+};
+
+const renderAddChildV67Base=renderAddChildV3;
+renderAddChildV3=function(){const r=renderAddChildV67Base();const opt=document.getElementById('childOpt');if(opt){const lab=opt.closest('label');if(lab)lab.lastChild.textContent=' Join the Everyone leaderboard (you can add private circles afterwards)';const note=document.createElement('p');note.className='note';note.textContent='After creating the learner, use Leaderboard settings to add them to Cousins, Friends or any other private circle.';opt.closest('.field')?.appendChild(note)}return r};
+
+renderChildPrivacyV3=async function(id){
+ const c=platformV3.children[id];if(!c||c.familyId!==platformV3.activeFamilyId)return;const circles=await cloudLoadFamilyCirclesV67(),selected=new Set(childCircleIdsV67(c));
+ bareV3(`<section class="card setup"><div class="pill">🏆 Leaderboard privacy</div><h1>${esc(c.progress?.profile?.name||'Learner')}</h1><p class="muted">Choose exactly where this child's competition nickname and mastered times can appear. Real name, school stage, mistakes and practice history stay private.</p><div class="field"><label>Competition nickname</label><input id="privacyAlias" maxlength="24" value="${esc(c.leaderboardAlias||randomAlias())}"><p class="note">Use the same safe nickname across their boards. Avoid surnames and school names.</p></div><div class="competition-choice-v67"><label class="circle-child-choice-v67"><input id="privacyOpt" type="checkbox" ${c.leaderboardOptIn?'checked':''}><span><strong>🌍 Everyone leaderboard</strong><small>Compete with all opted-in MathsReady learners.</small></span></label></div><div class="section-head" style="margin-top:18px"><div><h2>Private circles</h2><p>Only families with the invite code can join these groups.</p></div></div>${circles.length?`<div class="circle-child-list-v67">${circles.map(circle=>`<label class="circle-child-choice-v67"><input type="checkbox" data-privacy-circle-v67="${esc(circle.id)}" ${selected.has(circle.id)?'checked':''}><span><strong>👥 ${esc(circle.name)}</strong><small>${esc(circleDisplayCodeV67(circle))}</small></span></label>`).join('')}</div>`:`<div class="circle-safe-v67"><strong>No private circles yet.</strong><div class="tiny">Create separate Cousins and Friends circles from the Family page.</div></div>`}<div class="field" style="margin-top:18px"><label class="switchline"><input id="faceoffOpt" type="checkbox" ${c.faceoffEnabled!==false?'checked':''}> Allow invite-only Maths Face-Off</label></div><div class="circle-safe-v67"><strong>🔒 Privacy</strong><div class="tiny">Circle leaderboards show nickname + mastery time only. There is no chat, messaging, email, real name or school information.</div></div><div class="button-row" style="margin-top:14px"><button class="cta" id="savePrivacy">Save</button><button class="cta secondary" id="manageCirclesV67">Manage family circles</button><button class="cta secondary" id="privacyBack">Back</button></div></section>`);
+ document.getElementById('privacyBack').onclick=renderFamilyV3;document.getElementById('manageCirclesV67').onclick=renderFamilyV3;document.getElementById('savePrivacy').onclick=async()=>{const btn=document.getElementById('savePrivacy');btn.disabled=true;btn.textContent='Saving…';try{c.leaderboardAlias=document.getElementById('privacyAlias').value.trim()||randomAlias();c.leaderboardOptIn=document.getElementById('privacyOpt').checked;c.faceoffEnabled=document.getElementById('faceoffOpt').checked;c.leaderboardCircleIds=[...document.querySelectorAll('[data-privacy-circle-v67]:checked')].map(x=>x.dataset.privacyCircleV67);delete cloudV5.circleSyncSignatures[c.id];await cloudWriteChildV5(c);toast('Leaderboard choices saved');renderFamilyV3()}catch(e){btn.disabled=false;btn.textContent='Save';alert(cloudErrV5(e))}};
+};
+
+async function cloudLoadCircleLeaderboardV67(level,circleId){
+ const {collection,getDocs}=cloudV5.mods,br=Number(level.boardRevision)||1,key=circleBoardCacheKeyV67(circleId,level.id,br);
+ try{const s=await getDocs(collection(cloudV5.db,'circles',circleId,'boards',cloudBoardKeyV5(level.id,br),'entries'));cloudV5.circleLeaderboards[key]=s.docs.map(d=>{const x=d.data();return{childId:x.childId||d.id,familyId:x.familyId||'',alias:x.alias||'Maths Star',sec:Number(x.bestSec),masteredAt:cloudIsoV5(x.masteredAt)||x.masteredAt,courseVersion:Number(x.courseVersion)||1,boardRevision:br,levelId:level.id}})}catch(e){console.warn('circle board load',e);cloudV5.circleLeaderboards[key]=[]}
+}
+function leaderboardEntriesV67(levelId,scopeId){
+ const level=effectiveFluencyV3(levelId),br=Number(level?.boardRevision)||1,rows=scopeId==='public'?(cloudV5.leaderboards[cloudBoardKeyV5(levelId,br)]||[]):(cloudV5.circleLeaderboards[circleBoardCacheKeyV67(scopeId,levelId,br)]||[]);
+ return [...rows].sort((a,b)=>Number(a.sec)-Number(b.sec)||String(a.masteredAt).localeCompare(String(b.masteredAt)));
+}
+function leaderboardCardV67(l,focusId,scopeId){
+ const rows=leaderboardEntriesV67(l.id,scopeId),me=platformV3.activeChildId,meRank=rows.findIndex(r=>r.childId===me)+1;
+ return`<section class="card leaderboard-card" ${focusId===l.id?'style="box-shadow:0 0 0 3px #d7d0ff,var(--shadow)"':''}><div class="leaderboard-head"><strong>${esc(l.name)}</strong><div class="tiny">${l.count} questions • SMT ${fmtSec(fluencyTarget(l))} • board ${Number(l.boardRevision)||1}${meRank?` • your rank #${meRank}`:''}</div></div>${rows.length?rows.slice(0,10).map((r,i)=>`<div class="leader-row ${r.childId===me?'you':''}"><div class="rank">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</div><div><strong>${esc(r.alias)}${r.childId===me?' (you)':''}</strong><div class="tiny">mastered • course v${r.courseVersion}</div></div><strong>${fmtSec(r.sec)}</strong></div>`).join(''):'<div class="empty">No mastery times in this board yet.</div>'}</section>`;
+}
+renderLeaderboardsV3=async function(op='add',focusId=null,scopeId=activeBoardScopeV67){
+ const child=activeChildV3();if(!child)return renderFamilyV3();await cloudLoadFamilyCirclesV67();const ids=familyCircleIdsV67(),valid=scopeId==='public'||ids.includes(scopeId);if(!valid)scopeId=child.leaderboardOptIn?'public':childCircleIdsV67(child).find(id=>ids.includes(id))||'public';activeBoardScopeV67=scopeId;
+ const levels=courseLevelsV3(op),circle=scopeId==='public'?null:circleMetaV67(scopeId),scopeName=circle?.name||'Everyone';
+ render(`<section class="card"><div class="pill">🏆 ${scopeId==='public'?'Everyone leaderboard':'Private circle'}</div><h1 style="font-size:40px;margin:0">Loading ${esc(scopeName)}…</h1><p class="muted">${scopeId==='public'?'All opted-in MathsReady learners.':'Only families linked to this circle can read these boards.'}</p></section>`,'leaderboard');
+ if(scopeId==='public')await Promise.all(levels.map(cloudLoadLeaderboardV5));else await Promise.all(levels.map(l=>cloudLoadCircleLeaderboardV67(l,scopeId)));
+ const entered=scopeId==='public'?!!child.leaderboardOptIn:childCircleIdsV67(child).includes(scopeId);
+ render(`<section class="card"><div class="section-head" style="margin-top:0"><div><div class="pill">🏆 ${scopeId==='public'?'Everyone':'Private circle'}</div><h1 style="font-size:40px;margin:0">${esc(scopeName)} leaderboards</h1><p class="muted">${scopeId==='public'?'The wider optional board.':'A separate private leaderboard for this group only.'}</p></div><span class="version-badge">${entered?'✓ You are entered':'Viewing only'}</span></div><div class="board-scope-tabs-v67"><button class="board-scope-v67 ${scopeId==='public'?'active':''}" data-board-scope-v67="public">🌍 Everyone</button>${ids.map(id=>{const c=circleMetaV67(id);return c?`<button class="board-scope-v67 ${scopeId===id?'active':''}" data-board-scope-v67="${esc(id)}">👥 ${esc(c.name)}</button>`:''}).join('')}</div>${!entered?`<div class="circle-safe-v67" style="margin-top:12px"><strong>${esc(child.progress?.profile?.name||'This learner')} is not entered on this board.</strong><div class="tiny">A parent can change this from Family → Leaderboard settings.</div></div>`:''}<div class="op-tabs" style="margin-top:14px">${FLUENCY_OPERATIONS.map(o=>`<button class="op-tab ${op===o.id?'active':''}" data-board-op="${o.id}"><span class="opico">${o.icon}</span>${o.name}</button>`).join('')}</div></section><div class="leaderboard-grid" style="margin-top:14px">${levels.map(l=>leaderboardCardV67(l,focusId,scopeId)).join('')}</div>`,'leaderboard');
+ document.querySelectorAll('[data-board-op]').forEach(b=>b.onclick=()=>renderLeaderboardsV3(b.dataset.boardOp,null,scopeId));document.querySelectorAll('[data-board-scope-v67]').forEach(b=>b.onclick=()=>renderLeaderboardsV3(op,null,b.dataset.boardScopeV67));
+};
+
+/* Admin removal now clears the invalid time from private circles too. */
+removeBoardResultV63=async function(btn){
+ if(!platformV3.ownerLocal)return alert('Owner/admin access is required.');
+ const levelId=btn.dataset.removeBoardResult,rev=Number(btn.dataset.boardRev)||1,childId=btn.dataset.childId,familyId=btn.dataset.familyId,alias=btn.dataset.alias,sec=Number(btn.dataset.sec),level=effectiveFluencyV3(levelId);
+ const ok=confirm(`Remove ${alias}'s ${fmtSec(sec)} result from “${level?.name||levelId}”?\n\nThis removes the invalid time from Everyone and any private circles. Their mastery remains, and they can earn a fresh board time themselves.`);if(!ok)return;
+ btn.disabled=true;btn.textContent='Removing…';
+ try{
+  const {doc,getDoc,writeBatch,deleteField}=cloudV5.mods,batch=writeBatch(cloudV5.db);batch.delete(doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(levelId,rev),'entries',childId));let circleIds=[];
+  if(familyId){const childRef=doc(cloudV5.db,'families',familyId,'children',childId),snap=await getDoc(childRef);if(snap.exists()){circleIds=Array.isArray(snap.data().leaderboardCircleIds)?snap.data().leaderboardCircleIds:[];batch.update(childRef,{[`progress.fluency.levels.${levelId}.boardResults.${rev}`]:deleteField()});for(const circleId of circleIds)batch.delete(circleBoardRefV67(circleId,levelId,rev,childId))}}
+  await batch.commit();const local=platformV3.children[childId];if(local?.progress?.fluency?.levels?.[levelId]?.boardResults){delete local.progress.fluency.levels[levelId].boardResults[rev];if(platformV3.activeChildId===childId)state=local.progress}delete cloudV5.circleSyncSignatures[childId];
+  const key=cloudBoardKeyV5(levelId,rev);cloudV5.leaderboards[key]=(cloudV5.leaderboards[key]||[]).filter(r=>r.childId!==childId);for(const circleId of circleIds){const ck=circleBoardCacheKeyV67(circleId,levelId,rev);cloudV5.circleLeaderboards[ck]=(cloudV5.circleLeaderboards[ck]||[]).filter(r=>r.childId!==childId)}
+  toast('Leaderboard result removed from all boards');await loadOwnerBoardsV63(ownerBoardOpV63);
+ }catch(e){btn.disabled=false;btn.textContent='Remove';alert(cloudErrV5(e))}
+};
+
+const cloudLoadAccountV67Base=cloudLoadAccountV5;
+cloudLoadAccountV5=async function(user){await cloudLoadAccountV67Base(user);if(activeFamilyV3()){await cloudLoadFamilyCirclesV67();if(!platformV3.activeChildId)renderFamilyV3()}};
+const cloudResetMemoryV67Base=cloudResetMemoryV5;
+cloudResetMemoryV5=function(){cloudResetMemoryV67Base();cloudV5.circles={};cloudV5.circleLeaderboards={};cloudV5.circleSyncSignatures={};activeBoardScopeV67='public'};
 
 
 // Start Cloud V6 instead of local V4 bootstrap.

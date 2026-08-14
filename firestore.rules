@@ -19,6 +19,12 @@ service cloud.firestore {
       return signedIn() && (request.auth.uid == familyId || isOwner());
     }
 
+
+    function inLeaderboardCircle(circleId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/circles/$(circleId)/members/$(request.auth.uid));
+    }
+
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isOwner());
 
@@ -109,6 +115,51 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/families/$(request.auth.uid)/children/$(childId));
         allow delete: if signedIn()
           && (resource.data.familyId == request.auth.uid || isOwner());
+      }
+    }
+
+    // Private leaderboard circles. The circle document ID is the invite code,
+    // so a signed-in family must know the exact code to open the circle.
+    // Member documents contain only the family UID; real family/child names are
+    // never written into circle metadata or leaderboard entries.
+    match /circles/{circleId} {
+      allow get: if signedIn();
+      allow list: if isOwner();
+      allow create: if signedIn()
+        && request.resource.data.circleId == circleId
+        && request.resource.data.ownerFamilyId == request.auth.uid
+        && exists(/databases/$(database)/documents/families/$(request.auth.uid));
+      allow update, delete: if isOwner()
+        || (signedIn() && resource.data.ownerFamilyId == request.auth.uid);
+
+      match /members/{familyId} {
+        allow read: if isOwner()
+          || (signedIn() && familyId == request.auth.uid);
+        allow create: if signedIn()
+          && familyId == request.auth.uid
+          && request.resource.data.familyId == request.auth.uid
+          && existsAfter(/databases/$(database)/documents/circles/$(circleId))
+          && exists(/databases/$(database)/documents/families/$(request.auth.uid));
+        allow update: if signedIn()
+          && familyId == request.auth.uid
+          && request.resource.data.familyId == request.auth.uid;
+        allow delete: if isOwner()
+          || (signedIn() && familyId == request.auth.uid);
+      }
+
+      match /boards/{boardId} {
+        allow read, write: if false;
+
+        match /entries/{childId} {
+          allow read: if isOwner() || inLeaderboardCircle(circleId);
+          allow create, update: if inLeaderboardCircle(circleId)
+            && request.resource.data.familyId == request.auth.uid
+            && request.resource.data.childId == childId
+            && exists(/databases/$(database)/documents/families/$(request.auth.uid)/children/$(childId));
+          allow delete: if isOwner()
+            || (inLeaderboardCircle(circleId)
+              && resource.data.familyId == request.auth.uid);
+        }
       }
     }
 
