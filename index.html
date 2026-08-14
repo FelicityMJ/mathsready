@@ -116,6 +116,19 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .circle-grid-v67{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:12px 0 22px}.circle-card-v67{padding:18px}.circle-card-v67 h3{margin:3px 0 2px;font-size:20px}.circle-icon-v67{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#f1efff;font-size:22px;margin-bottom:9px}.circle-code-v67{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;font-size:12px;font-weight:900;background:#f8f9fc;border:1px dashed #cfd5df;border-radius:10px;padding:9px 10px;margin:12px 0;color:#475467}.circle-public-v67{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;background:linear-gradient(135deg,#fff,#f8fbff)}.circle-public-v67 p{margin:4px 0 0}.circle-safe-v67{background:#f7f8fb;border:1px solid var(--line);border-radius:14px;padding:13px 14px;line-height:1.45}.circle-child-list-v67{display:grid;gap:9px}.circle-child-choice-v67{display:flex;align-items:flex-start;gap:11px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff;cursor:pointer}.circle-child-choice-v67:hover{border-color:#c8c0ff;background:#fbfaff}.circle-child-choice-v67 input{width:auto;margin-top:3px;transform:scale(1.12)}.circle-child-choice-v67 span{display:block}.circle-child-choice-v67 strong{display:block}.circle-child-choice-v67 small{display:block;color:var(--muted);margin-top:3px;line-height:1.4}.board-scope-tabs-v67{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.board-scope-v67{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;font-weight:900;color:var(--muted);cursor:pointer}.board-scope-v67.active{background:#f1efff;border-color:#c8c0ff;color:#594ac9}.danger-text-v67{color:#a93636}.competition-choice-v67{margin-top:10px}.circle-head-v67{align-items:flex-end}.circle-empty-v67{margin-bottom:20px}
 @media(max-width:760px){.circle-grid-v67{grid-template-columns:1fr}.circle-public-v67{display:block}.circle-public-v67 .privacy-pill{margin-top:10px}.circle-head-v67{align-items:flex-start;display:block}.circle-head-v67 .button-row{margin-top:10px}.board-scope-tabs-v67{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.board-scope-v67{white-space:nowrap}}
 
+
+/* === V6.10 MATHSREADY ARCADE === */
+.arcade-banner{margin-top:14px;background:linear-gradient(135deg,#251b55,#5b4bd8);color:#fff;overflow:hidden;position:relative}
+.arcade-banner:after{content:'★  ×  +  ÷';position:absolute;right:18px;bottom:-8px;font-size:58px;font-weight:950;opacity:.12;letter-spacing:8px;pointer-events:none}
+.arcade-banner h2{margin:4px 0 6px;font-size:30px}.arcade-banner p{margin:0;max-width:720px;color:rgba(255,255,255,.85);line-height:1.5}.arcade-banner .pill{background:rgba(255,255,255,.14);color:#fff}
+.arcade-game-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:14px}.arcade-game-card{border:0;border-radius:22px;padding:18px;text-align:left;cursor:pointer;background:#fff;box-shadow:0 8px 24px rgba(35,43,65,.08);border:1px solid var(--line);transition:.16s transform,.16s box-shadow}.arcade-game-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(35,43,65,.13)}.arcade-game-icon{font-size:38px}.arcade-game-card h3{margin:6px 0 5px;font-size:20px}.arcade-game-card p{margin:0;color:var(--muted);line-height:1.4}.arcade-game-tag{display:inline-flex;margin-top:10px;border-radius:999px;padding:5px 8px;background:#f1efff;color:#594ac9;font-size:11px;font-weight:900}
+.arcade-level-group{margin-bottom:14px}.arcade-level-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.arcade-level-btn{border:1px solid var(--line);background:#fff;border-radius:16px;padding:13px;text-align:left;cursor:pointer}.arcade-level-btn:hover{border-color:#8c7df1}.arcade-level-btn strong{display:block;font-size:15px}.arcade-level-btn small{display:block;color:var(--muted);margin-top:4px}.arcade-level-btn.next{border:2px solid #8c7df1;background:#f8f6ff}.arcade-level-btn.mastered{background:#f2fbf7}
+.arcade-shell{max-width:920px;margin:0 auto}.arcade-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.arcade-score-strip{display:flex;gap:8px;flex-wrap:wrap}.arcade-stat{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900}.arcade-question{font-size:clamp(34px,6vw,58px);font-weight:950;text-align:center;margin:8px 0 14px;letter-spacing:-1px}.arcade-instruction{text-align:center;color:var(--muted);font-weight:750;margin:0 0 12px}.arcade-feedback{min-height:28px;text-align:center;font-weight:950;font-size:17px;margin-top:10px}.arcade-feedback.good{color:#087a4a}.arcade-feedback.bad{color:#c23a38}
+.whack-field{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;padding:16px;background:linear-gradient(#dff5ff 0 44%,#8dc66a 44% 100%);border-radius:24px;min-height:330px}.mole-hole{position:relative;border:0;background:transparent;cursor:pointer;min-height:130px;padding:0}.mole-hole:after{content:'';position:absolute;left:10%;right:10%;bottom:7px;height:31px;background:#5d4436;border-radius:50%;box-shadow:inset 0 6px 0 rgba(0,0,0,.17)}.mole{position:absolute;left:17%;right:17%;bottom:19px;min-height:96px;border-radius:50% 50% 38% 38%;background:#9b6a48;border:4px solid #765039;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:950;color:#fff;box-shadow:inset 0 8px 0 rgba(255,255,255,.13);animation:moleUp .3s ease-out}.mole:before{content:'• ᴗ •';position:absolute;top:10px;font-size:17px;color:#2b211c}.mole span{margin-top:27px;background:#fff;color:#172033;border-radius:999px;padding:6px 10px;min-width:42px;text-align:center}.mole-hole.hit .mole{animation:bonk .32s ease}.mole-hole.miss .mole{animation:wobble .28s ease}@keyframes moleUp{from{transform:translateY(58px)}to{transform:translateY(0)}}@keyframes bonk{50%{transform:scale(.78) translateY(14px)}}@keyframes wobble{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.balloon-field{position:relative;height:430px;overflow:hidden;border-radius:24px;background:linear-gradient(#dff4ff,#f8fbff);border:1px solid #dbe9f4}.balloon{position:absolute;left:var(--x);bottom:-110px;width:92px;height:112px;border:0;border-radius:50% 50% 48% 48%;background:var(--balloon);color:#fff;font-size:24px;font-weight:950;cursor:pointer;box-shadow:inset -10px -12px 0 rgba(0,0,0,.08),inset 10px 10px 0 rgba(255,255,255,.18);animation:floatBalloon var(--dur) linear var(--delay) infinite}.balloon:before{content:'';position:absolute;bottom:-10px;left:40px;border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid var(--balloon)}.balloon:after{content:'';position:absolute;top:111px;left:46px;width:2px;height:70px;background:#8b8b8b}.balloon.pop{animation:balloonPop .25s ease forwards}.balloon.wrong{animation:balloonWobble .3s ease}@keyframes floatBalloon{from{transform:translateY(0)}to{transform:translateY(-570px)}}@keyframes balloonPop{to{transform:scale(1.65);opacity:0}}@keyframes balloonWobble{25%{margin-left:-8px}75%{margin-left:8px}}
+.maze-board{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;max-width:560px;margin:0 auto;background:#31285f;padding:7px;border-radius:20px;touch-action:none}.maze-cell{aspect-ratio:1;min-width:0;border-radius:8px;background:#f4f1ff;display:flex;align-items:center;justify-content:center;font-weight:950;font-size:18px;position:relative}.maze-cell.wall{background:#31285f}.maze-cell.answer{background:#fff2a8;border:2px solid #ebcf39}.maze-cell.wrong-answer{background:#ffe0dd;border-color:#f08a81}.maze-avatar{font-size:28px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}.maze-controls{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,52px);justify-content:center;gap:6px;margin-top:14px}.maze-controls button{border:1px solid var(--line);border-radius:13px;background:#fff;font-size:22px;font-weight:950;cursor:pointer}.maze-controls .up{grid-column:2}.maze-controls .left{grid-column:1;grid-row:2}.maze-controls .down{grid-column:2;grid-row:2}.maze-controls .right{grid-column:3;grid-row:2}
+.arcade-finish-stars{font-size:44px;letter-spacing:5px;margin:8px 0}.arcade-best{display:inline-flex;background:#fff7d8;color:#725600;border-radius:999px;padding:7px 12px;font-weight:900;margin-top:6px}
+@media(max-width:760px){.arcade-game-grid{grid-template-columns:1fr}.arcade-level-grid{grid-template-columns:1fr}.whack-field{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px}.mole-hole{min-height:118px}.balloon-field{height:390px}.balloon{width:78px;height:98px;font-size:21px}.arcade-top{align-items:flex-start;flex-direction:column}.arcade-banner:after{font-size:42px}}
 </style></head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -879,7 +892,7 @@ function bootstrapV3(){if(platformV3.activeFamilyId&&activeFamilyV3()){const kid
    Leaderboard and Face-Off scoring are client-submitted in this pilot;
    move validation to Cloud Functions/App Check before a public launch.
    ================================================================ */
-const V5_VERSION='6.9.1-circle-faceoff-rules-fix';
+const V5_VERSION='6.10.0-mathsready-arcade';
 const FIREBASE_CONFIG_V5={
   apiKey:'AIzaSyC9JoRl_pOOr_s9L_-kwa0JmimLEGc9bIk',
   authDomain:'mathsready-5fa65.firebaseapp.com',
@@ -1440,6 +1453,134 @@ renderFluency=function(op=activeFluencyOp){
  if(current&&startCurrent&&fluencyUnlocked(current)&&!document.getElementById('practiceCurrentV64')){const b=document.createElement('button');b.className='cta secondary';b.id='practiceCurrentV64';b.textContent='Practise this step first';startCurrent.insertAdjacentElement('afterend',b);b.style.marginTop='8px';b.onclick=()=>startFluencyHelperV64(current.id)}
  bindPracticeV64();
 };
+
+
+
+/* === V6.10 MATHSREADY ARCADE ===
+   Three child-friendly practice games driven by the exact Fluency fact banks.
+   Arcade play is practice only: it never awards official Fluency mastery and
+   does not feed visual-game reaction time into mastery fact-speed statistics.
+*/
+const ARCADE_GAMES_V610={
+ whack:{id:'whack',icon:'🔨',name:'Whack-a-Fact',blurb:'Whack the mole holding the right answer.',tag:'Great for quick recall'},
+ balloons:{id:'balloons',icon:'🎈',name:'Balloon Pop',blurb:'Pop the balloon with the correct answer.',tag:'Calm visual practice'},
+ maze:{id:'maze',icon:'👾',name:'Maths Maze',blurb:'Move through the maze to the correct answer.',tag:'Think, move, solve'}
+};
+let activeArcadeV610=null,arcadeKeyHandlerV610=null;
+
+function arcadeCleanupV610(){
+ if(arcadeKeyHandlerV610){window.removeEventListener('keydown',arcadeKeyHandlerV610);arcadeKeyHandlerV610=null}
+ activeArcadeV610=null;
+}
+function arcadeBestStoreV610(){if(!state.arcadeBest||typeof state.arcadeBest!=='object')state.arcadeBest={};return state.arcadeBest}
+function arcadeBestV610(gameId,levelId){return Number(arcadeBestStoreV610()[`${gameId}:${levelId}`]||0)}
+function arcadeEligibleLevelsV610(){
+ return FLUENCY_OPERATIONS.flatMap(o=>courseLevelsV3(o.id)).filter(l=>l.active!==false&&fluencyUnlocked(l));
+}
+function arcadeGameCardsV610(){return Object.values(ARCADE_GAMES_V610).map(g=>`<button class="arcade-game-card" data-arcade-game="${g.id}"><div class="arcade-game-icon">${g.icon}</div><h3>${esc(g.name)}</h3><p>${esc(g.blurb)}</p><span class="arcade-game-tag">${esc(g.tag)}</span></button>`).join('')}
+function arcadeHomeBlockV610(){return`<section class="card arcade-banner" id="mathsReadyArcadeV610"><div class="pill">🎮 MathsReady Arcade</div><h2>Turn practice into a game</h2><p>Pick a game, then choose the exact Fluency step you want to strengthen. Game scores are just for fun — official mastery still happens on the clean timed worksheet.</p></section><div class="arcade-game-grid">${arcadeGameCardsV610()}</div>`}
+function bindArcadeHomeV610(){document.querySelectorAll('[data-arcade-game]').forEach(b=>b.onclick=()=>renderArcadeLevelPickerV610(b.dataset.arcadeGame));document.querySelectorAll('[data-arcade-for-level]').forEach(b=>b.onclick=()=>renderArcadeGamePickerV610(b.dataset.arcadeForLevel))}
+
+const renderPracticeV610Base=renderPractice;
+renderPractice=function(){
+ const r=recommendedSkill(),rLink=fluencyLinkForSkillV64(r.id);
+ render(`<section class="practice-hero card"><div><div class="pill">🌟 Practice Zone</div><h1>What do you want to get better at?</h1><p>Practice is where you learn and make mistakes. <strong>Fluency is where you show you can do it automatically.</strong></p></div><div class="practice-hero-badge">No pressure<br><strong>Just practise 💪</strong></div></section>
+ <div class="mode-grid practice-modes">
+  <button class="mode" id="dailyMode"><div class="ico">🎯</div><h3>Today's Mission</h3><p>A short mix chosen for you.</p></button>
+  <button class="mode" id="fluencyHelpMode"><div class="ico">⚡</div><h3>Help My Fluency</h3><p>Practise exactly what your next Fluency tests need.</p></button>
+  <button class="mode" id="arcadeMode"><div class="ico">🎮</div><h3>MathsReady Arcade</h3><p>Play a game using your real Fluency facts.</p></button>
+  <button class="mode" id="skillMode"><div class="ico">🧩</div><h3>Choose a Skill</h3><p>Pick something you want more help with.</p></button>
+  <button class="mode" id="mixedMode"><div class="ico">🧠</div><h3>Mix It Up</h3><p>Bring older maths back so it stays strong.</p></button>
+ </div>
+ ${arcadeHomeBlockV610()}
+ <div class="section-head" id="fluencyHelpersV64"><div><h2>⚡ Practice for your next Fluency steps</h2><p>These blocks use the same kinds of facts as the mastery level named on the card.</p></div></div>
+ <div class="fluency-help-grid">${FLUENCY_OPERATIONS.map(o=>fluencyGoalCardV64(o.id)).join('')}</div>
+ <div class="section-head"><div><h2>⭐ Best next practice for you</h2><p>Based on the maths path and your recent work.</p></div></div>
+ <section class="card recommended-practice-v64"><div><h3 style="margin:0 0 6px">${esc(r.name)}</h3>${practiceFluencyLabelV64(r)}<p class="muted" style="margin-bottom:0">${skillWhy(r)}</p></div><div class="button-row"><button class="cta" id="rec">Practise this skill</button>${rLink&&!rLink.allDone&&fluencyUnlocked(rLink.level)?`<button class="cta secondary" data-helper-fluency="${rLink.level.id}">Practise for ${esc(rLink.level.name)}</button><button class="cta secondary" data-arcade-for-level="${rLink.level.id}">🎮 Game for this step</button>`:''}</div></section>
+ <div class="button-row" style="justify-content:center;margin-top:18px"><button class="cta secondary" id="goFluencyTests">Go to Fluency mastery tests →</button><button class="cta secondary" id="pathBtn">See my whole maths path</button></div>`,'practice');
+ document.getElementById('dailyMode').onclick=()=>startSession('Daily Mission',makeDailyQueue(state.settings.dailyQuestions));
+ document.getElementById('fluencyHelpMode').onclick=()=>document.getElementById('fluencyHelpersV64')?.scrollIntoView({behavior:'smooth',block:'start'});
+ document.getElementById('arcadeMode').onclick=()=>document.getElementById('mathsReadyArcadeV610')?.scrollIntoView({behavior:'smooth',block:'start'});
+ document.getElementById('skillMode').onclick=renderSkillPicker;
+ document.getElementById('mixedMode').onclick=()=>startSession('Mixed Review',makeMixedQueue(state.settings.dailyQuestions));
+ document.getElementById('rec').onclick=()=>startSession('Skill Practice',makeSkillQueue(r.id,12),{fixedSkill:r.id});
+ document.getElementById('goFluencyTests').onclick=()=>renderFluency('add');
+ document.getElementById('pathBtn').onclick=renderPath;
+ bindPracticeV64();bindArcadeHomeV610();
+ document.querySelectorAll('.fluency-help-card .fluency-help-actions').forEach(holder=>{const helper=holder.querySelector('[data-helper-fluency]');if(helper&&!holder.querySelector('[data-arcade-for-level]')){const b=document.createElement('button');b.className='cta secondary small';b.dataset.arcadeForLevel=helper.dataset.helperFluency;b.textContent='🎮 Play a game';holder.appendChild(b)}});
+ bindArcadeHomeV610();
+}
+
+function renderArcadeLevelPickerV610(gameId){
+ const game=ARCADE_GAMES_V610[gameId];if(!game)return renderPractice();
+ const eligible=arcadeEligibleLevelsV610(),currentIds=new Set(FLUENCY_OPERATIONS.map(o=>nextFluencyGoalV64(o.id)?.id).filter(Boolean));
+ render(`<section class="card arcade-banner"><div class="pill">${game.icon} ${esc(game.name)}</div><h2>Which Fluency step do you want to practise?</h2><p>${esc(game.blurb)} Pick an open step below — green steps have already been mastered but can still be replayed.</p></section><div class="section-head"><button class="back" id="arcadeBack">← Arcade</button></div>${FLUENCY_OPERATIONS.map(op=>{const levels=eligible.filter(l=>l.op===op.id);if(!levels.length)return'';return`<section class="card arcade-level-group"><h3 style="margin-top:0">${op.icon} ${esc(op.name)}</h3><div class="arcade-level-grid">${levels.map(l=>{const mastered=fluencyLevelState(l.id).mastered,isNext=currentIds.has(l.id),best=arcadeBestV610(gameId,l.id);return`<button class="arcade-level-btn ${mastered?'mastered':''} ${isNext?'next':''}" data-arcade-start="${gameId}" data-arcade-level="${l.id}"><strong>${isNext?'⭐ ':mastered?'✓ ':''}${esc(l.name)}</strong><small>${isNext?'Your next Fluency step':mastered?'Mastered — extra practice':`Open for practice`}${best?` • game best ${best} pts`:''}</small></button>`}).join('')}</div></section>`}).join('')}`,'practice');
+ document.getElementById('arcadeBack').onclick=renderPractice;document.querySelectorAll('[data-arcade-start]').forEach(b=>b.onclick=()=>startArcadeV610(b.dataset.arcadeStart,b.dataset.arcadeLevel));
+}
+function renderArcadeGamePickerV610(levelId){
+ const level=effectiveFluencyV3(levelId);if(!level||!fluencyUnlocked(level))return renderPractice();
+ render(`<section class="card arcade-banner"><div class="pill">🎮 GAME PRACTICE</div><h2>${esc(level.name)}</h2><p>Choose how you want to practise this exact Fluency step. None of these games can award mastery.</p></section><div class="arcade-game-grid">${Object.values(ARCADE_GAMES_V610).map(g=>`<button class="arcade-game-card" data-arcade-start="${g.id}" data-arcade-level="${level.id}"><div class="arcade-game-icon">${g.icon}</div><h3>${esc(g.name)}</h3><p>${esc(g.blurb)}</p><span class="arcade-game-tag">Best: ${arcadeBestV610(g.id,level.id)||0} pts</span></button>`).join('')}</div><div class="button-row" style="justify-content:center;margin-top:18px"><button class="cta secondary" id="arcadeGameBack">← Practice Zone</button><button class="cta secondary" id="arcadeNormalPractice">🧩 Normal practice instead</button></div>`,'practice');
+ document.querySelectorAll('[data-arcade-start]').forEach(b=>b.onclick=()=>startArcadeV610(b.dataset.arcadeStart,b.dataset.arcadeLevel));document.getElementById('arcadeGameBack').onclick=renderPractice;document.getElementById('arcadeNormalPractice').onclick=()=>startFluencyHelperV64(level.id);
+}
+
+function arcadeChoicesV610(q,level,count=6){
+ const correct=Number(q.answer),answers=[...new Set(makeFluencyBank(level).map(x=>Number(x.answer)).filter(Number.isFinite))].filter(x=>x!==correct),near=[];
+ for(let d=1;d<=12;d++){if(correct-d>=0)near.push(correct-d);near.push(correct+d)}
+ const candidates=shuffle([...new Set([...shuffle(answers),...near])]).filter(x=>x!==correct).slice(0,count-1);while(candidates.length<count-1)candidates.push(correct+candidates.length+1);
+ return shuffle([correct,...candidates]);
+}
+function startArcadeV610(gameId,levelId){
+ arcadeCleanupV610();const game=ARCADE_GAMES_V610[gameId],level=effectiveFluencyV3(levelId);if(!game||!level)return renderPractice();if(!fluencyUnlocked(level))return alert('That Fluency step is not open yet.');
+ const count=gameId==='maze'?8:12;activeArcadeV610={game,level,questions:makeHelperQuestionsV64(level,count),index:0,items:[],correct:0,wrong:0,streak:0,bestStreak:0,points:0,started:Date.now(),questionWrong:0,maze:null};
+ window.scrollTo({top:0,behavior:'auto'});renderArcadeQuestionV610();
+}
+function arcadeTopV610(a){return`<div class="arcade-top"><button class="back" id="arcadeExit">← Exit game</button><div class="arcade-score-strip"><span class="arcade-stat">⭐ ${a.points} pts</span><span class="arcade-stat">🔥 ${a.streak} streak</span><span class="arcade-stat">${a.index+1}/${a.questions.length}</span></div></div>`}
+function bindArcadeExitV610(){const b=document.getElementById('arcadeExit');if(b)b.onclick=()=>{const level=activeArcadeV610?.level;arcadeCleanupV610();level?renderArcadeGamePickerV610(level.id):renderPractice()}}
+function renderArcadeQuestionV610(){const a=activeArcadeV610;if(!a)return;if(a.index>=a.questions.length)return finishArcadeV610();a.q=a.questions[a.index];a.questionWrong=0;if(a.game.id==='whack')renderWhackV610();else if(a.game.id==='balloons')renderBalloonsV610();else renderMazeV610()}
+function arcadeCorrectV610(extra=0){
+ const a=activeArcadeV610;if(!a)return;a.correct++;a.streak++;a.bestStreak=Math.max(a.bestStreak,a.streak);a.points+=100+(a.streak-1)*10+extra;a.items.push({prompt:a.q.prompt,answer:a.q.answer,correct:a.questionWrong===0,wrongAttempts:a.questionWrong,game:a.game.id});setTimeout(()=>{if(!activeArcadeV610)return;a.index++;renderArcadeQuestionV610()},520);
+}
+function arcadeWrongV610(){const a=activeArcadeV610;if(!a)return;a.wrong++;a.questionWrong++;a.streak=0}
+function setArcadeFeedbackV610(text,good){const el=document.getElementById('arcadeFeedbackV610');if(el){el.textContent=text;el.className='arcade-feedback '+(good?'good':'bad')}}
+
+function renderWhackV610(){
+ const a=activeArcadeV610,q=a.q,choices=arcadeChoicesV610(q,a.level,6);
+ render(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="card"><div class="qmeta">🔨 WHACK-A-FACT • PRACTICE FOR ${esc(a.level.name).toUpperCase()}</div><div class="arcade-question">${esc(q.prompt)} = ?</div><p class="arcade-instruction">Whack the mole holding the right answer!</p><div class="whack-field">${choices.map(v=>`<button class="mole-hole" data-whack-answer="${v}"><span class="mole"><span>${esc(v)}</span></span></button>`).join('')}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`,'practice');bindArcadeExitV610();document.querySelectorAll('[data-whack-answer]').forEach(b=>b.onclick=()=>{if(!activeArcadeV610)return;const ok=Number(b.dataset.whackAnswer)===Number(q.answer);if(ok){b.classList.add('hit');document.querySelectorAll('[data-whack-answer]').forEach(x=>x.disabled=true);setArcadeFeedbackV610('BONK! ✓ Great hit!',true);arcadeCorrectV610()}else{b.classList.add('miss');b.disabled=true;arcadeWrongV610();setArcadeFeedbackV610('Not that mole — keep looking!',false)}})
+}
+function renderBalloonsV610(){
+ const a=activeArcadeV610,q=a.q,choices=arcadeChoicesV610(q,a.level,6),palette=['#ef6b78','#6c79e8','#37a977','#e9a437','#a868d7','#3aa7cb'];
+ render(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="card"><div class="qmeta">🎈 BALLOON POP • PRACTICE FOR ${esc(a.level.name).toUpperCase()}</div><div class="arcade-question">${esc(q.prompt)} = ?</div><p class="arcade-instruction">Pop the balloon with the correct answer. The balloons keep coming back, so there is no rush.</p><div class="balloon-field">${choices.map((v,i)=>`<button class="balloon" data-balloon-answer="${v}" style="--x:${5+(i%3)*31+rand(-2,2)}%;--delay:${-(i*1.15)}s;--dur:${9+(i%3)*1.4}s;--balloon:${palette[i%palette.length]}">${esc(v)}</button>`).join('')}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`,'practice');bindArcadeExitV610();document.querySelectorAll('[data-balloon-answer]').forEach(b=>b.onclick=()=>{if(!activeArcadeV610)return;const ok=Number(b.dataset.balloonAnswer)===Number(q.answer);if(ok){b.classList.add('pop');document.querySelectorAll('[data-balloon-answer]').forEach(x=>x.disabled=true);setArcadeFeedbackV610('POP! ✓ That’s it!',true);arcadeCorrectV610()}else{b.classList.add('wrong');b.disabled=true;arcadeWrongV610();setArcadeFeedbackV610('Oops — try another balloon!',false)}})
+}
+
+const MAZE_MAP_V610=[
+ [1,1,1,1,1,1,1],
+ [1,0,0,0,1,0,1],
+ [1,0,1,0,1,0,1],
+ [1,0,1,0,0,0,1],
+ [1,0,1,1,1,0,1],
+ [1,0,0,0,0,0,1],
+ [1,1,1,1,1,1,1]
+];
+function mazeOpenCellsV610(){const out=[];MAZE_MAP_V610.forEach((row,r)=>row.forEach((v,c)=>{if(v===0)out.push([r,c])}));return out}
+function mazeKeyV610(r,c){return`${r},${c}`}
+function initMazeV610(){
+ const a=activeArcadeV610,q=a.q,open=mazeOpenCellsV610(),start=[5,1],available=open.filter(([r,c])=>!(r===start[0]&&c===start[1])),choices=arcadeChoicesV610(q,a.level,4),spots=shuffle(available).slice(0,4),targets={};spots.forEach((pos,i)=>targets[mazeKeyV610(...pos)]={value:choices[i],wrong:false});a.maze={pos:start,targets};
+}
+function renderMazeV610(){
+ const a=activeArcadeV610;if(!a.maze)initMazeV610();const q=a.q,m=a.maze;
+ const cells=MAZE_MAP_V610.map((row,r)=>row.map((v,c)=>{if(v)return`<div class="maze-cell wall"></div>`;const key=mazeKeyV610(r,c),target=m.targets[key],avatar=m.pos[0]===r&&m.pos[1]===c;return`<div class="maze-cell ${target?'answer':''} ${target?.wrong?'wrong-answer':''}">${target?`<span>${esc(target.value)}</span>`:''}${avatar?`<span class="maze-avatar">🛸</span>`:''}</div>`}).join('')).join('');
+ render(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="card"><div class="qmeta">👾 MATHS MAZE • PRACTICE FOR ${esc(a.level.name).toUpperCase()}</div><div class="arcade-question">${esc(q.prompt)} = ?</div><p class="arcade-instruction">Use the arrows or your keyboard. Drive the 🛸 onto the correct answer.</p><div class="maze-board">${cells}</div><div class="maze-controls"><button class="up" data-maze-move="up" aria-label="Up">↑</button><button class="left" data-maze-move="left" aria-label="Left">←</button><button class="down" data-maze-move="down" aria-label="Down">↓</button><button class="right" data-maze-move="right" aria-label="Right">→</button></div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`,'practice');bindArcadeExitV610();document.querySelectorAll('[data-maze-move]').forEach(b=>b.onclick=()=>mazeMoveV610(b.dataset.mazeMove));if(!arcadeKeyHandlerV610){arcadeKeyHandlerV610=e=>{const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};if(map[e.key]&&activeArcadeV610?.game?.id==='maze'){e.preventDefault();mazeMoveV610(map[e.key])}};window.addEventListener('keydown',arcadeKeyHandlerV610)}
+}
+function mazeMoveV610(dir){
+ const a=activeArcadeV610,m=a?.maze;if(!a||!m)return;const delta={up:[-1,0],down:[1,0],left:[0,-1],right:[0,1]}[dir];if(!delta)return;const nr=m.pos[0]+delta[0],nc=m.pos[1]+delta[1];if(!MAZE_MAP_V610[nr]||MAZE_MAP_V610[nr][nc]!==0)return;m.pos=[nr,nc];const t=m.targets[mazeKeyV610(nr,nc)];if(t){if(Number(t.value)===Number(a.q.answer)){renderMazeV610();setArcadeFeedbackV610('You found it! ✓',true);document.querySelectorAll('[data-maze-move]').forEach(x=>x.disabled=true);arcadeCorrectV610(20);return}else if(!t.wrong){t.wrong=true;arcadeWrongV610()}}renderMazeV610();if(t&&t.wrong)setArcadeFeedbackV610('That path led to a wrong answer — keep exploring!',false)
+}
+function finishArcadeV610(){
+ const a=activeArcadeV610;if(!a)return;const duration=Math.max(1,Math.round((Date.now()-a.started)/1000)),firstTry=a.items.filter(x=>x.correct).length,bestStore=arcadeBestStoreV610(),key=`${a.game.id}:${a.level.id}`,old=Number(bestStore[key]||0);bestStore[key]=Math.max(old,a.points);state.stars=Number(state.stars||0)+a.correct;logSession(`Arcade: ${a.game.name}`,a.items,duration,{fluencyLevel:a.level.id,practiceOnly:true,arcadeGame:a.game.id,points:a.points,wrongClicks:a.wrong});save();const game=a.game,level=a.level,points=a.points,best=bestStore[key],streak=a.bestStreak,total=a.questions.length;arcadeCleanupV610();
+ render(`<section class="card complete"><div class="pill">🎮 MathsReady Arcade</div><div class="arcade-finish-stars">${firstTry===total?'⭐⭐⭐':firstTry>=Math.ceil(total*.75)?'⭐⭐☆':'⭐☆☆'}</div><h1>${firstTry===total?'Perfect first-time choices!':firstTry>=Math.ceil(total*.75)?'Great game!':'Good practice!'}</h1><p class="muted">You played <strong>${esc(game.name)}</strong> for <strong>${esc(level.name)}</strong>. You got ${firstTry}/${total} right first time and made ${a.wrong} extra wrong taps.</p><div class="set-stats"><div class="set-stat"><strong>${points}</strong><span>points</span></div><div class="set-stat"><strong>${streak}</strong><span>best streak</span></div><div class="set-stat"><strong>${firstTry}/${total}</strong><span>first try</span></div></div><div class="arcade-best">🏆 Best for this game + level: ${best} pts</div><p class="note" style="margin-top:14px">Game practice helps you build confidence, but it never marks a Fluency level as mastered.</p><div class="button-row" style="justify-content:center;margin-top:18px"><button class="cta" id="arcadeAgain">Play again</button><button class="cta secondary" id="arcadeOther">Choose another game</button><button class="cta secondary" id="arcadeMastery">⚡ Try mastery</button><button class="cta secondary" id="arcadeHome">Practice Zone</button></div></section>`,'practice');document.getElementById('arcadeAgain').onclick=()=>startArcadeV610(game.id,level.id);document.getElementById('arcadeOther').onclick=()=>renderArcadeGamePickerV610(level.id);document.getElementById('arcadeMastery').onclick=()=>startFluencySet(level.id);document.getElementById('arcadeHome').onclick=renderPractice;
+}
+
+const routeV610Base=route;
+route=function(name){if(activeArcadeV610||arcadeKeyHandlerV610)arcadeCleanupV610();routeV610Base(name)};
 
 
 /* === V6.7 PRIVATE LEADERBOARD CIRCLES ===
