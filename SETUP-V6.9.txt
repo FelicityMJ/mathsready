@@ -1,0 +1,48 @@
+NAT5 READY MATHS — V6.9 CIRCLE FACE-OFF ROOMS
+================================================
+
+WHAT CHANGED
+------------
+• Removed the Face-Off Session time/date field. One-off hosts simply start when ready.
+• Every private family circle (e.g. Cousins, Friends) now has one permanent Face-Off room.
+• No new Face-Off code is needed for children already linked through a circle.
+• Inside a circle room, one child sets up the race:
+    - Addition / subtraction / multiplication / division
+    - Exact fluency question set
+    - 10 / 20 / 30 / 40 / 50 questions per round
+    - One round / Best of 3 / Best of 5
+    - Maximum racers
+• Other children join the current race and press Ready.
+• When every current racer is Ready, the shared 10-second countdown starts automatically.
+• Every round in a multi-round match uses Ready again before the next 10-second countdown.
+• Recent Face-Off matches now have Remove buttons. This removes the item only from that
+  learner's own visible history; it does not delete another family's copy.
+• One-off MATH-xxxxx rooms remain available as a fallback for someone outside a circle.
+
+IMPORTANT — FIRESTORE RULES UPDATE REQUIRED
+-------------------------------------------
+V6.9 adds genuinely private permanent Face-Off rooms to the existing family circles.
+Publish the supplied firestore.rules BEFORE testing the new circle rooms.
+
+1. Firebase Console → Firestore Database → Rules.
+2. Replace the current rules with the supplied firestore.rules.
+3. Click Publish.
+4. In GitHub, replace the root index.html with the supplied index.html.
+5. Commit to main and hard-refresh the live site after GitHub Pages redeploys.
+
+HOW TO TEST
+-----------
+1. Use two different signed-in family accounts that are already in the same circle.
+2. Make sure the two test children are both selected for that circle.
+3. On both devices open Face-Off → the same circle room (for example Cousins).
+4. On one device choose Set up a race and save the settings.
+5. On the other device choose Join this race.
+6. Both children press Ready.
+7. Both devices should immediately show the same 10-second countdown bar and then Question 1.
+8. For Best of 3/5, both children press Ready again after each round result.
+
+PRIVACY
+-------
+Circle Face-Off room reads are limited in Firestore to families that are members of that
+circle. Creating/joining a racer also checks that the child has actually been selected for
+that circle in their family profile.

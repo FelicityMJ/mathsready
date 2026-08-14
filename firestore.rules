@@ -25,6 +25,33 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/circles/$(circleId)/members/$(request.auth.uid));
     }
 
+
+    function isCircleFaceoffData(data) {
+      return ('persistentCircleRoom' in data)
+        && data.persistentCircleRoom == true
+        && ('circleId' in data)
+        && data.circleId is string;
+    }
+
+    function canUseFaceoffRoom(roomId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/faceoffs/$(roomId))
+        && (
+          !isCircleFaceoffData(get(/databases/$(database)/documents/faceoffs/$(roomId)).data)
+          || inLeaderboardCircle(get(/databases/$(database)/documents/faceoffs/$(roomId)).data.circleId)
+        );
+    }
+
+    function childCanUseCircleFaceoff(roomId, childId) {
+      return canUseFaceoffRoom(roomId)
+        && isCircleFaceoffData(get(/databases/$(database)/documents/faceoffs/$(roomId)).data)
+        && exists(/databases/$(database)/documents/families/$(request.auth.uid)/children/$(childId))
+        && get(/databases/$(database)/documents/families/$(request.auth.uid)/children/$(childId)).data.leaderboardCircleIds is list
+        && get(/databases/$(database)/documents/families/$(request.auth.uid)/children/$(childId)).data.leaderboardCircleIds.hasAny([
+          get(/databases/$(database)/documents/faceoffs/$(roomId)).data.circleId
+        ]);
+    }
+
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isOwner());
 
@@ -163,43 +190,67 @@ service cloud.firestore {
       }
     }
 
-    // Invite-only Face-Off pilot. Rooms cannot be listed; a participant must
-    // know the room code. Scoring is client-submitted in V5 and should move
-    // to Cloud Functions/App Check before a public, high-stakes release.
+    // Face-Off rooms. One-off rooms are still code-based. Private circle rooms
+    // are permanent and may only be read or changed by families that already
+    // belong to that leaderboard circle.
     match /faceoffs/{roomId} {
-      allow get: if signedIn();
+      allow get: if signedIn()
+        && (
+          !isCircleFaceoffData(resource.data)
+          || inLeaderboardCircle(resource.data.circleId)
+        );
       allow list: if false;
       allow create: if signedIn()
-        && request.resource.data.hostFamilyId == request.auth.uid;
-      allow update: if signedIn();
-      allow delete: if isOwner();
+        && (
+          (isCircleFaceoffData(request.resource.data)
+            && inLeaderboardCircle(request.resource.data.circleId))
+          || (!isCircleFaceoffData(request.resource.data)
+            && request.resource.data.hostFamilyId == request.auth.uid)
+        );
+      allow update: if signedIn()
+        && (
+          (!isCircleFaceoffData(resource.data))
+          || inLeaderboardCircle(resource.data.circleId)
+        );
+      allow delete: if isOwner()
+        || (signedIn()
+          && !isCircleFaceoffData(resource.data)
+          && resource.data.hostFamilyId == request.auth.uid);
 
       match /players/{childId} {
-        allow read: if signedIn();
+        allow read: if canUseFaceoffRoom(roomId);
         allow create: if signedIn()
-          && (request.resource.data.familyId == request.auth.uid || isOwner());
-        allow update: if signedIn()
+          && request.resource.data.familyId == request.auth.uid
+          && (
+            !isCircleFaceoffData(get(/databases/$(database)/documents/faceoffs/$(roomId)).data)
+            || childCanUseCircleFaceoff(roomId, childId)
+          );
+        allow update: if canUseFaceoffRoom(roomId)
           && ((resource.data.familyId == request.auth.uid
                && request.resource.data.familyId == request.auth.uid)
               || isOwner());
-        allow delete: if signedIn()
+        allow delete: if canUseFaceoffRoom(roomId)
           && (resource.data.familyId == request.auth.uid || isOwner());
       }
 
       match /rounds/{roundId} {
-        allow read: if signedIn();
-        allow create: if signedIn()
-          && get(/databases/$(database)/documents/faceoffs/$(roomId)).data.hostFamilyId == request.auth.uid;
-        allow update: if signedIn();
+        allow read: if canUseFaceoffRoom(roomId);
+        allow create: if canUseFaceoffRoom(roomId)
+          && (
+            isCircleFaceoffData(get(/databases/$(database)/documents/faceoffs/$(roomId)).data)
+            || get(/databases/$(database)/documents/faceoffs/$(roomId)).data.hostFamilyId == request.auth.uid
+          );
+        allow update: if canUseFaceoffRoom(roomId);
         allow delete: if isOwner();
 
         match /results/{childId} {
-          allow read: if signedIn();
-          allow create, update: if signedIn()
+          allow read: if canUseFaceoffRoom(roomId);
+          allow create, update: if canUseFaceoffRoom(roomId)
             && (request.resource.data.familyId == request.auth.uid || isOwner());
           allow delete: if isOwner();
         }
       }
     }
+
   }
 }
