@@ -108,7 +108,7 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:760px){.practice-hero{display:block}.practice-hero-badge{margin-top:14px}.fluency-help-grid{grid-template-columns:1fr}.recommended-practice-v64{display:block}.recommended-practice-v64 .button-row{margin-top:14px}}
 
 
-/* V6.5 keyboard finish: keep the no-click hint compact inside the submit row. */
+/* V6.6 mastery restart: hard top-lock before the clock starts; V6.5 keyboard finish retained. */
 .mastery-enter-hint{color:var(--muted);font-weight:700;white-space:nowrap}
 @media(max-width:700px){.mastery-enter-hint{width:100%;text-align:center;white-space:normal;order:3}}
 
@@ -764,7 +764,7 @@ function shellV3(content,active='home'){
  const ch=activeChildV3(),f=activeFamilyV3(),has=!!ch&&!!state.profile;return `<div class="app"><header class="topbar"><div class="brand"><div class="logo">∑</div><span>Nat5 Ready Maths</span></div><nav class="nav"><button data-nav="home" class="${active==='home'?'active':''} ${!has?'locked':''}">Home</button><button data-nav="fluency" class="${active==='fluency'?'active':''} ${!has?'locked':''}">⚡ Fluency</button><button data-nav="practice" class="${active==='practice'?'active':''} ${!has?'locked':''}">Practise</button><button data-nav="path" class="${active==='path'?'active':''} ${!has?'locked':''}">Maths path</button><button data-nav="leaderboard" class="${active==='leaderboard'?'active':''} ${!has?'locked':''}">🏆 Boards</button><button data-nav="parent" class="${active==='parent'?'active':''} ${!has?'locked':''}">Parent</button><button data-nav="family" class="${active==='family'?'active':''}">Family</button>${platformV3.ownerLocal?`<button data-nav="owner" class="${active==='owner'?'active':''}">Admin</button>`:''}</nav></header>${has?`<div class="child-switch no-print" style="margin:-5px 0 14px"><span class="top-chip">👤 ${esc(state.profile.name)} • ${esc(state.profile.stage)}</span>${familyChildrenV3().length>1?'<button class="linklike" id="quickSwitch">Switch child</button>':''}</div>`:''}${content}<div class="footer">Nat5 Ready Maths V${V3_VERSION} • learner records use stable IDs • published course v${currentCourseV3().version}</div></div>`
 }
 shell=shellV3;
-render=function(content,active){document.getElementById('app').innerHTML=shellV3(content,active);bindNav();const qs=document.getElementById('quickSwitch');if(qs)qs.onclick=renderFamilyV3;window.scrollTo({top:0,behavior:'smooth'})};
+render=function(content,active){document.getElementById('app').innerHTML=shellV3(content,active);bindNav();const qs=document.getElementById('quickSwitch');if(qs)qs.onclick=renderFamilyV3;const hardMasteryTop=active==='fluency'&&activeFluency?.worksheet;window.scrollTo({top:0,behavior:hardMasteryTop?'auto':'smooth'})};
 bindNav=function(){document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{if(b.classList.contains('locked'))return;route(b.dataset.nav)})};
 route=function(name){clearInterval(beatTimer);beatTimer=null;clearInterval(fluencyTimer);fluencyTimer=null;activeFluency=null;if(name==='home')activeChildV3()?renderHome():renderFamilyV3();if(name==='fluency')renderFluency();if(name==='practice')renderPractice();if(name==='path')renderPath();if(name==='leaderboard')renderLeaderboardsV3();if(name==='parent')renderParent();if(name==='family')renderFamilyV3();if(name==='owner')renderOwnerV3('codes')};
 
@@ -1140,19 +1140,26 @@ function startParentFluencyPracticeV61(id){startWorksheetFluencyV61(id,'parentPr
 function startWorksheetFluencyV61(id,mode='mastery',returnTo='fluency'){
  const l=effectiveFluencyV3(id);if(!l)return;if(mode==='mastery'&&!fluencyUnlocked(l))return;
  clearInterval(fluencyTimer);fluencyTimer=null;
+ // The Repeat/Next button lives at the bottom of the review sheet. Blur it before
+ // replacing the DOM so the browser cannot try to preserve that focused position.
+ if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
  const questions=makeFluencySet(l);
- // Build the new sheet first. The normal renderer uses smooth scrolling, so the
- // mastery clock must not start until that movement has been cancelled.
  activeFluency={level:l,questions,index:0,items:[],started:performance.now(),finished:false,courseVersion:currentCourseV3().version,courseSnapshot:{levelId:l.id,name:l.name,count:l.count,targetSec:fluencyTarget(l)},worksheet:true,mode,returnTo,responses:Array(questions.length).fill(''),answerTimes:{}};
  renderFluencyWorksheetV61();
- // Snap to the very top after the new DOM exists, then start timing from zero.
+ // Mastery starts are deliberately different from normal navigation: no smooth
+ // scrolling and no focus-driven scroll. Let the new layout settle for two paints,
+ // pin the viewport to the top, focus Q1 without scrolling, THEN start the clock.
  scrollToTopInstantV62();
- activeFluency.started=performance.now();
- activeFluency.answerTimes={};
- updateWorksheetTimerV61();
- if(mode!=='parentPractice')fluencyTimer=setInterval(updateWorksheetTimerV61,100);
- // A second instant snap on the next paint cancels any browser smooth-scroll still queued.
- requestAnimationFrame(()=>{if(activeFluency&&activeFluency.worksheet){scrollToTopInstantV62();syncMasteryStickyOffsetV62();}});
+ const startedLevelId=l.id;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+   const a=activeFluency;if(!a||!a.worksheet||a.level.id!==startedLevelId)return;
+   scrollToTopInstantV62();syncMasteryStickyOffsetV62();
+   const first=document.querySelector('[data-ws-answer="0"]');
+   if(first){try{first.focus({preventScroll:true})}catch(_){first.focus();scrollToTopInstantV62();}}
+   scrollToTopInstantV62();
+   a.started=performance.now();a.answerTimes={};updateWorksheetTimerV61();
+   if(a.mode!=='parentPractice')fluencyTimer=setInterval(updateWorksheetTimerV61,100);
+ }));
 }
 function renderFluencyWorksheetV61(){
  const a=activeFluency;if(!a||!a.worksheet)return;const target=a.courseSnapshot.targetSec,count=a.questions.length,timed=a.mode!=='parentPractice';
@@ -1164,7 +1171,7 @@ function renderFluencyWorksheetV61(){
  // On the final answer the first Enter moves to Submit; the second Enter submits.
  // Explicit handling makes this reliable across browsers and avoids a mouse-click time penalty.
  submitBtn.addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const blank=firstBlankInput();if(blank){blank.focus();return}submitWorksheetV61()});
- submitBtn.onclick=submitWorksheetV61;if(inputs[0])inputs[0].focus();syncMasteryStickyOffsetV62();updateAnsweredV61();updateWorksheetTimerV61();
+ submitBtn.onclick=submitWorksheetV61;if(inputs[0]){try{inputs[0].focus({preventScroll:true})}catch(_){inputs[0].focus()}}syncMasteryStickyOffsetV62();updateAnsweredV61();updateWorksheetTimerV61();
 }
 function updateAnsweredV61(){const a=activeFluency;if(!a)return;const txt=`${a.responses.filter(x=>String(x).trim()!=='').length}/${a.questions.length} answered`,el=document.getElementById('masteryAnswered'),sticky=document.getElementById('masteryStickyAnswered');if(el)el.textContent=txt;if(sticky)sticky.textContent=txt}
 function estimateItemTimesV61(a){const pairs=Object.entries(a.answerTimes||{}).map(([i,t])=>({i:Number(i),t:Number(t)})).sort((x,y)=>x.t-y.t),ms={};let prev=0;for(const p of pairs){ms[p.i]=Math.max(150,p.t-prev);prev=p.t}const fallback=Math.max(500,Math.round((a.elapsedAtSubmit*1000)/Math.max(1,a.questions.length)));for(let i=0;i<a.questions.length;i++)if(ms[i]==null)ms[i]=fallback;return ms}
