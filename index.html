@@ -892,7 +892,7 @@ function bootstrapV3(){if(platformV3.activeFamilyId&&activeFamilyV3()){const kid
    Leaderboard and Face-Off scoring are client-submitted in this pilot;
    move validation to Cloud Functions/App Check before a public launch.
    ================================================================ */
-const V5_VERSION='6.10.0-mathsready-arcade';
+const V5_VERSION='6.10.1-mathsready-arcade-nav';
 const FIREBASE_CONFIG_V5={
   apiKey:'AIzaSyC9JoRl_pOOr_s9L_-kwa0JmimLEGc9bIk',
   authDomain:'mathsready-5fa65.firebaseapp.com',
@@ -2051,6 +2051,39 @@ refreshFamilyCirclePanelV67=async function(){const r=await refreshFamilyCirclePa
 const faceoffStatusV69Base=faceoffStatusV4;
 faceoffStatusV4=function(room){if(isCircleFaceoffV69(room)){if(room.status==='idle'||!Number(room.matchNo||0))return'∞ Always open';if(room.status==='starting')return'⏳ Starting';if(room.status==='lobby'){const ps=faceoffAllPlayersV4(room);return ps.length?`🟢 ${ps.length} racer${ps.length===1?'':'s'} in ready room`:'🟢 Ready room open'}}return faceoffStatusV69Base(room)};
 
+
+
+/* === V6.10.1 ARCADE DISCOVERABILITY ===
+   Arcade is now a first-class learner destination in the main navigation.
+   The existing Practice-page Arcade cards remain available too.
+*/
+function renderArcadeHubV6101(){
+ const eligible=arcadeEligibleLevelsV610(),next=FLUENCY_OPERATIONS.map(o=>nextFluencyGoalV64(o.id)).filter(Boolean).filter(l=>fluencyUnlocked(l));
+ render(`<section class="card arcade-banner"><div class="pill">🎮 MathsReady Arcade</div><h2>Choose a game</h2><p>Every game uses your real Fluency facts. Play for points and confidence, then use the official mastery sheet when you're ready.</p></section>
+ <div class="arcade-game-grid" style="margin-top:14px">${arcadeGameCardsV610()}</div>
+ ${next.length?`<div class="section-head"><div><h2>⭐ Good games to play next</h2><p>These are linked to your next open Fluency steps.</p></div></div><section class="card"><div class="arcade-level-grid">${next.map(l=>`<button class="arcade-level-btn next" data-arcade-for-level="${l.id}"><strong>${esc(l.name)}</strong><small>Choose a game for this Fluency step →</small></button>`).join('')}</div></section>`:''}
+ <div class="section-head"><div><h2>All open Fluency steps</h2><p>You can also choose a game first, then pick any open step.</p></div></div>
+ <div class="button-row" style="justify-content:center"><button class="cta secondary" id="arcadePracticeBackV6101">← Practice Zone</button></div>`,'arcade');
+ bindArcadeHomeV610();
+ document.getElementById('arcadePracticeBackV6101').onclick=renderPractice;
+}
+
+// Add Arcade to the final cloud navigation shell.
+const shellV6101Base=shellV3;
+shellV3=function(content,active='home'){
+ cloudV5.route=active;const ch=activeChildV3(),has=!!ch&&!!state.profile;
+ return `<div class="app"><header class="topbar"><div class="brand"><div class="logo">∑</div><span>Nat5 Ready Maths</span></div><nav class="nav"><button data-nav="home" class="${active==='home'?'active':''} ${!has?'locked':''}">Home</button><button data-nav="fluency" class="${active==='fluency'?'active':''} ${!has?'locked':''}">⚡ Fluency</button><button data-nav="practice" class="${active==='practice'?'active':''} ${!has?'locked':''}">Practise</button><button data-nav="arcade" class="${active==='arcade'?'active':''} ${!has?'locked':''}">🎮 Arcade</button><button data-nav="faceoff" class="${active==='faceoff'?'active':''} ${!has?'locked':''}">⚔️ Face-Off</button><button data-nav="path" class="${active==='path'?'active':''} ${!has?'locked':''}">Maths path</button><button data-nav="leaderboard" class="${active==='leaderboard'?'active':''} ${!has?'locked':''}">🏆 Boards</button><button data-nav="parent" class="${active==='parent'?'active':''} ${!has?'locked':''}">Parent</button><button data-nav="family" class="${active==='family'?'active':''}">Family</button>${platformV3.ownerLocal?`<button data-nav="owner" class="${active==='owner'?'active':''}">Admin</button>`:''}</nav></header>${has?`<div class="child-switch no-print" style="margin:-5px 0 14px"><span class="top-chip">☁️ ${esc(state.profile.name)} • ${esc(state.profile.stage)}</span>${familyChildrenV3().length>1?'<button class="linklike" id="quickSwitch">Switch child</button>':''}<span class="top-chip">Saved online</span></div>`:''}${content}<div class="footer">Nat5 Ready Maths Cloud V6 • MathsReady Arcade • small-step fluency • published course v${currentCourseV3().version}</div></div>`;
+};
+
+const routeV6101Base=route;
+route=function(name){
+ if(name==='arcade'){
+  clearInterval(beatTimer);beatTimer=null;clearInterval(fluencyTimer);fluencyTimer=null;clearInterval(placementTimerV6);placementTimerV6=null;clearFaceoffTimerV4();cloudStopFaceoffWatchV5();activeFluency=null;activePlacementV6=null;activeFaceoffV4=null;arcadeCleanupV610();
+  if(!activeChildV3())return renderFamilyV3();
+  renderArcadeHubV6101();return;
+ }
+ routeV6101Base(name);
+};
 
 // Start Cloud V6 instead of local V4 bootstrap.
 initCloudV5();
