@@ -1626,6 +1626,139 @@ const cloudResetMemoryV67Base=cloudResetMemoryV5;
 cloudResetMemoryV5=function(){cloudResetMemoryV67Base();cloudV5.circles={};cloudV5.circleLeaderboards={};cloudV5.circleSyncSignatures={};activeBoardScopeV67='public'};
 
 
+
+/* ================================================================
+   V6.8 — LIVE FACE-OFF SYNC + SHARED 10-SECOND READY COUNTDOWN
+   Fixes the pilot Face-Off listener so lobby joins/start events update
+   automatically on every device. The host starts a common countdown;
+   human players enter the question screen automatically when it ends.
+   ================================================================ */
+const FACE_OFF_READY_MS_V68=10000;
+let faceoffWatchRefreshSeqV68=0;
+let faceoffCountdownLaunchKeyV68=null;
+
+(function addFaceoffV68Styles(){
+ const css=`
+ .faceoff-ready-v68{max-width:760px;margin:18px auto;text-align:center;padding:32px 22px}
+ .faceoff-ready-v68 .ready-kicker{font-size:13px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+ .faceoff-ready-v68 .ready-number{font-size:100px;line-height:1;font-weight:950;letter-spacing:-.07em;margin:12px 0 8px}
+ .faceoff-ready-v68 .ready-message{font-size:20px;font-weight:900;margin:0 0 20px}
+ .faceoff-ready-track-v68{height:22px;border-radius:999px;background:#e7eaf1;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+ .faceoff-ready-track-v68 span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),#71b9ff);transition:width .08s linear}
+ .faceoff-ready-v68 .ready-players{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}
+ .faceoff-ready-v68 .ready-player{background:#f4f5f8;border:1px solid var(--line);border-radius:999px;padding:7px 11px;font-size:12px;font-weight:850}
+ @media(max-width:560px){.faceoff-ready-v68 .ready-number{font-size:78px}.faceoff-ready-v68{padding:26px 14px}}
+ `;
+ const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+})();
+
+function faceoffRaceStartsMsV68(round){
+ if(!round)return 0;
+ const direct=round.raceStartsAt;
+ if(direct?.toMillis)return direct.toMillis();
+ if(direct){const ms=new Date(cloudIsoV5(direct)||direct).getTime();if(Number.isFinite(ms))return ms}
+ const begun=round.countdownStartedAt||round.startedAt;
+ if(begun?.toMillis)return begun.toMillis()+FACE_OFF_READY_MS_V68;
+ if(begun){const ms=new Date(cloudIsoV5(begun)||begun).getTime();if(Number.isFinite(ms))return ms+FACE_OFF_READY_MS_V68}
+ return 0;
+}
+function faceoffCountdownRemainingV68(round){const t=faceoffRaceStartsMsV68(round);return t?Math.max(0,t-Date.now()):0}
+function faceoffRoundNeedsMeV68(room,round){const child=activeChildV3();return !!(room&&round&&child&&room.players?.[child.id]&&!round.results?.[child.id]&&!room.players[child.id]?.isBot)}
+
+// V6.8: always make an opened Face-Off room live. The old caller often passed
+// false, which meant Firebase changed but the other browser never rerendered.
+cloudWatchFaceoffV5=async function(code){
+ cloudStopFaceoffWatchV5();
+ const key=cloudFaceoffKeyV5(code),{doc,onSnapshot,collection}=cloudV5.mods;
+ cloudV5.watchedRoom=key;
+ const myWatch=++faceoffWatchRefreshSeqV68;
+ let refreshNo=0;
+ const refresh=async()=>{
+  const mine=++refreshNo;
+  try{
+   const room=await cloudAssembleRoomV5(key);
+   if(!room||cloudV5.watchedRoom!==key||myWatch!==faceoffWatchRefreshSeqV68||mine!==refreshNo)return;
+   if(!activeFaceoffV4&&document.querySelector('[data-nav="faceoff"].active'))renderFaceoffRoomV4(room.id);
+  }catch(e){console.warn('Face-Off live refresh',e)}
+ };
+ cloudV5.faceoffUnsubs.push(onSnapshot(doc(cloudV5.db,'faceoffs',key),refresh));
+ cloudV5.faceoffUnsubs.push(onSnapshot(collection(cloudV5.db,'faceoffs',key,'players'),refresh));
+ cloudV5.faceoffUnsubs.push(onSnapshot(collection(cloudV5.db,'faceoffs',key,'rounds'),refresh));
+ await refresh();
+ return platformV3.faceoffs[key];
+};
+
+// Host starts one shared 10-second window. Both the room change and round
+// document are committed atomically so every device sees the same round.
+startFaceoffRoundV4=async function(roomId){
+ let room=faceoffRoomV4(roomId);
+ if(!room||room.hostChildId!==platformV3.activeChildId||!faceoffCanStartV4(room))return;
+ const next=(room.rounds?.length||0)+1;if(room.matchFormat===3&&next>3)return;
+ const startNow=Date.now(),raceStartsAt=new Date(startNow+FACE_OFF_READY_MS_V68).toISOString();
+ const round={number:next,matchNo:Number(room.matchNo)||1,seed:`${room.id}:${room.matchNo}:${next}:${startNow}`,countdownStartedAt:cloudV5.mods.serverTimestamp(),raceStartsAt,startedAt:raceStartsAt,winnerIds:[],resolved:false};
+ const startBtn=document.getElementById('startFoRound')||document.getElementById('nextFoRound');if(startBtn){startBtn.disabled=true;startBtn.textContent='Starting everyone…'}
+ try{
+  const batch=cloudV5.mods.writeBatch(cloudV5.db);
+  batch.set(cloudFaceoffRoundRefV5(room,next),round);
+  batch.set(cloudFaceoffRefV5(room.code),{currentRound:next,status:'round'},{merge:true});
+  await batch.commit();
+  room=await cloudAssembleRoomV5(room.code);
+  // Demo rivals may be resolved immediately in the database, but their result is
+  // hidden behind the same countdown and cannot start a human early.
+  for(const p of faceoffAllPlayersV4(room).filter(x=>x.isBot)){
+   const rnd=seededNumberV4(`${round.seed}:${p.childId}`),difficulty=Math.max(0,FLUENCY_LEVELS.findIndex(x=>x.id===room.levelId));let correct=room.questionCount;
+   if(rnd()<.35)correct=Math.max(0,room.questionCount-1);if(rnd()<.12)correct=Math.max(0,correct-1);
+   const seconds=+(room.questionCount*(1.4+Math.min(2.8,difficulty*.035)+rnd()*1.8)).toFixed(1);
+   await cloudV5.mods.setDoc(cloudFaceoffResultRefV5(room,next,p.childId),{childId:p.childId,familyId:p.familyId,alias:p.alias,correct,seconds,finishedAt:new Date(Date.parse(raceStartsAt)+seconds*1000).toISOString(),isBot:true});
+   await cloudV5.mods.setDoc(cloudFaceoffPlayerRefV5(room.code,p.childId),{live:{answered:room.questionCount,round:next,finished:true}},{merge:true});
+  }
+  await cloudAssembleRoomV5(room.code);await cloudTryResolveRoundV5(room.code);renderFaceoffRoomV4(room.id);
+ }catch(e){if(startBtn){startBtn.disabled=false;startBtn.textContent='Start round'}alert(cloudErrV5(e))}
+};
+
+function renderFaceoffCountdownV68(room,round){
+ clearFaceoffTimerV4();activeFaceoffV4=null;
+ const level=effectiveFluencyV3(room.levelId),players=faceoffAllPlayersV4(room).filter(p=>!p.isBot),initial=faceoffCountdownRemainingV68(round),initialN=Math.max(1,Math.ceil(initial/1000));
+ render(`<section class="card faceoff-room-card"><div class="pill">⚔️ ${esc(room.name)}</div><h1 style="font-size:36px;margin:6px 0">Get ready!</h1><p class="muted">${esc(level?.name||room.levelNameSnapshot)} • Round ${round.number} • ${room.questionCount} questions</p></section><section class="card faceoff-ready-v68"><div class="ready-kicker">Everyone starts together</div><div class="ready-number" id="faceoffReadyNumberV68">${initialN}</div><div class="ready-message" id="faceoffReadyMessageV68">Hands ready… wait for GO!</div><div class="faceoff-ready-track-v68"><span id="faceoffReadyBarV68"></span></div><div class="ready-players">${players.map(p=>`<span class="ready-player">✓ ${esc(p.alias)}</span>`).join('')}</div><p class="note" style="margin-top:16px">The questions open automatically when the bar reaches the end.</p></section>`,'faceoff');
+ const launchKey=`${room.id}:${room.matchNo||1}:${round.number}:${platformV3.activeChildId}`;
+ const tick=()=>{
+  const remaining=faceoffCountdownRemainingV68(round),elapsed=Math.max(0,FACE_OFF_READY_MS_V68-remaining),pct=Math.max(0,Math.min(100,elapsed/FACE_OFF_READY_MS_V68*100));
+  const n=document.getElementById('faceoffReadyNumberV68'),bar=document.getElementById('faceoffReadyBarV68'),msg=document.getElementById('faceoffReadyMessageV68');
+  if(bar)bar.style.width=`${pct}%`;if(n)n.textContent=remaining>0?String(Math.max(1,Math.ceil(remaining/1000))):'GO!';if(msg&&remaining<=1000)msg.textContent='Ready…';
+  if(remaining<=0){clearFaceoffTimerV4();if(faceoffCountdownLaunchKeyV68!==launchKey){faceoffCountdownLaunchKeyV68=launchKey;playFaceoffRoundV4(room.id)}}
+ };
+ tick();faceoffUiTimerV4=setInterval(tick,80);
+}
+
+// Do not let an old manual Play button start someone before the shared start.
+playFaceoffRoundV4=function(roomId){
+ const room=faceoffRoomV4(roomId),round=faceoffRoundV4(room),child=activeChildV3();
+ if(!room||!round||room.status!=='round'||!child||round.results?.[child.id])return;
+ const remaining=faceoffCountdownRemainingV68(round);if(remaining>0)return renderFaceoffCountdownV68(room,round);
+ if(activeFaceoffV4&&activeFaceoffV4.roomId===roomId&&Number(activeFaceoffV4.roundNo)===Number(round.number))return;
+ clearFaceoffTimerV4();
+ activeFaceoffV4={roomId,roundNo:round.number,questions:faceoffQuestionsV4(room,round.number),index:0,items:[],started:performance.now(),qStarted:performance.now()};
+ renderFaceoffQuestionV4();
+};
+
+// Final room wrapper: live-watch every opened room, show countdown automatically,
+// then launch Question 1 without the child pressing a second Start button.
+const renderFaceoffRoomV68Base=renderFaceoffRoomV4;
+renderFaceoffRoomV4=function(roomId){
+ const room=faceoffRoomV4(roomId),key=room?.code?cloudFaceoffKeyV5(room.code):null;
+ if(room?.code&&cloudV5.watchedRoom!==key)cloudWatchFaceoffV5(room.code).catch(console.warn);
+ const round=faceoffRoundV4(room),remaining=faceoffCountdownRemainingV68(round);
+ if(room?.status==='round'&&round&&faceoffRoundNeedsMeV68(room,round)&&remaining>0)return renderFaceoffCountdownV68(room,round);
+ if(room?.status==='round'&&round&&faceoffRoundNeedsMeV68(room,round)&&remaining<=0&&!activeFaceoffV4)return playFaceoffRoundV4(room.id);
+ renderFaceoffRoomV68Base(roomId);
+ const st=document.getElementById('startFoRound');if(st)st.textContent='Start round 1 • 10s countdown →';
+ const nx=document.getElementById('nextFoRound');if(nx)nx.textContent=`Start round ${(round?.number||0)+1} • 10s countdown →`;
+};
+
+const faceoffStatusV68Base=faceoffStatusV4;
+faceoffStatusV4=function(room){const r=faceoffRoundV4(room);if(room?.status==='round'&&r&&faceoffCountdownRemainingV68(r)>0)return'⏳ Everyone getting ready';return faceoffStatusV68Base(room)};
+
+
 // Start Cloud V6 instead of local V4 bootstrap.
 initCloudV5();
 

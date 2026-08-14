@@ -1,0 +1,33 @@
+NAT5 READY MATHS — V6.8 FACE-OFF LIVE SYNC
+=============================================
+
+WHAT THIS FIXES
+---------------
+• Players joining a Face-Off room now appear live on the host and other joined devices.
+• No browser refresh should be needed to see a new player.
+• When the host starts a round, every open participant device reacts automatically.
+• Every round now has a shared 10-second ready countdown.
+• The countdown shows a large 10 → 1 display plus a filling progress bar.
+• At the end of the countdown, Question 1 opens automatically.
+• The child's race timer starts only when the questions actually open, not during the ready countdown.
+• This applies to round 1, later rounds and rematches.
+
+DEPLOYMENT
+----------
+1. Replace the root index.html in the GitHub mathsready repository with this index.html.
+2. Commit to main and wait for GitHub Pages to redeploy.
+3. Hard refresh both devices before testing (Ctrl+F5 on desktop; reload/close and reopen on mobile).
+
+FIREBASE RULES
+--------------
+No Firestore rules change is required for V6.8 if the V6.7 rules are already published.
+
+RECOMMENDED TEST
+----------------
+1. Open Family A on one device and Family B on another.
+2. Family A creates a Face-Off and stays in the lobby.
+3. Family B joins with the MATH code.
+4. Confirm Family A sees Family B appear without refreshing.
+5. Host presses Start round 1.
+6. Confirm both devices show the 10-second countdown automatically.
+7. Confirm both devices open Question 1 automatically when the countdown ends.
