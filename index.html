@@ -879,7 +879,7 @@ function bootstrapV3(){if(platformV3.activeFamilyId&&activeFamilyV3()){const kid
    Leaderboard and Face-Off scoring are client-submitted in this pilot;
    move validation to Cloud Functions/App Check before a public launch.
    ================================================================ */
-const V5_VERSION='6.9.0-circle-faceoff';
+const V5_VERSION='6.9.1-circle-faceoff-rules-fix';
 const FIREBASE_CONFIG_V5={
   apiKey:'AIzaSyC9JoRl_pOOr_s9L_-kwa0JmimLEGc9bIk',
   authDomain:'mathsready-5fa65.firebaseapp.com',
@@ -900,7 +900,7 @@ function cloudErrV5(e){console.error(e);cloudV5.lastCloudError=e;const code=Stri
  'weak-password':'Please choose a stronger password.',
  'invalid-email':'Please check the email address.',
  'too-many-requests':'Too many attempts. Wait a little and try again.',
- 'permission-denied':'Firebase blocked that action. Check the Firestore Rules supplied with V5.'
+ 'permission-denied':'Firebase blocked that action. Publish the current MathsReady Firestore rules, then hard-refresh this page.'
 };return friendly[code]||e?.message||'Something went wrong.'}
 function cloudLoadingV5(message='Connecting securely…'){document.getElementById('app').innerHTML=`<div class="platform-shell"><div class="platform-brand"><div class="logo">∑</div><div><strong style="font-size:21px">Nat5 Ready Maths</strong><div class="tiny">Cloud V6</div></div></div><section class="card access-card"><div class="pill">☁️ Firebase</div><h1>${esc(message)}</h1><p class="muted">Parent accounts and learner progress are loading from the shared database.</p></section></div>`}
 
