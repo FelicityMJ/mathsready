@@ -2983,7 +2983,7 @@ sweeperUsePowerV618=function(kind){
 
 ARCADE_GAMES_V610.sweeper.blurb='Solve adaptive facts to scan squares, reveal real clues and clear the minefield.';
 
-/* === V6.20 MATHSWEEPER: REAL SCAN MATHS + TIMER + LEADERBOARD + WIN ===
+/* === V6.20.1 MATHSWEEPER TIMER FIX ===
    The adaptive mental-maths answer now unlocks a square; the revealed square
    then shows its genuine 0–8 Minesweeper clue. This keeps the board authentic
    while allowing the full Fluency answer range instead of endless 0/1/2/3.
@@ -2993,7 +2993,7 @@ function sweeperFormatMsV620(ms){
  ms=Math.max(0,Math.round(Number(ms)||0));const min=Math.floor(ms/60000),sec=Math.floor((ms%60000)/1000),mil=ms%1000;
  return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(mil).padStart(3,'0')}`
 }
-function sweeperElapsedMsV620(s){if(!s)return 0;if(s.finished)return Math.round(s.elapsedMs||0);if(s.timerStartedAt!=null)return Math.max(0,Math.round(performance.now()-s.timerStartedAt));return Math.round(s.elapsedMs||0)}
+function sweeperElapsedMsV620(s){if(!s)return 0;if(s.timerStartedAt!=null)return Math.max(0,Math.round(performance.now()-s.timerStartedAt));return Math.max(0,Math.round(s.elapsedMs||0))}
 function sweeperPaintTimerV620(){const s=activeArcadeV610?.sweeper,el=document.getElementById('sweeperTimerV620');if(el&&s)el.textContent=sweeperFormatMsV620(sweeperElapsedMsV620(s))}
 function sweeperStartTimerV620(s){if(!s||s.timerStartedAt!=null||s.finished)return;s.timerStartedAt=performance.now();s.elapsedMs=0;if(sweeperBoardTimerV620)clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=setInterval(sweeperPaintTimerV620,31);sweeperPaintTimerV620()}
 function sweeperStopTimerV620(s){if(!s)return;s.elapsedMs=sweeperElapsedMsV620(s);s.timerStartedAt=null;if(sweeperBoardTimerV620){clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=null}sweeperPaintTimerV620()}
@@ -3001,9 +3001,11 @@ const arcadeCleanupV620Base=arcadeCleanupV610;
 arcadeCleanupV610=function(){if(sweeperBoardTimerV620){clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=null}arcadeCleanupV620Base()};
 
 function sweeperTimesStoreV620(st=state){
- if(!st.mathsweeper||typeof st.mathsweeper!=='object')st.mathsweeper={};if(!st.mathsweeper.times||typeof st.mathsweeper.times!=='object')st.mathsweeper.times={beginner:[],intermediate:[]};if(!Array.isArray(st.mathsweeper.times.beginner))st.mathsweeper.times.beginner=[];if(!Array.isArray(st.mathsweeper.times.intermediate))st.mathsweeper.times.intermediate=[];if(!Array.isArray(st.mathsweeper.runs))st.mathsweeper.runs=[];return st.mathsweeper
+ if(!st.mathsweeper||typeof st.mathsweeper!=='object')st.mathsweeper={};if(!st.mathsweeper.times||typeof st.mathsweeper.times!=='object')st.mathsweeper.times={beginner:[],intermediate:[]};if(!Array.isArray(st.mathsweeper.times.beginner))st.mathsweeper.times.beginner=[];if(!Array.isArray(st.mathsweeper.times.intermediate))st.mathsweeper.times.intermediate=[];if(!Array.isArray(st.mathsweeper.runs))st.mathsweeper.runs=[];
+ // Remove impossible V6.20 timer-bug records (typically exactly 1 ms).
+ st.mathsweeper.times.beginner=st.mathsweeper.times.beginner.filter(r=>Number(r?.ms)>10);st.mathsweeper.times.intermediate=st.mathsweeper.times.intermediate.filter(r=>Number(r?.ms)>10);st.mathsweeper.runs=st.mathsweeper.runs.filter(r=>Number(r?.ms)>10);return st.mathsweeper
 }
-function sweeperTimesReadV620(st,preset){const x=st?.mathsweeper?.times?.[preset];return Array.isArray(x)?x:[]}
+function sweeperTimesReadV620(st,preset){const x=st?.mathsweeper?.times?.[preset];if(!Array.isArray(x))return[];return x.filter(r=>Number(r?.ms)>10)}
 function sweeperCurrentAliasV620(){const c=typeof activeChildV3==='function'?activeChildV3():null;return c?.leaderboardAlias||state.profile?.name||'You'}
 function sweeperFamilyBestRowsV620(preset){
  const rows=[],kids=typeof familyChildrenV3==='function'?familyChildrenV3():[],activeId=typeof platformV3!=='undefined'?platformV3.activeChildId:null;
@@ -3045,7 +3047,10 @@ sweeperBeginDecodeV617=function(i){const a=activeArcadeV610,s=a?.sweeper;if(!a||
 sweeperChooseAnswerV617=function(value,btn){const a=activeArcadeV610,s=a?.sweeper,p=s?.pending;if(!a||!s||!p||s.locked||s.finished)return;const ok=Number(value)===Number(p.decodeQ.answer);if(ok){if(btn)btn.classList.add('correct');s.locked=true;setTimeout(()=>{if(activeArcadeV610?.game?.id!=='sweeper')return;s.locked=false;sweeperManualCorrectV617()},150)}else{if(btn){btn.classList.add('wrong');btn.disabled=true}p.wrong++;s.decodeStreak=0;arcadeWrongV610(20,'math');s.message='Not quite — try the fact again. The square stays covered.';setArcadeFeedbackV610('Wrong maths answer — 20 points lost. Keep calculating!',false);const status=document.getElementById('sweeperMessageV617');if(status)status.textContent=s.message}}
 
 function sweeperCheckWinV620(a,s){
- if(!a||!s||s.finished||!s.generated||!sweeperBoardClearV617(s))return false;s.finished=true;s.locked=true;sweeperStopTimerV620(s);a.points+=500;refreshArcadeStatsV610();s.message='🏆 FIELD SECURED! Timer stopped.';s.winResult=sweeperRecordTimeV620(a,s);a.questions=a.questions.slice(0,Math.max(1,a.items.length));return true
+ if(!a||!s||s.finished||!s.generated||!sweeperBoardClearV617(s))return false;
+ // Freeze the running clock BEFORE marking the board finished. V6.20 set finished first,
+ // which made elapsed-time reads fall back to 0 and produced impossible 00:00.001 wins.
+ sweeperStopTimerV620(s);s.finished=true;s.locked=true;a.points+=500;refreshArcadeStatsV610();s.message='🏆 FIELD SECURED! Timer stopped.';s.winResult=sweeperRecordTimeV620(a,s);a.questions=a.questions.slice(0,Math.max(1,a.items.length));return true
 }
 
 sweeperManualCorrectV617=function(){
@@ -3063,7 +3068,7 @@ sweeperUsePowerV618=function(kind){const a=activeArcadeV610,s=a?.sweeper,had=Num
 
 sweeperOpenV617=function(i){
  const a=activeArcadeV610,s=a?.sweeper;if(!a||!s||s.pending||s.locked||s.finished)return;const c=s.cells[i];if(!c||c.revealed)return;if(s.mode==='flag'){sweeperToggleFlagV617(i);return}if(c.flagged)return;
- if(s.firstOpen||!s.generated){const opened=sweeperGenerateFirstLayoutV619(s,i)||0;sweeperStartTimerV620(s);const won=sweeperCheckWinV620(a,s);renderSweeperV617();setArcadeFeedbackV610(won?'🏆 Incredible opening — field secured!':`Classic opening: ${opened} safe squares opened. Timer is running.`,true);return}
+ if(s.firstOpen||!s.generated){sweeperStartTimerV620(s);const opened=sweeperGenerateFirstLayoutV619(s,i)||0;const won=sweeperCheckWinV620(a,s);renderSweeperV617();setArcadeFeedbackV610(won?'🏆 Incredible opening — field secured!':`Classic opening: ${opened} safe squares opened. Timer is running.`,true);return}
  if(s.cells[i].mine)return sweeperHitMineV617(i);sweeperBeginDecodeV617(i)
 };
 
