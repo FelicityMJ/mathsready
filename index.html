@@ -356,6 +356,28 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:720px){.sweeper-power-grid-v618{grid-template-columns:repeat(2,minmax(0,1fr))}.sweeper-power-notice-v618{align-items:flex-start}.sweeper-power-dismiss-v618{margin-left:auto}.sweeper-size-v618{padding:7px 9px}}
 @media(max-width:420px){.sweeper-power-v618{min-height:65px;padding:7px}.sweeper-power-desc-v618{font-size:8px}.sweeper-power-notice-v618{flex-wrap:wrap}.sweeper-power-dismiss-v618{width:100%}}
 </style>
+
+<style id="mathsready-mathsweeper-v620">
+/* V6.20 Mathsweeper: full-range scan maths, millisecond timer, clean-run leaderboard, win celebration */
+.sweeper-timer-v620{font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#17263a!important;color:#fff!important;border-color:#17263a!important;min-width:122px;justify-content:center}
+.sweeper-timer-v620 strong{font-size:13px;letter-spacing:.02em}
+.sweeper-scan-note-v620{max-width:660px;margin:-3px auto 10px;padding:8px 11px;border-radius:13px;background:#eef8ff;border:1px solid #cce8fb;color:#285c7c;text-align:center;font-size:11px;font-weight:850;line-height:1.4}
+.sweeper-scan-note-v620 b{color:#163d59}
+.sweeper-leader-v620{max-width:660px;margin:13px auto 4px;border:1px solid #e0e3ea;background:#fff;border-radius:17px;overflow:hidden;text-align:left}
+.sweeper-leader-head-v620{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:#f7f8fb;border-bottom:1px solid #e7e9ee}.sweeper-leader-head-v620 strong{font-size:13px;color:#31394d}.sweeper-leader-head-v620 span{font-size:10px;color:#747b8c;font-weight:800}
+.sweeper-leader-row-v620{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 13px;border-bottom:1px solid #f0f1f4;font-size:11px}.sweeper-leader-row-v620:last-child{border-bottom:0}.sweeper-leader-row-v620.you{background:#f2efff}.sweeper-leader-rank-v620{font-size:14px;font-weight:1000;color:#6656c8}.sweeper-leader-name-v620{font-weight:900;color:#4d5365;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sweeper-leader-time-v620{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;font-weight:1000;color:#1f2940;font-variant-numeric:tabular-nums}
+.sweeper-leader-empty-v620{padding:12px 13px;color:#747b8b;font-size:11px;text-align:center}.sweeper-leader-note-v620{padding:8px 12px;background:#fbfbfd;border-top:1px solid #eef0f3;color:#7b8190;font-size:9px;line-height:1.35;text-align:center}
+.sweeper-finished-strip-v620{max-width:660px;margin:10px auto;border:1px solid #9eddb9;background:#e9faef;color:#17633a;border-radius:14px;padding:10px 12px;text-align:center;font-weight:900}.sweeper-finished-strip-v620 button{margin-left:8px;border:0;background:#17633a;color:#fff;border-radius:9px;padding:6px 9px;font-weight:900;cursor:pointer}
+.sweeper-win-modal-v620{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:rgba(18,27,47,.62);backdrop-filter:blur(4px);padding:18px;overflow:hidden}
+.sweeper-win-card-v620{position:relative;z-index:3;width:min(520px,94vw);background:linear-gradient(180deg,#fffef8,#fff);border-radius:28px;padding:26px 24px 22px;text-align:center;box-shadow:0 30px 80px rgba(9,18,38,.35);border:2px solid #f3df83;animation:sweeperWinPopV620 .45s cubic-bezier(.2,.85,.25,1.2)}
+.sweeper-win-icon-v620{font-size:58px;line-height:1}.sweeper-win-card-v620 h1{font-size:clamp(30px,6vw,48px);margin:4px 0 3px;color:#202944}.sweeper-win-sub-v620{color:#646c7e;font-weight:800;margin:0 0 14px}.sweeper-win-time-v620{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;background:#17263a;color:#fff;border-radius:17px;padding:10px 18px;font-size:clamp(27px,6vw,43px);font-weight:1000;letter-spacing:.02em;box-shadow:0 8px 20px rgba(23,38,58,.18)}
+.sweeper-win-badges-v620{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:12px 0}.sweeper-win-badge-v620{border-radius:999px;padding:6px 9px;background:#f3f0ff;color:#5848bb;border:1px solid #dbd4ff;font-size:10px;font-weight:950}.sweeper-win-badge-v620.pb{background:#fff5c9;border-color:#ead36b;color:#745800}.sweeper-win-badge-v620.assisted{background:#fff0ed;border-color:#f1c1b9;color:#93473d}
+.sweeper-win-actions-v620{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:13px}.sweeper-win-actions-v620 button{border:0;border-radius:12px;padding:10px 14px;font-weight:950;cursor:pointer}.sweeper-win-actions-v620 .primary{background:#6653c7;color:#fff}.sweeper-win-actions-v620 .secondary{background:#f1f3f6;color:#495267}
+.sweeper-confetti-v620{position:absolute;inset:0;pointer-events:none;overflow:hidden}.sweeper-confetti-v620 i{position:absolute;top:-8vh;width:10px;height:18px;border-radius:3px;background:var(--c);left:var(--x);transform:rotate(var(--r));animation:sweeperConfettiFallV620 var(--d) linear var(--delay) infinite}
+@keyframes sweeperWinPopV620{from{opacity:0;transform:scale(.72) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes sweeperConfettiFallV620{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(115vh) rotate(720deg)}}
+@media(max-width:600px){.sweeper-leader-row-v620{padding:7px 9px}.sweeper-win-card-v620{padding:22px 16px 18px}.sweeper-timer-v620{min-width:106px}.sweeper-scan-note-v620{font-size:10px}}
+</style>
 </head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -2955,6 +2977,108 @@ const sweeperUsePowerV619Base=sweeperUsePowerV618;
 sweeperUsePowerV618=function(kind){
  const s=activeArcadeV610?.sweeper;if(s&&kind!=='shield'&&!s.generated){s.message='Open your first square before using this power-up — the minefield is created around your safe first move.';renderSweeperV617();return}
  return sweeperUsePowerV619Base(kind)
+};
+
+
+
+ARCADE_GAMES_V610.sweeper.blurb='Solve adaptive facts to scan squares, reveal real clues and clear the minefield.';
+
+/* === V6.20 MATHSWEEPER: REAL SCAN MATHS + TIMER + LEADERBOARD + WIN ===
+   The adaptive mental-maths answer now unlocks a square; the revealed square
+   then shows its genuine 0–8 Minesweeper clue. This keeps the board authentic
+   while allowing the full Fluency answer range instead of endless 0/1/2/3.
+*/
+let sweeperBoardTimerV620=null;
+function sweeperFormatMsV620(ms){
+ ms=Math.max(0,Math.round(Number(ms)||0));const min=Math.floor(ms/60000),sec=Math.floor((ms%60000)/1000),mil=ms%1000;
+ return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(mil).padStart(3,'0')}`
+}
+function sweeperElapsedMsV620(s){if(!s)return 0;if(s.finished)return Math.round(s.elapsedMs||0);if(s.timerStartedAt!=null)return Math.max(0,Math.round(performance.now()-s.timerStartedAt));return Math.round(s.elapsedMs||0)}
+function sweeperPaintTimerV620(){const s=activeArcadeV610?.sweeper,el=document.getElementById('sweeperTimerV620');if(el&&s)el.textContent=sweeperFormatMsV620(sweeperElapsedMsV620(s))}
+function sweeperStartTimerV620(s){if(!s||s.timerStartedAt!=null||s.finished)return;s.timerStartedAt=performance.now();s.elapsedMs=0;if(sweeperBoardTimerV620)clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=setInterval(sweeperPaintTimerV620,31);sweeperPaintTimerV620()}
+function sweeperStopTimerV620(s){if(!s)return;s.elapsedMs=sweeperElapsedMsV620(s);s.timerStartedAt=null;if(sweeperBoardTimerV620){clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=null}sweeperPaintTimerV620()}
+const arcadeCleanupV620Base=arcadeCleanupV610;
+arcadeCleanupV610=function(){if(sweeperBoardTimerV620){clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=null}arcadeCleanupV620Base()};
+
+function sweeperTimesStoreV620(st=state){
+ if(!st.mathsweeper||typeof st.mathsweeper!=='object')st.mathsweeper={};if(!st.mathsweeper.times||typeof st.mathsweeper.times!=='object')st.mathsweeper.times={beginner:[],intermediate:[]};if(!Array.isArray(st.mathsweeper.times.beginner))st.mathsweeper.times.beginner=[];if(!Array.isArray(st.mathsweeper.times.intermediate))st.mathsweeper.times.intermediate=[];if(!Array.isArray(st.mathsweeper.runs))st.mathsweeper.runs=[];return st.mathsweeper
+}
+function sweeperTimesReadV620(st,preset){const x=st?.mathsweeper?.times?.[preset];return Array.isArray(x)?x:[]}
+function sweeperCurrentAliasV620(){const c=typeof activeChildV3==='function'?activeChildV3():null;return c?.leaderboardAlias||state.profile?.name||'You'}
+function sweeperFamilyBestRowsV620(preset){
+ const rows=[],kids=typeof familyChildrenV3==='function'?familyChildrenV3():[],activeId=typeof platformV3!=='undefined'?platformV3.activeChildId:null;
+ for(const c of kids){if(c.id!==activeId&&!c.leaderboardOptIn)continue;const ts=sweeperTimesReadV620(c.progress,preset);if(!ts.length)continue;const best=[...ts].sort((a,b)=>a.ms-b.ms)[0];rows.push({childId:c.id,alias:c.leaderboardAlias||c.progress?.profile?.name||'Maths Star',ms:Number(best.ms),date:best.date,you:c.id===activeId})}
+ if(!rows.length){const ts=sweeperTimesReadV620(state,preset);if(ts.length){const best=[...ts].sort((a,b)=>a.ms-b.ms)[0];rows.push({childId:'local',alias:sweeperCurrentAliasV620(),ms:Number(best.ms),date:best.date,you:true})}}
+ return rows.sort((a,b)=>a.ms-b.ms||String(a.date).localeCompare(String(b.date)))
+}
+function sweeperLeaderboardHtmlV620(preset){
+ const family=sweeperFamilyBestRowsV620(preset),mine=sweeperTimesReadV620(state,preset).slice().sort((a,b)=>a.ms-b.ms);
+ let title='🏆 Best times',sub=sweeperPresetV618(preset).detail,rows=[];
+ if(family.length>=2){title='🏆 Family leaderboard';rows=family.slice(0,8).map((r,i)=>({rank:i+1,name:r.alias,ms:r.ms,you:r.you}))}
+ else{title='🏆 Your best times';rows=mine.slice(0,5).map((r,i)=>({rank:i+1,name:i===0?'Personal best':new Date(r.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}),ms:r.ms,you:i===0}))}
+ const body=rows.length?rows.map(r=>`<div class="sweeper-leader-row-v620 ${r.you?'you':''}"><span class="sweeper-leader-rank-v620">${r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':r.rank}</span><span class="sweeper-leader-name-v620">${esc(r.name)}</span><span class="sweeper-leader-time-v620">${sweeperFormatMsV620(r.ms)}</span></div>`).join(''):`<div class="sweeper-leader-empty-v620">Complete a clean board to set the first time.</div>`;
+ return `<div class="sweeper-leader-v620" id="sweeperLeaderboardV620"><div class="sweeper-leader-head-v620"><strong>${title}</strong><span>${esc(sub)} • nearest 0.001 s</span></div>${body}<div class="sweeper-leader-note-v620">Clean runs only: Radar, Shield Recharge, Defuser, Super Sweep or hitting a mine make a run assisted, so its time is not ranked.</div></div>`
+}
+function sweeperRecordTimeV620(a,s){
+ const ms=Math.max(1,Math.round(s.elapsedMs||0)),store=sweeperTimesStoreV620(state),preset=s.sizeChoice||'beginner',eligible=!s.assisted;
+ const run={ms,date:new Date().toISOString(),preset,eligible,levelId:a.missionPrimaryId||a.level?.id||null,mode:a.mode||'free',mathCorrect:a.correct||0,mathWrong:a.mathWrong||0};store.runs.unshift(run);store.runs=store.runs.slice(0,60);
+ let personalRank=null,newPb=false;if(eligible){const list=store.times[preset];list.push(run);list.sort((x,y)=>x.ms-y.ms||String(x.date).localeCompare(String(y.date)));store.times[preset]=list.slice(0,20);personalRank=store.times[preset].findIndex(x=>x===run)+1;newPb=personalRank===1}
+ save();const family=sweeperFamilyBestRowsV620(preset),activeId=typeof platformV3!=='undefined'?platformV3.activeChildId:null,familyRank=eligible?family.findIndex(r=>(activeId&&r.childId===activeId)||(!activeId&&r.you))+1:null;
+ return{ms,eligible,personalRank,newPb,familyRank:familyRank>0?familyRank:null}
+}
+function sweeperConfettiHtmlV620(){const cols=['#ff5578','#ffd43b','#55c7ff','#6ddd80','#9b6df1','#ff9c45'];return Array.from({length:34},(_,i)=>`<i style="--x:${(i*29)%101}%;--c:${cols[i%cols.length]};--d:${2.4+(i%7)*.21}s;--delay:${-(i%9)*.23}s;--r:${(i*47)%360}deg"></i>`).join('')}
+function sweeperWinHtmlV620(s){if(!s.finished||s.celebrationDismissed)return'';const r=s.winResult||{ms:s.elapsedMs,eligible:false},rank=r.familyRank||r.personalRank;return `<div class="sweeper-win-modal-v620" role="dialog" aria-modal="true" aria-label="Mathsweeper board complete"><div class="sweeper-confetti-v620">${sweeperConfettiHtmlV620()}</div><div class="sweeper-win-card-v620"><div class="sweeper-win-icon-v620">🏆🎉</div><h1>FIELD SECURED!</h1><p class="sweeper-win-sub-v620">Every safe square cleared on ${esc(sweeperPresetV618(s.sizeChoice).name)}.</p><div class="sweeper-win-time-v620">${sweeperFormatMsV620(r.ms)}</div><div class="sweeper-win-badges-v620">${r.newPb?'<span class="sweeper-win-badge-v620 pb">✨ NEW PERSONAL BEST</span>':''}${r.eligible?`<span class="sweeper-win-badge-v620">🏆 Leaderboard eligible${rank?` • rank #${rank}`:''}</span>`:'<span class="sweeper-win-badge-v620 assisted">🎒 Assisted practice time — not ranked</span>'}</div><div class="sweeper-win-actions-v620"><button class="primary" id="sweeperWinResultsV620">See learning results →</button><button class="secondary" id="sweeperWinBoardV620">View board & leaderboard</button></div></div></div>`}
+
+function sweeperExtendQuestionsV620(a){const n=12,primary=effectiveFluencyV3(a.missionPrimaryId||a.level?.id)||a.level,more=a.mode==='mission'?arcadeMissionQuestionsV616(primary,n):makeHelperQuestionsV64(a.level,n);a.questions.push(...more)}
+function sweeperSetCurrentQuestionV620(a){
+ if(!a)return;while(a.index>=a.questions.length)sweeperExtendQuestionsV620(a);const recent=a.sweeper?.mathAnswerHistory?.slice(-2).map(Number)||[];
+ if(recent.length&&recent.includes(Number(a.questions[a.index]?.answer))){const j=a.questions.findIndex((q,k)=>k>a.index&&!recent.includes(Number(q.answer)));if(j>a.index)[a.questions[a.index],a.questions[j]]=[a.questions[j],a.questions[a.index]]}
+ a.q=a.questions[a.index];a.questionWrong=0;a.mathQuestionWrong=0
+}
+function sweeperScanChoicesV620(a,q){const level=effectiveFluencyV3(q?.sourceLevelId||a.level?.id)||a.level;return arcadeChoicesGuaranteedV613(q,level,4)}
+
+const sweeperNewBoardV620Base=sweeperNewBoardV617;
+sweeperNewBoardV617=function(keepShields=false,sizeChoice=null){if(sweeperBoardTimerV620){clearInterval(sweeperBoardTimerV620);sweeperBoardTimerV620=null}const r=sweeperNewBoardV620Base(keepShields,sizeChoice);const s=activeArcadeV610?.sweeper;if(s){s.timerStartedAt=null;s.elapsedMs=0;s.finished=false;s.assisted=false;s.celebrationDismissed=false;s.winResult=null;s.mathAnswerHistory=[]}return r};
+
+sweeperBeginDecodeV617=function(i){const a=activeArcadeV610,s=a?.sweeper;if(!a||!s||s.pending||s.locked||s.finished)return;const c=s.cells[i];if(!c||c.revealed||c.flagged||c.mine)return;if(!a.q)sweeperSetCurrentQuestionV620(a);s.radarIndex=s.radarIndex===i?null:s.radarIndex;s.pending={index:i,decodeQ:{...a.q},wrong:0};s.message='Solve the mental-maths scan to reveal this square’s real Minesweeper clue.';renderSweeperV617()};
+
+sweeperChooseAnswerV617=function(value,btn){const a=activeArcadeV610,s=a?.sweeper,p=s?.pending;if(!a||!s||!p||s.locked||s.finished)return;const ok=Number(value)===Number(p.decodeQ.answer);if(ok){if(btn)btn.classList.add('correct');s.locked=true;setTimeout(()=>{if(activeArcadeV610?.game?.id!=='sweeper')return;s.locked=false;sweeperManualCorrectV617()},150)}else{if(btn){btn.classList.add('wrong');btn.disabled=true}p.wrong++;s.decodeStreak=0;arcadeWrongV610(20,'math');s.message='Not quite — try the fact again. The square stays covered.';setArcadeFeedbackV610('Wrong maths answer — 20 points lost. Keep calculating!',false);const status=document.getElementById('sweeperMessageV617');if(status)status.textContent=s.message}}
+
+function sweeperCheckWinV620(a,s){
+ if(!a||!s||s.finished||!s.generated||!sweeperBoardClearV617(s))return false;s.finished=true;s.locked=true;sweeperStopTimerV620(s);a.points+=500;refreshArcadeStatsV610();s.message='🏆 FIELD SECURED! Timer stopped.';s.winResult=sweeperRecordTimeV620(a,s);a.questions=a.questions.slice(0,Math.max(1,a.items.length));return true
+}
+
+sweeperManualCorrectV617=function(){
+ const a=activeArcadeV610,s=a?.sweeper,p=s?.pending;if(!a||!s||!p||s.finished)return;const q=p.decodeQ,first=(a.mathQuestionWrong||0)===0;
+ if(first)s.decodeStreak=(s.decodeStreak||0)+1;else s.decodeStreak=0;if(a.mode==='mission')arcadeRecordLearningV616(a,q);a.correct++;a.streak++;a.bestStreak=Math.max(a.bestStreak,a.streak);a.points+=120+(a.streak-1)*10;a.items.push({prompt:q.prompt,answer:q.answer,correct:first,wrongAttempts:a.mathQuestionWrong||0,mathWrongAttempts:a.mathQuestionWrong||0,game:a.game.id,sourceZone:q.sourceZone||'free',sourceLevelId:q.sourceLevelId||a.level.id});
+ s.mathAnswerHistory=s.mathAnswerHistory||[];s.mathAnswerHistory.push(Number(q.answer));s.mathAnswerHistory=s.mathAnswerHistory.slice(-5);const cell=s.cells[p.index];cell.revealed=true;cell.boom=false;if(cell.adj===0)sweeperFloodZeroV617(s,p.index);s.pending=null;a.index++;a.questionWrong=0;a.mathQuestionWrong=0;sweeperPowerRewardV617(a);refreshArcadeStatsV610();
+ const won=sweeperCheckWinV620(a,s);if(!won){sweeperSetCurrentQuestionV620(a);s.message=cell.adj===0?'✨ Clear space! The zero opened its connected area.':`✓ Scan complete — this square’s real clue is ${cell.adj}.`;}
+ renderSweeperV617();setArcadeFeedbackV610(won?'🏆 Field secured! Brilliant Minesweeper + maths work.':first?'Correct first time — square scanned!':'Correct — square scanned!',true)
+};
+
+const sweeperHitMineV620Base=sweeperHitMineV617;
+sweeperHitMineV617=function(i){const s=activeArcadeV610?.sweeper;if(s)s.assisted=true;return sweeperHitMineV620Base(i)};
+const sweeperUsePowerV620Base=sweeperUsePowerV618;
+sweeperUsePowerV618=function(kind){const a=activeArcadeV610,s=a?.sweeper,had=Number(s?.powerInventory?.[kind]||0)>0;if(s?.finished)return;if(had&&!(kind==='shield'&&s.shields>=s.maxShields))s.assisted=true;const r=sweeperUsePowerV620Base(kind);if(a&&s&&s.generated&&!s.finished&&sweeperCheckWinV620(a,s))renderSweeperV617();return r};
+
+sweeperOpenV617=function(i){
+ const a=activeArcadeV610,s=a?.sweeper;if(!a||!s||s.pending||s.locked||s.finished)return;const c=s.cells[i];if(!c||c.revealed)return;if(s.mode==='flag'){sweeperToggleFlagV617(i);return}if(c.flagged)return;
+ if(s.firstOpen||!s.generated){const opened=sweeperGenerateFirstLayoutV619(s,i)||0;sweeperStartTimerV620(s);const won=sweeperCheckWinV620(a,s);renderSweeperV617();setArcadeFeedbackV610(won?'🏆 Incredible opening — field secured!':`Classic opening: ${opened} safe squares opened. Timer is running.`,true);return}
+ if(s.cells[i].mine)return sweeperHitMineV617(i);sweeperBeginDecodeV617(i)
+};
+
+const renderArcadeQuestionV620Base=renderArcadeQuestionV610;
+renderArcadeQuestionV610=function(){const a=activeArcadeV610;if(!a||a.game?.id!=='sweeper')return renderArcadeQuestionV620Base();sweeperEnsureV617();sweeperSetCurrentQuestionV620(a);renderSweeperV617()};
+
+renderSweeperV617=function(){
+ const a=activeArcadeV610;if(!a)return;sweeperEnsureV617();const s=a.sweeper,preset=sweeperPresetV618(s.sizeChoice),flags=sweeperFlagsV617(s),left=Math.max(0,s.mineCount-flags),p=s.pending,choices=p?sweeperScanChoicesV620(a,p.decodeQ):[],inv=s.powerInventory||(s.powerInventory={radar:0,shield:0,defuser:0,sweep:0});const cell=sweeperCellSizeV618(s.size),gap=s.size>=16?2:3;
+ const decode=p?`<div class="sweeper-decode-v617"><div class="sweeper-decode-kicker-v617">🧠 Mental-maths scan</div><div class="sweeper-decode-q-v617">${esc(p.decodeQ.prompt)} = ?</div><div class="sweeper-answers-v617">${choices.map(v=>`<button class="sweeper-answer-v617" data-sweep-answer="${v}">${esc(v)}</button>`).join('')}</div><div class="tiny" style="margin-top:7px">Solve the fact to unlock the square. Its real Minesweeper clue will then be revealed.</div></div>`:`<div class="sweeper-decode-v617 waiting"><strong>${s.finished?'🏆 Board complete':'👆 Choose a covered square'}</strong><span class="tiny">${s.finished?'Your final time is locked in.':s.generated?'Safe squares trigger an adaptive mental-maths scan; mines remain game decisions.':'Your first click starts the timer and opens a safe starting patch automatically.'}</span></div>`;
+ const notice=s.powerNotice?`<div class="sweeper-power-notice-v618"><div class="sweeper-power-notice-icon-v618">${s.powerNotice.icon}</div><div class="sweeper-power-notice-text-v618"><strong>${esc(s.powerNotice.title)}</strong><span>${esc(s.powerNotice.body)}</span></div><button class="sweeper-power-dismiss-v618" id="sweeperPowerDismissV618">Got it</button></div>`:'';
+ const power=(key,icon,name,desc,disabledExtra=false)=>`<button class="sweeper-power-v618 ${inv[key]>0&&!disabledExtra&&!s.finished?'ready':''}" data-sweep-power="${key}" ${inv[key]<=0||disabledExtra||s.finished?'disabled':''}><span class="sweeper-power-name-v618">${icon} ${name}</span><span class="sweeper-power-desc-v618">${desc}</span><span class="sweeper-power-count-v618">×${inv[key]||0}</span></button>`;
+ const radarNote=s.radarIndex!=null?`<div class="sweeper-radar-note-v618">🔍 Radar is active: the glowing blue square is guaranteed safe.</div>`:'';
+ const finishedStrip=s.finished&&s.celebrationDismissed?`<div class="sweeper-finished-strip-v620">🏆 Board secured in <strong>${sweeperFormatMsV620(s.elapsedMs)}</strong>.<button id="sweeperFinishedResultsV620">See learning results →</button></div>`:'';
+ renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage sweeper-stage-v617"><div class="qmeta">💣 MATHSWEEPER <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Scan facts • reveal clues • deduce mines</div><p class="arcade-instruction">Solve a normal Fluency fact to <strong>scan a safe square</strong>. The square then reveals its genuine Minesweeper clue (0–8).</p><div class="sweeper-scan-note-v620"><b>Why this is better:</b> the maths answers can now be 8, 17, 36, 56, 72… while the board still behaves exactly like Minesweeper.</div><div class="sweeper-sizebar-v618"><span class="sweeper-size-label-v618">Board size:</span>${Object.values(SWEEPER_PRESETS_V618).map(x=>`<button class="sweeper-size-v618 ${s.sizeChoice===x.id?'active':''}" data-sweep-size="${x.id}" ${s.timerStartedAt!=null||s.finished?'disabled':''}>${x.name}<small>${x.detail}</small></button>`).join('')}</div><div class="sweeper-game-hud-v617"><span class="sweeper-chip-v617 mine">💣 ${left} mines left</span><span class="sweeper-chip-v617 shield">${'❤️'.repeat(s.shields)}${'🤍'.repeat(Math.max(0,s.maxShields-s.shields))} shields</span><span class="sweeper-chip-v617 timer sweeper-timer-v620">⏱️ <strong id="sweeperTimerV620">${sweeperFormatMsV620(sweeperElapsedMsV620(s))}</strong></span><span class="sweeper-chip-v617 power">🧠 Maths streak ${s.decodeStreak||0}</span></div><div class="sweeper-modebar-v617"><button class="sweeper-mode-v617 ${s.mode==='open'?'active':''}" data-sweep-mode="open" ${s.finished?'disabled':''}>👆 OPEN</button><button class="sweeper-mode-v617 ${s.mode==='flag'?'active':''}" data-sweep-mode="flag" ${s.finished?'disabled':''}>🚩 FLAG</button></div><div class="sweeper-board-shell-v617"><div class="sweeper-board-v617" style="--sweep-size:${s.size};--sweep-cell:${cell}px;--sweep-gap:${gap}px">${s.cells.map((c,i)=>sweeperCellHtmlV617(s,c,i)).join('')}</div></div>${radarNote}${decode}<div class="sweeper-tip-v617" id="sweeperMessageV617">${esc(s.message)}</div>${finishedStrip}${notice}<div class="sweeper-power-area-v618"><div class="sweeper-power-heading-v618"><span>🎒 Power-ups — useful for practice, but assisted runs do not rank</span><span class="sweeper-streak-v618">3 🔍 • 5 🛡️ • 8 🧰 • 10 ⚡</span></div><div class="sweeper-power-grid-v618">${power('radar','🔍','Radar','Highlights one guaranteed safe square.')}${power('shield','🛡️','Shield','Restores one lost shield.',s.shields>=s.maxShields)}${power('defuser','🧰','Defuser','Removes one hidden mine.')}${power('sweep','⚡','Super Sweep','Safely opens an empty area.')}</div></div>${sweeperLeaderboardHtmlV620(s.sizeChoice)}<div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>${sweeperWinHtmlV620(s)}`);
+ bindArcadeExitV610();const exitBtn=document.getElementById('arcadeExit');if(exitBtn&&s.finished)exitBtn.onclick=()=>finishArcadeV610();const prog=document.getElementById('arcadeProgressStat');if(prog)prog.textContent=`🧠 ${a.correct} scans`;document.querySelectorAll('[data-sweep-size]').forEach(b=>b.onclick=()=>sweeperSetSizeV618(b.dataset.sweepSize));document.querySelectorAll('[data-sweep-mode]').forEach(b=>b.onclick=()=>{if(!activeArcadeV610?.sweeper||s.finished)return;s.mode=b.dataset.sweepMode;renderSweeperV617()});document.querySelectorAll('[data-sweep-cell]').forEach(b=>{const i=Number(b.dataset.sweepCell);b.onclick=()=>sweeperOpenV617(i);b.oncontextmenu=e=>{e.preventDefault();if(!s.finished)sweeperToggleFlagV617(i)}});document.querySelectorAll('[data-sweep-answer]').forEach(b=>b.onclick=()=>sweeperChooseAnswerV617(b.dataset.sweepAnswer,b));document.querySelectorAll('[data-sweep-power]').forEach(b=>b.onclick=()=>sweeperUsePowerV618(b.dataset.sweepPower));const dismiss=document.getElementById('sweeperPowerDismissV618');if(dismiss)dismiss.onclick=sweeperDismissPowerV618;const winResults=document.getElementById('sweeperWinResultsV620'),winBoard=document.getElementById('sweeperWinBoardV620'),finishedResults=document.getElementById('sweeperFinishedResultsV620');if(winResults)winResults.onclick=()=>finishArcadeV610();if(winBoard)winBoard.onclick=()=>{s.celebrationDismissed=true;renderSweeperV617();requestAnimationFrame(()=>document.getElementById('sweeperLeaderboardV620')?.scrollIntoView({behavior:'smooth',block:'center'}))};if(finishedResults)finishedResults.onclick=()=>finishArcadeV610();sweeperPaintTimerV620()
 };
 
 
