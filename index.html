@@ -440,6 +440,35 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:980px){.snake-setup-grid-v624{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.snake-setup-grid-v624{grid-template-columns:1fr}.snake-board-shell-v614.snake-wide-v625,.snake-board-shell-v614.snake-standard-v625{width:min(95vw,calc(100vh - 280px));max-width:none}.snake-play-shell-v624.snake-wide-play-v625{max-width:760px}.snake-life-card-v625{padding:16px}.arcade-gate-card-v625{padding:20px}}
 </style>
+
+<style id="surfer-v627-style">
+/* MathsReady V6.27 — Maths Surfer clear answer gates + readable jumping */
+.surfer-gate-v626{z-index:18!important}
+.surfer-object-v626{z-index:11}
+.surfer-player-v626{z-index:22!important;transition:left .13s ease;transform:translateX(-50%)!important;animation:none!important;filter:none!important}
+.surfer-rider-v627{position:absolute;inset:0;display:grid;place-items:center;font-size:54px;filter:drop-shadow(0 9px 6px rgba(0,0,0,.32));transform-origin:50% 100%;will-change:transform}
+.surfer-rider-v627 .board{position:absolute;bottom:1px;font-size:39px;z-index:-1;transform:rotate(-8deg)}
+.surfer-jump-shadow-v627{position:absolute;left:50%;bottom:4px;width:50px;height:13px;border-radius:50%;background:rgba(0,0,0,.28);transform:translateX(-50%) scale(1);filter:blur(2px);opacity:.72;pointer-events:none}
+.surfer-player-v626.jump .surfer-rider-v627{animation:surferJumpRiderV627 .74s cubic-bezier(.22,.68,.25,1)}
+.surfer-player-v626.jump .surfer-jump-shadow-v627{animation:surferJumpShadowV627 .74s ease}
+.surfer-player-v626.hit .surfer-rider-v627{animation:surferHitRiderV627 .42s ease}
+.surfer-player-v626.jump.hit .surfer-rider-v627{animation:surferJumpRiderV627 .74s cubic-bezier(.22,.68,.25,1)}
+@keyframes surferJumpRiderV627{
+  0%{transform:translateY(0) scale(1) rotate(0deg)}
+  12%{transform:translateY(-18px) scale(1.03) rotate(-3deg)}
+  47%{transform:translateY(-142px) scale(1.12) rotate(-8deg)}
+  68%{transform:translateY(-112px) scale(1.09) rotate(3deg)}
+  91%{transform:translateY(-12px) scale(1.02) rotate(1deg)}
+  100%{transform:translateY(0) scale(1) rotate(0deg)}
+}
+@keyframes surferJumpShadowV627{
+  0%,100%{transform:translateX(-50%) scale(1);opacity:.72}
+  47%{transform:translateX(-50%) scale(.36);opacity:.22}
+  68%{transform:translateX(-50%) scale(.48);opacity:.30}
+}
+@keyframes surferHitRiderV627{20%{transform:rotate(-14deg) scale(.9)}45%{transform:rotate(14deg) scale(.9)}75%{transform:rotate(-8deg)}100%{transform:rotate(0)}}
+@media(max-width:700px){.surfer-rider-v627{font-size:48px}}
+</style>
 </head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -3589,6 +3618,62 @@ const renderArcadeQuestionV626Base=renderArcadeQuestionV610;
 renderArcadeQuestionV610=function(){
  const a=activeArcadeV610;if(!a||a.game?.id!=='surfer')return renderArcadeQuestionV626Base();if(a.index>=a.questions.length){const s=a.surfer;if(s)s.resolved=true;if(arcadeSurferTimerV626){clearInterval(arcadeSurferTimerV626);arcadeSurferTimerV626=null}return finishArcadeV610()}
  a.q=a.questions[a.index];a.questionWrong=0;a.mathQuestionWrong=0;if(!a.surfer){surferInitV626();return renderSurferV626()}const s=a.surfer;s.waitingNext=false;surferMakeGateV626();surferRefreshHudV626();surferPaintV626();
+};
+
+
+// ================================================================
+// V6.27 MATHS SURFER — protected answer gates + visible jump arc
+// ================================================================
+function surferGateClearZoneV627(){
+ const s=activeArcadeV610?.surfer;if(!s||!s.gate)return;
+ const gy=Number(s.gate.y||-999);
+ // The gate is 92px tall. Keep a generous buffer both above and below it.
+ // Removing objects here prevents both visual overlap and invisible collisions.
+ const top=gy-82,bottom=gy+166;
+ s.objects=(s.objects||[]).filter(o=>Number(o.y)<top||Number(o.y)>bottom);
+}
+
+const surferMakeGateV627Base=surferMakeGateV626;
+surferMakeGateV626=function(){
+ surferMakeGateV627Base();
+ surferGateClearZoneV627();
+};
+
+const surferSpawnCoinTrailV627Base=surferSpawnCoinTrailV626;
+surferSpawnCoinTrailV626=function(){
+ surferSpawnCoinTrailV627Base();
+ surferGateClearZoneV627();
+};
+
+const surferSpawnObstacleV627Base=surferSpawnObstacleV626;
+surferSpawnObstacleV626=function(){
+ surferSpawnObstacleV627Base();
+ surferGateClearZoneV627();
+};
+
+// Stronger, longer jump. Collision immunity for barriers matches the visible airborne time.
+surferJumpV626=function(){
+ const s=activeArcadeV610?.surfer;if(!s||s.resolved)return;
+ s.jumpingUntil=Date.now()+740;
+ const p=document.getElementById('surferPlayerV626');
+ if(p){p.classList.remove('jump');void p.offsetWidth;p.classList.add('jump')}
+};
+
+const surferPaintV627Base=surferPaintV626;
+surferPaintV626=function(){
+ surferGateClearZoneV627();
+ surferPaintV627Base();
+ const p=document.getElementById('surferPlayerV626');
+ if(p&&!p.querySelector('.surfer-rider-v627')){
+   p.innerHTML='<span class="surfer-jump-shadow-v627"></span><span class="surfer-rider-v627">🧑<span class="board">🛹</span></span>';
+ }
+};
+
+const renderSurferV627Base=renderSurferV626;
+renderSurferV626=function(){
+ renderSurferV627Base();
+ const p=document.getElementById('surferPlayerV626');
+ if(p)p.innerHTML='<span class="surfer-jump-shadow-v627"></span><span class="surfer-rider-v627">🧑<span class="board">🛹</span></span>';
 };
 
 </script></body></html>
