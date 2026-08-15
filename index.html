@@ -2723,7 +2723,7 @@ function sweeperCellHtmlV617(s,c,i){
 function renderSweeperV617(){
  const a=activeArcadeV610;if(!a)return;sweeperEnsureV617();const s=a.sweeper,meta=sweeperMetaV617(a.challengeTier),flags=sweeperFlagsV617(s),left=Math.max(0,s.mineCount-flags),p=s.pending,choices=p?sweeperAnswerChoicesV617(p.decodeQ.answer,a.challengeTier):[];
  const decode=p?`<div class="sweeper-decode-v617"><div class="sweeper-decode-kicker-v617">🧠 Decode this Minesweeper clue</div><div class="sweeper-decode-q-v617">${esc(p.decodeQ.prompt)}</div><div class="sweeper-answers-v617">${choices.map(v=>`<button class="sweeper-answer-v617" data-sweep-answer="${v}">${v}</button>`).join('')}</div></div>`:`<div class="sweeper-decode-v617 waiting"><strong>👆 Choose a covered square</strong><span class="tiny">If it is safe, mental maths will decode the clue number. Right-click a square to flag it, or use Flag mode on touchscreens.</span></div>`;
- renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage sweeper-stage-v617"><div class="qmeta">💣 MATHSWEEPER <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Decode clues • deduce mines • secure the field</div><p class="arcade-instruction">The maths answer <strong>is the Minesweeper clue</strong>: it tells you how many mines touch that square.</p><div class="sweeper-tip-v617" style="margin:-5px auto 10px">Example: a decoded <strong>3</strong> means exactly 3 of the surrounding squares contain mines.</div><div class="sweeper-game-hud-v617"><span class="sweeper-chip-v617 mine">💣 ${left} mines left</span><span class="sweeper-chip-v617 shield">${'❤️'.repeat(s.shields)}${'🤍'.repeat(Math.max(0,s.maxShields-s.shields))} shields</span><span class="sweeper-chip-v617">🧩 ${meta.name} • ${s.size}×${s.size}</span><span class="sweeper-chip-v617 power">🔍 3 • 🛡️ 5 • 🧰 8 • ⚡ 10 streak</span></div><div class="sweeper-modebar-v617"><button class="sweeper-mode-v617 ${s.mode==='open'?'active':''}" data-sweep-mode="open">👆 OPEN</button><button class="sweeper-mode-v617 ${s.mode==='flag'?'active':''}" data-sweep-mode="flag">🚩 FLAG</button></div><div class="sweeper-board-shell-v617"><div class="sweeper-powerflash-v617" id="sweeperPowerFlashV617"></div><div class="sweeper-board-v617" style="--sweep-size:${s.size}">${s.cells.map((c,i)=>sweeperCellHtmlV617(s,c,i)).join('')}</div></div>${decode}<div class="sweeper-tip-v617" id="sweeperMessageV617">${esc(s.message)}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);
+ renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage sweeper-stage-v617"><div class="qmeta">💣 MATHSWEEPER <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Decode clues • deduce mines • secure the field</div><p class="arcade-instruction">The maths answer <strong>is the Minesweeper clue</strong>: it tells you how many mines touch that square. The first click always opens a useful safe area, just like classic Minesweeper.</p><div class="sweeper-tip-v617" style="margin:-5px auto 10px">Example: a decoded <strong>3</strong> means exactly 3 of the surrounding squares contain mines.</div><div class="sweeper-game-hud-v617"><span class="sweeper-chip-v617 mine">💣 ${left} mines left</span><span class="sweeper-chip-v617 shield">${'❤️'.repeat(s.shields)}${'🤍'.repeat(Math.max(0,s.maxShields-s.shields))} shields</span><span class="sweeper-chip-v617">🧩 ${meta.name} • ${s.size}×${s.size}</span><span class="sweeper-chip-v617 power">🔍 3 • 🛡️ 5 • 🧰 8 • ⚡ 10 streak</span></div><div class="sweeper-modebar-v617"><button class="sweeper-mode-v617 ${s.mode==='open'?'active':''}" data-sweep-mode="open">👆 OPEN</button><button class="sweeper-mode-v617 ${s.mode==='flag'?'active':''}" data-sweep-mode="flag">🚩 FLAG</button></div><div class="sweeper-board-shell-v617"><div class="sweeper-powerflash-v617" id="sweeperPowerFlashV617"></div><div class="sweeper-board-v617" style="--sweep-size:${s.size}">${s.cells.map((c,i)=>sweeperCellHtmlV617(s,c,i)).join('')}</div></div>${decode}<div class="sweeper-tip-v617" id="sweeperMessageV617">${esc(s.message)}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);
  bindArcadeExitV610();document.querySelectorAll('[data-sweep-mode]').forEach(b=>b.onclick=()=>{if(!activeArcadeV610?.sweeper)return;activeArcadeV610.sweeper.mode=b.dataset.sweepMode;renderSweeperV617()});document.querySelectorAll('[data-sweep-cell]').forEach(b=>{const i=Number(b.dataset.sweepCell);b.onclick=()=>sweeperOpenV617(i);b.oncontextmenu=e=>{e.preventDefault();sweeperToggleFlagV617(i)}});document.querySelectorAll('[data-sweep-answer]').forEach(b=>b.onclick=()=>sweeperChooseAnswerV617(b.dataset.sweepAnswer,b));if(s.powerText)setTimeout(()=>{if(activeArcadeV610?.game?.id==='sweeper')sweeperPowerFlashV617(s.powerText)},20)
 }
 
@@ -2833,7 +2833,7 @@ sweeperCellHtmlV617=function(s,c,i){
 renderSweeperV617=function(){
  const a=activeArcadeV610;if(!a)return;sweeperEnsureV617();const s=a.sweeper,tier=sweeperMetaV617(a.challengeTier),preset=sweeperPresetV618(s.sizeChoice),flags=sweeperFlagsV617(s),left=Math.max(0,s.mineCount-flags),p=s.pending,choices=p?sweeperAnswerChoicesV617(p.decodeQ.answer,a.challengeTier):[],inv=s.powerInventory||(s.powerInventory={radar:0,shield:0,defuser:0,sweep:0});
  const cell=sweeperCellSizeV618(s.size),gap=s.size>=16?2:3;
- const decode=p?`<div class="sweeper-decode-v617"><div class="sweeper-decode-kicker-v617">🧠 Decode this Minesweeper clue</div><div class="sweeper-decode-q-v617">${esc(p.decodeQ.prompt)}</div><div class="sweeper-answers-v617">${choices.map(v=>`<button class="sweeper-answer-v617" data-sweep-answer="${v}">${v}</button>`).join('')}</div></div>`:`<div class="sweeper-decode-v617 waiting"><strong>👆 Choose a covered square</strong><span class="tiny">If it is safe, mental maths will decode its clue number. Right-click to flag on a computer, or use Flag mode on touchscreens.</span></div>`;
+ const decode=p?`<div class="sweeper-decode-v617"><div class="sweeper-decode-kicker-v617">🧠 Decode this Minesweeper clue</div><div class="sweeper-decode-q-v617">${esc(p.decodeQ.prompt)}</div><div class="sweeper-answers-v617">${choices.map(v=>`<button class="sweeper-answer-v617" data-sweep-answer="${v}">${v}</button>`).join('')}</div></div>`:`<div class="sweeper-decode-v617 waiting"><strong>👆 Choose a covered square</strong><span class="tiny">Your first click opens a safe starting patch automatically. After that, covered safe squares use mental maths to decode their clue number. Right-click to flag on a computer, or use Flag mode on touchscreens.</span></div>`;
  const notice=s.powerNotice?`<div class="sweeper-power-notice-v618"><div class="sweeper-power-notice-icon-v618">${s.powerNotice.icon}</div><div class="sweeper-power-notice-text-v618"><strong>${esc(s.powerNotice.title)}</strong><span>${esc(s.powerNotice.body)}</span></div><button class="sweeper-power-dismiss-v618" id="sweeperPowerDismissV618">Got it</button></div>`:'';
  const power=(key,icon,name,desc,disabledExtra=false)=>`<button class="sweeper-power-v618 ${inv[key]>0&&!disabledExtra?'ready':''}" data-sweep-power="${key}" ${inv[key]<=0||disabledExtra?'disabled':''}><span class="sweeper-power-name-v618">${icon} ${name}</span><span class="sweeper-power-desc-v618">${desc}</span><span class="sweeper-power-count-v618">×${inv[key]||0}</span></button>`;
  const radarNote=s.radarIndex!=null?`<div class="sweeper-radar-note-v618">🔍 Radar is active: the glowing blue square is guaranteed safe.</div>`:'';
@@ -2845,6 +2845,116 @@ renderSweeperV617=function(){
  document.querySelectorAll('[data-sweep-answer]').forEach(b=>b.onclick=()=>sweeperChooseAnswerV617(b.dataset.sweepAnswer,b));
  document.querySelectorAll('[data-sweep-power]').forEach(b=>b.onclick=()=>sweeperUsePowerV618(b.dataset.sweepPower));
  const dismiss=document.getElementById('sweeperPowerDismissV618');if(dismiss)dismiss.onclick=sweeperDismissPowerV618;
+};
+
+
+
+
+/* === V6.19 MATHSWEEPER CLASSIC OPENING + BETTER CLUE MIX ===
+   - Mines are generated on the first OPEN click, so the clicked square and
+     all 8 neighbours are guaranteed mine-free.
+   - First click immediately flood-opens a useful classic Minesweeper area.
+   - Zero flood fill reveals both zero cells AND their numbered boundary.
+   - From many valid random minefields, choose a more interesting layout with
+     a healthier mix of 2/3/4 clues instead of accepting a sea of 1s.
+*/
+function sweeperNeighborTableV619(size){
+ const total=size*size,out=Array.from({length:total},()=>[]);
+ for(let i=0;i<total;i++){
+  const x=i%size,y=Math.floor(i/size);
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+   if(!dx&&!dy)continue;const nx=x+dx,ny=y+dy;
+   if(nx>=0&&ny>=0&&nx<size&&ny<size)out[i].push(ny*size+nx)
+  }
+ }
+ return out
+}
+function sweeperOpeningSetV619(cells,neighbors,start,respectFlags=true){
+ const opened=new Set(),seenZero=new Set(),q=[start];
+ while(q.length){
+  const i=q.shift();if(seenZero.has(i))continue;seenZero.add(i);
+  const c=cells[i];if(!c||c.mine||(respectFlags&&c.flagged))continue;
+  opened.add(i);
+  if(c.adj!==0)continue;
+  for(const j of neighbors[i]){
+   const n=cells[j];if(!n||n.mine||(respectFlags&&n.flagged))continue;
+   opened.add(j); // classic Minesweeper also reveals the numbered edge
+   if(n.adj===0&&!seenZero.has(j))q.push(j)
+  }
+ }
+ return opened
+}
+function sweeperCandidateV619(size,mineCount,firstIndex,neighbors,presetId){
+ const total=size*size,safe=new Set([firstIndex,...neighbors[firstIndex]]),eligible=new Set();
+ for(let i=0;i<total;i++)if(!safe.has(i))eligible.add(i);
+ // Slightly cluster some mines. Classic rules are unchanged, but this creates more 2/3/4 clues
+ // and fewer monotonous isolated-mine 1s. Each candidate uses a different clustering strength.
+ const mineList=[],clusterProb=.35+Math.random()*.43;
+ while(mineList.length<mineCount&&eligible.size){
+  let pool=[];
+  if(mineList.length&&Math.random()<clusterProb){const near=new Set();for(const m of mineList)for(const j of neighbors[m])if(eligible.has(j))near.add(j);pool=[...near]}
+  if(!pool.length)pool=[...eligible];
+  const pick=pool[Math.floor(Math.random()*pool.length)];mineList.push(pick);eligible.delete(pick)
+ }
+ const mines=new Set(mineList);
+ const cells=Array.from({length:total},(_,i)=>({mine:mines.has(i),flagged:false,adj:0}));
+ for(let i=0;i<total;i++)if(!cells[i].mine)cells[i].adj=neighbors[i].reduce((n,j)=>n+(cells[j].mine?1:0),0);
+ const opening=sweeperOpeningSetV619(cells,neighbors,firstIndex,false),allCounts=Array(9).fill(0),openCounts=Array(9).fill(0);
+ for(let i=0;i<total;i++)if(!cells[i].mine&&cells[i].adj>0)allCounts[cells[i].adj]++;
+ for(const i of opening)if(cells[i].adj>0)openCounts[cells[i].adj]++;
+ const stat=arr=>{const n=arr.slice(1).reduce((a,b)=>a+b,0)||1,ones=arr[1]/n,higher=arr.slice(2).reduce((a,b)=>a+b,0)/n,threePlus=arr.slice(3).reduce((a,b)=>a+b,0)/n,unique=arr.slice(1).filter(Boolean).length;return{n,ones,higher,threePlus,unique}};
+ const all=stat(allCounts),op=stat(openCounts),openN=opening.size,isIntermediate=presetId==='intermediate',target=isIntermediate?52:38,minOpen=isIntermediate?30:20,maxOpen=isIntermediate?85:52;
+ let score=-Math.abs(openN-target)*.6 + all.unique*2.5 + op.unique*4 + all.higher*25 + op.higher*42 + all.threePlus*15 + op.threePlus*22 - all.ones*25 - op.ones*40;
+ if(openN<minOpen)score-=100;if(openN>maxOpen)score-=(openN-maxOpen)*6;
+ const usefulOpen=openCounts.slice(2).reduce((a,b)=>a+b,0);if(usefulOpen<(isIntermediate?7:4))score-=60;
+ return{cells,opening,score,stats:{openN,allCounts,openCounts,oneRate:all.ones,openingOneRate:op.ones}}
+}
+function sweeperGenerateFirstLayoutV619(s,firstIndex){
+ const preset=sweeperPresetV618(s.sizeChoice),neighbors=sweeperNeighborTableV619(s.size),tries=s.size>=16?220:260;let best=null;
+ for(let k=0;k<tries;k++){const c=sweeperCandidateV619(s.size,preset.mines,firstIndex,neighbors,s.sizeChoice);if(!best||c.score>best.score)best=c}
+ if(!best)return;
+ for(let i=0;i<s.cells.length;i++){
+  const src=best.cells[i],dst=s.cells[i];dst.mine=src.mine;dst.adj=src.adj;dst.revealed=false;dst.boom=false
+ }
+ s.generated=true;s.firstOpen=false;s.firstIndex=firstIndex;s.layoutStats=best.stats;
+ // Respect any flags the child placed before opening. Everything else in the classic opening appears at once.
+ let opened=0;for(const i of best.opening){if(!s.cells[i].flagged){s.cells[i].revealed=true;opened++}}
+ s.message=`✨ Great start — ${opened} squares opened automatically. Use the revealed clues to work out where the mines are.`;
+ return opened
+}
+
+// Replace V6.18 board creation: hold the mine count, but delay actual mine placement until first click.
+sweeperNewBoardV617=function(keepShields=false,sizeChoice=null){
+ const a=activeArcadeV610;if(!a)return;
+ const tier=sweeperMetaV617(a.challengeTier),old=a.sweeper,choice=sizeChoice||old?.sizeChoice||a.sweeperSizeChoice||'beginner',preset=sweeperPresetV618(choice);
+ a.sweeperSizeChoice=choice;
+ const shields=keepShields&&old?old.shields:tier.shields,cells=Array.from({length:preset.size*preset.size},()=>({mine:false,revealed:false,flagged:false,adj:0,boom:false}));
+ const boardNo=(old?.boardNo||0)+1,inventory=old?.powerInventory||{radar:0,shield:0,defuser:0,sweep:0};
+ a.sweeper={size:preset.size,sizeChoice:choice,mineCount:preset.mines,initialMines:preset.mines,cells,mode:old?.mode||'open',pending:null,firstOpen:true,generated:false,shields,maxShields:tier.shields,radarIndex:null,message:`${preset.name} field ready. Your first click will open a clear starting area.`,boardNo,locked:false,powerInventory:{...inventory},powerNotice:old?.powerNotice||null,decodeStreak:old?.decodeStreak||0};
+};
+
+// Proper classic flood: zero cells plus the numbered border around them.
+sweeperFloodZeroV617=function(s,start){
+ const neighbors=sweeperNeighborTableV619(s.size),opened=sweeperOpeningSetV619(s.cells,neighbors,start,true);let count=0;
+ for(const i of opened){const c=s.cells[i];if(c&&!c.mine&&!c.flagged&&!c.revealed){c.revealed=true;count++}else if(c&&!c.mine&&!c.flagged)c.revealed=true}
+ return count
+};
+
+// First OPEN click creates a guaranteed zero start and opens it immediately; no maths question is charged for the free starting patch.
+sweeperOpenV617=function(i){
+ const a=activeArcadeV610,s=a?.sweeper;if(!a||!s||s.pending||s.locked)return;const c=s.cells[i];if(!c||c.revealed)return;
+ if(s.mode==='flag'){sweeperToggleFlagV617(i);return}if(c.flagged)return;
+ if(s.firstOpen||!s.generated){
+  const opened=sweeperGenerateFirstLayoutV619(s,i)||0;renderSweeperV617();setArcadeFeedbackV610(`Classic opening: ${opened} safe squares opened. Now use the clues and your mental maths.`,true);return
+ }
+ if(s.cells[i].mine)return sweeperHitMineV617(i);sweeperBeginDecodeV617(i)
+};
+
+// Powers that need a mine layout wait until the first click has generated one.
+const sweeperUsePowerV619Base=sweeperUsePowerV618;
+sweeperUsePowerV618=function(kind){
+ const s=activeArcadeV610?.sweeper;if(s&&kind!=='shield'&&!s.generated){s.message='Open your first square before using this power-up — the minefield is created around your safe first move.';renderSweeperV617();return}
+ return sweeperUsePowerV619Base(kind)
 };
 
 
