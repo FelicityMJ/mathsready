@@ -321,6 +321,41 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 @media(max-width:720px){.arcade-mission-games-v616{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.arcade-mission-games-v616{grid-template-columns:1fr}}
 @media(max-width:600px){.sweeper-board-shell-v617{padding:6px;border-radius:17px}.sweeper-board-v617{gap:2px}.sweeper-cell-v617{border-radius:6px}.sweeper-game-hud-v617{gap:5px}.sweeper-chip-v617{padding:6px 8px;font-size:10px}.sweeper-decode-v617{padding:10px}.sweeper-answer-v617{min-width:39px;padding:7px 9px}}
 </style>
+
+<style id="mathsready-mathsweeper-v618">
+/* V6.18 Mathsweeper UX: real board sizes, static hit mines, persistent power-ups */
+.sweeper-sizebar-v618{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;margin:4px auto 12px}
+.sweeper-size-label-v618{font-size:12px;font-weight:950;color:#697086;margin-right:2px}
+.sweeper-size-v618{border:1px solid #d9d8e8;background:#fff;color:#4f5670;border-radius:13px;padding:8px 12px;font-weight:900;cursor:pointer;line-height:1.15}
+.sweeper-size-v618 small{display:block;font-size:9px;font-weight:800;color:#81879a;margin-top:3px}
+.sweeper-size-v618.active{background:#26384d;color:#fff;border-color:#26384d;box-shadow:0 6px 14px rgba(29,47,65,.18)}
+.sweeper-size-v618.active small{color:#dce5ec}
+.sweeper-board-shell-v617{width:max-content;max-width:96vw;overflow:auto;padding:9px;border-radius:18px}
+.sweeper-board-v617{grid-template-columns:repeat(var(--sweep-size),var(--sweep-cell));grid-auto-rows:var(--sweep-cell);gap:var(--sweep-gap);width:max-content}
+.sweeper-cell-v617{width:var(--sweep-cell);height:var(--sweep-cell);aspect-ratio:auto;border-radius:clamp(3px,calc(var(--sweep-cell) * .2),8px);font-size:clamp(11px,calc(var(--sweep-cell) * .58),25px)}
+.sweeper-cell-v617.mine-static{background:#e9edf1;color:#5f6872;box-shadow:inset 0 0 0 1px rgba(53,75,95,.1)}
+.sweeper-cell-v617.mine-hit{background:#ffd8d3}
+.sweeper-powerflash-v617{display:none!important}
+.sweeper-power-area-v618{max-width:660px;margin:12px auto 3px}
+.sweeper-power-heading-v618{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 7px;color:#40485f;font-size:12px;font-weight:950}
+.sweeper-streak-v618{background:#fff7d6;border:1px solid #f2dd8d;color:#775a00;border-radius:999px;padding:5px 9px;white-space:nowrap}
+.sweeper-power-grid-v618{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.sweeper-power-v618{position:relative;text-align:left;border:1px solid #dedbea;background:#f8f7fc;border-radius:14px;padding:9px 9px 8px;min-height:72px;color:#4d5366;cursor:default}
+.sweeper-power-v618.ready{background:linear-gradient(180deg,#fff9df,#fff3ba);border-color:#e9ce67;box-shadow:0 5px 13px rgba(166,128,18,.12);cursor:pointer}
+.sweeper-power-v618.ready:hover{transform:translateY(-1px)}
+.sweeper-power-v618:disabled{opacity:.7}
+.sweeper-power-name-v618{display:block;font-size:12px;font-weight:1000;color:#31384e;padding-right:22px}
+.sweeper-power-desc-v618{display:block;font-size:9px;font-weight:750;line-height:1.25;margin-top:3px;color:#73798b}
+.sweeper-power-count-v618{position:absolute;right:7px;top:7px;min-width:20px;height:20px;border-radius:999px;display:grid;place-items:center;background:#ddd9ed;color:#5b5379;font-size:10px;font-weight:1000}
+.sweeper-power-v618.ready .sweeper-power-count-v618{background:#6f59ca;color:#fff}
+.sweeper-power-notice-v618{display:flex;align-items:center;gap:11px;max-width:660px;margin:9px auto;border:1px solid #e3ce71;background:linear-gradient(180deg,#fffbea,#fff4c5);border-radius:16px;padding:11px 12px;text-align:left;box-shadow:0 8px 20px rgba(120,91,6,.08)}
+.sweeper-power-notice-icon-v618{font-size:28px;line-height:1;flex:0 0 auto}
+.sweeper-power-notice-text-v618{flex:1;min-width:0}.sweeper-power-notice-text-v618 strong{display:block;color:#544000;font-size:13px}.sweeper-power-notice-text-v618 span{display:block;color:#756525;font-size:11px;line-height:1.35;margin-top:2px}
+.sweeper-power-dismiss-v618{border:0;background:#6a55c7;color:#fff;border-radius:10px;padding:7px 10px;font-size:10px;font-weight:950;cursor:pointer;white-space:nowrap}
+.sweeper-radar-note-v618{max-width:660px;margin:7px auto 0;text-align:center;border-radius:12px;background:#e7fbff;border:1px solid #a9edf6;color:#126379;padding:7px 10px;font-size:11px;font-weight:900}
+@media(max-width:720px){.sweeper-power-grid-v618{grid-template-columns:repeat(2,minmax(0,1fr))}.sweeper-power-notice-v618{align-items:flex-start}.sweeper-power-dismiss-v618{margin-left:auto}.sweeper-size-v618{padding:7px 9px}}
+@media(max-width:420px){.sweeper-power-v618{min-height:65px;padding:7px}.sweeper-power-desc-v618{font-size:8px}.sweeper-power-notice-v618{flex-wrap:wrap}.sweeper-power-dismiss-v618{width:100%}}
+</style>
 </head><body><div id="app"></div><script>
 'use strict';
 const APP_VERSION='2.0.0';
@@ -2695,6 +2730,121 @@ function renderSweeperV617(){
 const renderArcadeQuestionV617Base=renderArcadeQuestionV610;
 renderArcadeQuestionV610=function(){
  const a=activeArcadeV610;if(!a||a.game?.id!=='sweeper')return renderArcadeQuestionV617Base();if(a.index>=a.questions.length)return finishArcadeV610();a.q=a.questions[a.index];a.questionWrong=0;a.mathQuestionWrong=0;sweeperEnsureV617();renderSweeperV617()
+};
+
+
+
+
+/* === V6.18 MATHSWEEPER REFINEMENT === */
+const SWEEPER_PRESETS_V618={
+ beginner:{id:'beginner',name:'Beginner',size:9,mines:10,detail:'9×9 • 10 mines'},
+ intermediate:{id:'intermediate',name:'Intermediate',size:16,mines:40,detail:'16×16 • 40 mines'}
+};
+function sweeperPresetV618(id){return SWEEPER_PRESETS_V618[id]||SWEEPER_PRESETS_V618.beginner}
+function sweeperCellSizeV618(size){
+ const w=Math.max(300,Math.min(window.innerWidth||1100,760)*.90),gap=size>=16?2:3,max=size>=16?30:42,min=size>=16?18:25;
+ return clamp(Math.floor((w-26-gap*(size-1))/size),min,max)
+}
+
+sweeperNewBoardV617=function(keepShields=false,sizeChoice=null){
+ const a=activeArcadeV610;if(!a)return;
+ const tier=sweeperMetaV617(a.challengeTier),old=a.sweeper,choice=sizeChoice||old?.sizeChoice||a.sweeperSizeChoice||'beginner',preset=sweeperPresetV618(choice);
+ a.sweeperSizeChoice=choice;
+ const shields=keepShields&&old?old.shields:tier.shields,cells=Array.from({length:preset.size*preset.size},()=>({mine:false,revealed:false,flagged:false,adj:0,boom:false}));
+ for(const i of shuffle([...cells.keys()]).slice(0,preset.mines))cells[i].mine=true;
+ const boardNo=(old?.boardNo||0)+1,inventory=old?.powerInventory||{radar:0,shield:0,defuser:0,sweep:0};
+ a.sweeper={size:preset.size,sizeChoice:choice,mineCount:preset.mines,initialMines:preset.mines,cells,mode:old?.mode||'open',pending:null,firstOpen:true,shields,maxShields:tier.shields,radarIndex:null,message:`${preset.name} field ready. Open a square to begin.`,boardNo,locked:false,powerInventory:{...inventory},powerNotice:old?.powerNotice||null,decodeStreak:old?.decodeStreak||0};
+ sweeperRecalcV617(a.sweeper)
+};
+
+function sweeperSetSizeV618(id){
+ const a=activeArcadeV610;if(!a||a.game?.id!=='sweeper'||!SWEEPER_PRESETS_V618[id])return;
+ a.sweeperSizeChoice=id;sweeperNewBoardV617(false,id);const s=a.sweeper;s.powerNotice={icon:'🧩',title:`${sweeperPresetV618(id).name} board selected`,body:`New ${sweeperPresetV618(id).detail} minefield. Your maths Learning Mission and readiness evidence continue normally.`};renderSweeperV617()
+}
+
+function sweeperPowerRewardV617(a){
+ const s=a?.sweeper;if(!s)return;
+ const st=s.decodeStreak||0,inv=s.powerInventory||(s.powerInventory={radar:0,shield:0,defuser:0,sweep:0});let reward=null;
+ if(st===3){inv.radar++;reward={icon:'🔍',title:'Radar earned!',body:'Radar highlights one guaranteed safe covered square. It stays here until you choose to use it.'}}
+ else if(st===5){inv.shield++;reward={icon:'🛡️',title:'Shield Recharge earned!',body:'Banked for later. Use it after you lose a shield to restore one heart.'}}
+ else if(st===8){inv.defuser++;reward={icon:'🧰',title:'Defuser earned!',body:'Use it when you want Mathsweeper to secretly remove one hidden mine from the field.'}}
+ else if(st===10){inv.sweep++;reward={icon:'⚡',title:'Super Sweep earned!',body:'Use it to safely open an empty area of the minefield (or reveal a safe square if no empty area remains).'}}
+ if(reward)s.powerNotice=reward;
+ refreshArcadeStatsV610()
+};
+
+function sweeperUsePowerV618(kind){
+ const a=activeArcadeV610,s=a?.sweeper,inv=s?.powerInventory;if(!a||!s||!inv||!(inv[kind]>0)||s.pending||s.locked)return;
+ if(kind==='radar'){
+  const safe=shuffle([...s.cells.keys()]).find(i=>!s.cells[i].mine&&!s.cells[i].revealed&&!s.cells[i].flagged);
+  if(safe==null)return;inv.radar--;s.radarIndex=safe;s.message='🔍 Radar active — the glowing blue square is guaranteed safe. You can open it whenever you like.';
+ }
+ if(kind==='shield'){
+  if(s.shields>=s.maxShields){s.message='🛡️ Your shields are already full. The recharge stays banked for later.';renderSweeperV617();return}
+  inv.shield--;s.shields++;s.message='🛡️ Shield restored — one heart has been recharged.';
+ }
+ if(kind==='defuser'){
+  const mine=shuffle([...s.cells.keys()]).find(i=>s.cells[i].mine&&!s.cells[i].revealed&&!s.cells[i].flagged);
+  if(mine==null)return;inv.defuser--;s.cells[mine].mine=false;s.mineCount=Math.max(0,s.mineCount-1);sweeperRecalcV617(s);s.message='🧰 Defuser used — one hidden mine has been removed. The mine counter has dropped by one.';
+ }
+ if(kind==='sweep'){
+  const zero=shuffle([...s.cells.keys()]).find(i=>!s.cells[i].mine&&!s.cells[i].revealed&&!s.cells[i].flagged&&s.cells[i].adj===0);
+  inv.sweep--;
+  if(zero!=null){sweeperFloodZeroV617(s,zero);s.message='⚡ Super Sweep opened a safe empty area.'}
+  else{const safe=shuffle([...s.cells.keys()]).find(i=>!s.cells[i].mine&&!s.cells[i].revealed&&!s.cells[i].flagged);if(safe!=null){s.radarIndex=safe;s.message='⚡ No empty zone remained, so Super Sweep found a guaranteed safe square instead.'}}
+ }
+ renderSweeperV617()
+}
+function sweeperDismissPowerV618(){const s=activeArcadeV610?.sweeper;if(!s)return;s.powerNotice=null;renderSweeperV617()}
+
+const sweeperChooseAnswerV618Base=sweeperChooseAnswerV617;
+sweeperChooseAnswerV617=function(value,btn){
+ const a=activeArcadeV610,s=a?.sweeper,p=s?.pending;if(!a||!s||!p||s.locked)return;
+ const ok=Number(value)===Number(p.decodeQ.answer);
+ if(!ok)s.decodeStreak=0;
+ return sweeperChooseAnswerV618Base(value,btn)
+};
+
+const sweeperManualCorrectV618Base=sweeperManualCorrectV617;
+sweeperManualCorrectV617=function(){
+ const a=activeArcadeV610,s=a?.sweeper,p=s?.pending;if(!a||!s||!p)return;
+ const first=(a.mathQuestionWrong||0)===0;
+ if(first)s.decodeStreak=(s.decodeStreak||0)+1;else s.decodeStreak=0;
+ return sweeperManualCorrectV618Base()
+};
+
+sweeperHitMineV617=function(i){
+ const a=activeArcadeV610,s=a?.sweeper;if(!a||!s)return;const c=s.cells[i];c.revealed=true;c.boom=true;s.shields=Math.max(0,s.shields-1);arcadeWrongV610(30,'game');
+ s.message=s.shields?`💥 Mine! Shield lost — ${s.shields} left. Your maths accuracy is unaffected.`:'💥 Shields gone! The minefield is resetting — your maths mission continues.';
+ renderSweeperV617();setArcadeFeedbackV610(s.message,false);
+ // Only the newly-hit mine animates. Once the boom finishes it becomes a quiet, static revealed mine.
+ setTimeout(()=>{if(activeArcadeV610?.sweeper===s)c.boom=false},60);
+ if(!s.shields)setTimeout(()=>{if(activeArcadeV610?.game?.id!=='sweeper')return;sweeperNewBoardV617(false);renderSweeperV617();setArcadeFeedbackV610('Fresh field. Same learning mission — keep going!',true)},900)
+};
+
+sweeperCellHtmlV617=function(s,c,i){
+ if(c.revealed){
+  if(c.mine)return`<button class="sweeper-cell-v617 revealed ${c.boom?'mine-hit':'mine-static'}" aria-label="Revealed mine">${c.boom?'💥':'💣'}</button>`;
+  const secured=sweeperSecuredV617(s,i),n=c.adj;return`<button class="sweeper-cell-v617 revealed ${n===0?'zero':'n'+n} ${secured?'secured':''}" data-sweep-revealed="${i}" aria-label="Revealed clue ${n}">${n||''}${secured?'<span style="position:absolute;right:3px;bottom:2px;font-size:9px;color:#15865a">✓</span>':''}</button>`
+ }
+ const pending=s.pending?.index===i,radar=s.radarIndex===i;return`<button class="sweeper-cell-v617 covered ${c.flagged?'flagged':''} ${pending?'pending':''} ${radar?'radar':''}" data-sweep-cell="${i}" aria-label="${c.flagged?'Flagged':'Covered'} square">${c.flagged?'🚩':pending?'?':''}</button>`
+};
+
+renderSweeperV617=function(){
+ const a=activeArcadeV610;if(!a)return;sweeperEnsureV617();const s=a.sweeper,tier=sweeperMetaV617(a.challengeTier),preset=sweeperPresetV618(s.sizeChoice),flags=sweeperFlagsV617(s),left=Math.max(0,s.mineCount-flags),p=s.pending,choices=p?sweeperAnswerChoicesV617(p.decodeQ.answer,a.challengeTier):[],inv=s.powerInventory||(s.powerInventory={radar:0,shield:0,defuser:0,sweep:0});
+ const cell=sweeperCellSizeV618(s.size),gap=s.size>=16?2:3;
+ const decode=p?`<div class="sweeper-decode-v617"><div class="sweeper-decode-kicker-v617">🧠 Decode this Minesweeper clue</div><div class="sweeper-decode-q-v617">${esc(p.decodeQ.prompt)}</div><div class="sweeper-answers-v617">${choices.map(v=>`<button class="sweeper-answer-v617" data-sweep-answer="${v}">${v}</button>`).join('')}</div></div>`:`<div class="sweeper-decode-v617 waiting"><strong>👆 Choose a covered square</strong><span class="tiny">If it is safe, mental maths will decode its clue number. Right-click to flag on a computer, or use Flag mode on touchscreens.</span></div>`;
+ const notice=s.powerNotice?`<div class="sweeper-power-notice-v618"><div class="sweeper-power-notice-icon-v618">${s.powerNotice.icon}</div><div class="sweeper-power-notice-text-v618"><strong>${esc(s.powerNotice.title)}</strong><span>${esc(s.powerNotice.body)}</span></div><button class="sweeper-power-dismiss-v618" id="sweeperPowerDismissV618">Got it</button></div>`:'';
+ const power=(key,icon,name,desc,disabledExtra=false)=>`<button class="sweeper-power-v618 ${inv[key]>0&&!disabledExtra?'ready':''}" data-sweep-power="${key}" ${inv[key]<=0||disabledExtra?'disabled':''}><span class="sweeper-power-name-v618">${icon} ${name}</span><span class="sweeper-power-desc-v618">${desc}</span><span class="sweeper-power-count-v618">×${inv[key]||0}</span></button>`;
+ const radarNote=s.radarIndex!=null?`<div class="sweeper-radar-note-v618">🔍 Radar is active: the glowing blue square is guaranteed safe.</div>`:'';
+ renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage sweeper-stage-v617"><div class="qmeta">💣 MATHSWEEPER <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Decode clues • deduce mines • secure the field</div><p class="arcade-instruction">The maths answer <strong>is the Minesweeper clue</strong>: it tells you how many mines touch that square.</p><div class="sweeper-sizebar-v618"><span class="sweeper-size-label-v618">Board size:</span>${Object.values(SWEEPER_PRESETS_V618).map(x=>`<button class="sweeper-size-v618 ${s.sizeChoice===x.id?'active':''}" data-sweep-size="${x.id}">${x.name}<small>${x.detail}</small></button>`).join('')}</div><div class="sweeper-game-hud-v617"><span class="sweeper-chip-v617 mine">💣 ${left} mines left</span><span class="sweeper-chip-v617 shield">${'❤️'.repeat(s.shields)}${'🤍'.repeat(Math.max(0,s.maxShields-s.shields))} shields</span><span class="sweeper-chip-v617">🧩 ${preset.name} • ${preset.detail}</span><span class="sweeper-chip-v617 power">🧠 Maths streak ${s.decodeStreak||0}</span></div><div class="sweeper-modebar-v617"><button class="sweeper-mode-v617 ${s.mode==='open'?'active':''}" data-sweep-mode="open">👆 OPEN</button><button class="sweeper-mode-v617 ${s.mode==='flag'?'active':''}" data-sweep-mode="flag">🚩 FLAG</button></div><div class="sweeper-board-shell-v617"><div class="sweeper-board-v617" style="--sweep-size:${s.size};--sweep-cell:${cell}px;--sweep-gap:${gap}px">${s.cells.map((c,i)=>sweeperCellHtmlV617(s,c,i)).join('')}</div></div>${radarNote}${decode}<div class="sweeper-tip-v617" id="sweeperMessageV617">${esc(s.message)}</div>${notice}<div class="sweeper-power-area-v618"><div class="sweeper-power-heading-v618"><span>🎒 Power-ups — earned by first-time-correct maths</span><span class="sweeper-streak-v618">3 🔍 • 5 🛡️ • 8 🧰 • 10 ⚡</span></div><div class="sweeper-power-grid-v618">${power('radar','🔍','Radar','Highlights one guaranteed safe square.')}${power('shield','🛡️','Shield','Restores one lost shield.',s.shields>=s.maxShields)}${power('defuser','🧰','Defuser','Removes one hidden mine.')}${power('sweep','⚡','Super Sweep','Safely opens an empty area.')}</div></div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);
+ bindArcadeExitV610();
+ document.querySelectorAll('[data-sweep-size]').forEach(b=>b.onclick=()=>sweeperSetSizeV618(b.dataset.sweepSize));
+ document.querySelectorAll('[data-sweep-mode]').forEach(b=>b.onclick=()=>{if(!activeArcadeV610?.sweeper)return;activeArcadeV610.sweeper.mode=b.dataset.sweepMode;renderSweeperV617()});
+ document.querySelectorAll('[data-sweep-cell]').forEach(b=>{const i=Number(b.dataset.sweepCell);b.onclick=()=>sweeperOpenV617(i);b.oncontextmenu=e=>{e.preventDefault();sweeperToggleFlagV617(i)}});
+ document.querySelectorAll('[data-sweep-answer]').forEach(b=>b.onclick=()=>sweeperChooseAnswerV617(b.dataset.sweepAnswer,b));
+ document.querySelectorAll('[data-sweep-power]').forEach(b=>b.onclick=()=>sweeperUsePowerV618(b.dataset.sweepPower));
+ const dismiss=document.getElementById('sweeperPowerDismissV618');if(dismiss)dismiss.onclick=sweeperDismissPowerV618;
 };
 
 
