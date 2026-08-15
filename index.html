@@ -403,6 +403,21 @@ button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!impo
 .invaders-falling-layer-v622{position:absolute;inset:0;z-index:3}.invader-drop-v622{position:absolute;width:min(230px,30%);transform:translateX(-50%);text-align:center;transition:left .2s ease;will-change:top;filter:drop-shadow(0 6px 10px rgba(0,0,0,.2))}.invader-drop-v622 .alien{font-size:42px;line-height:1}.invader-drop-v622 .sum{margin-top:3px;padding:8px 12px;border-radius:13px;background:rgba(19,27,54,.95);border:2px solid #526687;color:#f8fbff;font-size:clamp(18px,2.7vw,28px);font-weight:1000;font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;white-space:nowrap}.invader-drop-v622.active .sum{border-color:#54e8ff;box-shadow:0 0 0 4px rgba(84,232,255,.13),0 0 22px rgba(84,232,255,.32)}.invader-drop-v622.active .alien{filter:drop-shadow(0 0 10px rgba(82,236,255,.65))}.invader-drop-v622 .target-tag{display:none;margin:0 auto 4px;width:max-content;padding:3px 8px;border-radius:999px;background:#52e7ff;color:#10203d;font-size:10px;font-weight:1000;letter-spacing:.08em}.invader-drop-v622.active .target-tag{display:block}.invader-drop-v622 .zone-tag{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.1);color:#d9e5ff;font-size:9px;font-weight:900}.invader-drop-v622.blasted{animation:invaderBurstV622 .38s ease forwards}.invader-drop-v622.escaped{animation:invaderEscapeV622 .36s ease forwards}
 .invaders-active-v622{max-width:650px;margin:12px auto 7px;text-align:center}.invaders-active-v622 strong{display:inline-block;padding:6px 12px;border-radius:999px;background:#eafcff;border:1px solid #9eefff;color:#17374a;font-size:14px}.invaders-queue-note-v622{text-align:center;font-size:12px;color:#6a7389;font-weight:800;margin-top:4px}.invaders-message-v622{text-align:center;min-height:28px;margin-top:8px;font-weight:900;color:#56617a}.invaders-pulse-v622{position:absolute;left:50%;bottom:42px;transform:translateX(-50%);font-size:52px;z-index:5;opacity:.9}
 @keyframes invaderBurstV622{0%{transform:translateX(-50%) scale(1);opacity:1}45%{transform:translateX(-50%) scale(1.35) rotate(9deg);filter:brightness(2)}100%{transform:translateX(-50%) scale(.2);opacity:0}}@keyframes invaderEscapeV622{0%{transform:translateX(-50%);opacity:1}100%{transform:translateX(-50%) translateY(45px) scale(.8);opacity:0}}@media(max-width:650px){.invaders-space-v622{min-height:360px;height:51vh}.invader-drop-v622{width:31%}.invader-drop-v622 .alien{font-size:34px}.invader-drop-v622 .sum{padding:7px 6px;font-size:17px}.invader-drop-v622 .target-tag{font-size:8px}.invaders-active-v622 strong{font-size:12px}}
+
+
+/* === V6.23 FACT INVADERS: AIMED LASER COMBAT === */
+.invaders-ship-v623{bottom:16px!important;font-size:68px!important;line-height:1;z-index:7!important;filter:drop-shadow(0 0 10px rgba(73,223,247,.9)) drop-shadow(0 0 20px rgba(105,91,255,.55));transform:translateX(-50%) rotate(-45deg)!important;transition:filter .15s ease}
+.invaders-ship-v623.muzzle{filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 28px #5df2ff) brightness(1.35)}
+.invaders-ship-v623.hit{animation:invadersShipHitV623 .36s ease}
+.invaders-fx-v623{position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden}
+.invaders-laser-shot-v623{position:absolute;width:7px;height:54px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.15) 0%,#fff 28%,#7ff6ff 55%,#32ccff 100%);box-shadow:0 0 7px #fff,0 0 16px #5cecff,0 0 28px rgba(84,223,255,.75);transform-origin:50% 50%;will-change:left,top,transform,opacity}
+.invaders-laser-shot-v623.enemy{background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,#fff 25%,#ff9db6 55%,#ff3d69 100%);box-shadow:0 0 7px #fff,0 0 16px #ff6c91,0 0 28px rgba(255,61,105,.75)}
+.invaders-impact-v623{position:absolute;width:18px;height:18px;border-radius:50%;transform:translate(-50%,-50%);background:#fff;box-shadow:0 0 0 8px rgba(96,238,255,.35),0 0 26px 15px rgba(80,210,255,.45);animation:invadersImpactV623 .3s ease-out forwards}
+.invaders-impact-v623.enemy{box-shadow:0 0 0 8px rgba(255,90,122,.3),0 0 26px 15px rgba(255,71,105,.45)}
+.invader-drop-v622.target-locked-v623 .sum{border-color:#fff!important;box-shadow:0 0 0 5px rgba(84,232,255,.18),0 0 30px rgba(84,232,255,.58)!important}
+@keyframes invadersImpactV623{0%{opacity:1;transform:translate(-50%,-50%) scale(.25)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.5)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+@keyframes invadersShipHitV623{0%,100%{transform:translateX(-50%) rotate(-45deg)}25%{transform:translateX(-58%) rotate(-55deg);filter:brightness(2)}65%{transform:translateX(-42%) rotate(-35deg)}}
+@media(max-width:650px){.invaders-ship-v623{font-size:56px!important;bottom:18px!important}.invaders-laser-shot-v623{height:44px;width:6px}}
 </style>
 </head><body><div id="app"></div><script>
 'use strict';
@@ -3203,7 +3218,7 @@ function invadersStartLoopV622(){const a=activeArcadeV610,s=a?.invaders;if(!a||!
 function invadersSetInputV622(v){const s=activeArcadeV610?.invaders;if(!s||s.gameOver)return;s.input=String(v).slice(0,5);invadersPaintInputV622()}
 function invadersKeyV622(key){const s=activeArcadeV610?.invaders;if(!s||s.gameOver)return;if(/^\d$/.test(key))invadersSetInputV622((s.input||'')+key);else if(key==='-'&&!s.input)invadersSetInputV622('-');else if(key==='Backspace')invadersSetInputV622((s.input||'').slice(0,-1));else if(key==='Enter')invadersFireV621()}
 function invadersFireV621(){const a=activeArcadeV610,s=a?.invaders;if(!a||!s||s.gameOver)return;const target=invadersTargetV622(s);if(!target){s.message='Wait for the next sum to appear.';invadersPaintHudV622();return}const value=Number(String(s.input).trim());if(!s.input||!Number.isFinite(value)){s.message='Type the answer to the highlighted sum first.';invadersPaintHudV622();return}const ok=value===Number(target.q.answer);invadersResolveDropV622(target,ok,'answer')}
-function renderInvadersV621(){const a=activeArcadeV610,s=invadersEnsureV622();if(!a||!s)return;const best=arcadeBestForContextV621(a);renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage invaders-stage-v621"><div class="qmeta">👾 FACT INVADERS <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Defend the maths base!</div><p class="arcade-instruction">Up to three sums fall at once. Answer the <strong>highlighted oldest sum</strong> before any reaches the defence line.</p><div class="invaders-hud-v621"><span class="invaders-chip-v621 life" id="invadersLivesV622">${invadersLivesHtmlV622(s)}</span><span class="invaders-chip-v621 wave" id="invadersProgressV622">🌌 ${s.resolvedCount} / 20</span><span class="invaders-chip-v621" id="invadersScoreV622">🎯 ${a.correct} destroyed • ⭐ ${a.points} pts</span><span class="invaders-chip-v621">🏅 PB ${best} pts</span></div><div class="invaders-space-v622" id="invadersSpaceV622"><div class="invaders-falling-layer-v622" id="invadersFallingLayerV622"></div><div class="invaders-ground-v622"></div><div class="invaders-pulse-v622">🛡️</div></div><div class="invaders-active-v622" id="invadersActivePromptV622">Get ready…</div><div class="invaders-answer-panel-v621"><div class="invaders-answer-row-v621"><div class="invaders-display-v621" id="invadersDisplayV621">${esc(s.input||'?')}</div><button class="invaders-fire-v621" id="invadersFireV621">💥 BLAST</button></div><div class="invaders-keypad-v621">${['1','2','3','4','5','6','7','8','9','0','−','⌫'].map(k=>`<button class="invaders-key-v621 ${k==='−'||k==='⌫'?'special':''}" data-invader-key="${k}">${k}</button>`).join('')}</div></div><div class="invaders-message-v622" id="invadersMessageV622">${esc(s.message)}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);bindArcadeExitV610();document.getElementById('invadersFireV621').onclick=invadersFireV621;document.querySelectorAll('[data-invader-key]').forEach(b=>b.onclick=()=>{const k=b.dataset.invaderKey;if(k==='⌫')invadersKeyV622('Backspace');else if(k==='−')invadersKeyV622('-');else invadersKeyV622(k)});if(arcadeKeyHandlerV610)window.removeEventListener('keydown',arcadeKeyHandlerV610);arcadeKeyHandlerV610=e=>{if(activeArcadeV610?.game?.id!=='invaders')return;if(/^\d$/.test(e.key)||e.key==='Backspace'||e.key==='Enter'||e.key==='-'){e.preventDefault();invadersKeyV622(e.key)}};window.addEventListener('keydown',arcadeKeyHandlerV610);invadersPaintHudV622();invadersSyncDropsV622();invadersStartLoopV622()}
+function renderInvadersV621(){const a=activeArcadeV610,s=invadersEnsureV622();if(!a||!s)return;const best=arcadeBestForContextV621(a);renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage invaders-stage-v621"><div class="qmeta">👾 FACT INVADERS <span class="arcade-v2-badge">ARCADE 2.0</span></div><div class="arcade-question">Defend the maths base!</div><p class="arcade-instruction">Up to three sums fall at once. Answer the <strong>highlighted oldest sum</strong> before any reaches the defence line.</p><div class="invaders-hud-v621"><span class="invaders-chip-v621 life" id="invadersLivesV622">${invadersLivesHtmlV622(s)}</span><span class="invaders-chip-v621 wave" id="invadersProgressV622">🌌 ${s.resolvedCount} / 20</span><span class="invaders-chip-v621" id="invadersScoreV622">🎯 ${a.correct} destroyed • ⭐ ${a.points} pts</span><span class="invaders-chip-v621">🏅 PB ${best} pts</span></div><div class="invaders-space-v622" id="invadersSpaceV622"><div class="invaders-falling-layer-v622" id="invadersFallingLayerV622"></div><div class="invaders-ground-v622"></div><div class="invaders-pulse-v622 invaders-ship-v623" id="invadersShipV623">🚀</div><div class="invaders-fx-v623" id="invadersFxV623" aria-hidden="true"></div></div><div class="invaders-active-v622" id="invadersActivePromptV622">Get ready…</div><div class="invaders-answer-panel-v621"><div class="invaders-answer-row-v621"><div class="invaders-display-v621" id="invadersDisplayV621">${esc(s.input||'?')}</div><button class="invaders-fire-v621" id="invadersFireV621">💥 BLAST</button></div><div class="invaders-keypad-v621">${['1','2','3','4','5','6','7','8','9','0','−','⌫'].map(k=>`<button class="invaders-key-v621 ${k==='−'||k==='⌫'?'special':''}" data-invader-key="${k}">${k}</button>`).join('')}</div></div><div class="invaders-message-v622" id="invadersMessageV622">${esc(s.message)}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);bindArcadeExitV610();document.getElementById('invadersFireV621').onclick=invadersFireV621;document.querySelectorAll('[data-invader-key]').forEach(b=>b.onclick=()=>{const k=b.dataset.invaderKey;if(k==='⌫')invadersKeyV622('Backspace');else if(k==='−')invadersKeyV622('-');else invadersKeyV622(k)});if(arcadeKeyHandlerV610)window.removeEventListener('keydown',arcadeKeyHandlerV610);arcadeKeyHandlerV610=e=>{if(activeArcadeV610?.game?.id!=='invaders')return;if(/^\d$/.test(e.key)||e.key==='Backspace'||e.key==='Enter'||e.key==='-'){e.preventDefault();invadersKeyV622(e.key)}};window.addEventListener('keydown',arcadeKeyHandlerV610);invadersPaintHudV622();invadersSyncDropsV622();invadersStartLoopV622()}
 const renderArcadeQuestionV622Base=renderArcadeQuestionV610;
 renderArcadeQuestionV610=function(){const a=activeArcadeV610;if(!a||a.game?.id!=='invaders')return renderArcadeQuestionV622Base();if(!a.invaders?.v622)invadersInitV622(a);renderInvadersV621()};
 const invadersFinishV622Base=invadersFinishV621;
@@ -3218,4 +3233,58 @@ invadersFinishV621=function(cleared){const r=invadersFinishCopyV622Base(cleared)
 initCloudV5();
 
 
+
+
+/* === V6.23 FACT INVADERS: AIMED LASER COMBAT === */
+const invadersProgressV623Base=invadersProgressV622;
+invadersProgressV622=function(drop,now){
+ if(drop?.hitPending&&Number.isFinite(drop.hitProgress))return drop.hitProgress;
+ return invadersProgressV623Base(drop,now);
+};
+const invadersTickV623Base=invadersTickV622;
+invadersTickV622=function(){
+ const s=activeArcadeV610?.invaders;
+ if(s?.shotBusy){invadersSyncDropsV622();return}
+ return invadersTickV623Base();
+};
+function invadersImpactV623(x,y,enemy=false){
+ const fx=document.getElementById('invadersFxV623');if(!fx)return;
+ const hit=document.createElement('div');hit.className='invaders-impact-v623'+(enemy?' enemy':'');hit.style.left=`${x}px`;hit.style.top=`${y}px`;fx.appendChild(hit);setTimeout(()=>hit.remove(),340);
+}
+function invadersAimedShotV623(fromEl,toEl,enemy=false,onImpact=()=>{}){
+ const stage=document.getElementById('invadersSpaceV622'),fx=document.getElementById('invadersFxV623');
+ if(!stage||!fx||!fromEl||!toEl){onImpact();return}
+ const sr=stage.getBoundingClientRect(),fr=fromEl.getBoundingClientRect(),tr=toEl.getBoundingClientRect();
+ const sx=fr.left+fr.width/2-sr.left,sy=fr.top+fr.height*.38-sr.top,tx=tr.left+tr.width/2-sr.left,ty=tr.top+tr.height*.55-sr.top;
+ const dx=tx-sx,dy=ty-sy,angle=Math.atan2(dy,dx)*180/Math.PI+90;
+ const bolt=document.createElement('div');bolt.className='invaders-laser-shot-v623'+(enemy?' enemy':'');bolt.style.left=`${sx}px`;bolt.style.top=`${sy}px`;fx.appendChild(bolt);
+ const duration=Math.max(150,Math.min(260,Math.hypot(dx,dy)*.34));
+ const anim=bolt.animate([
+  {left:`${sx}px`,top:`${sy}px`,transform:`translate(-50%,-50%) rotate(${angle}deg) scaleY(.55)`,opacity:.25},
+  {offset:.18,left:`${sx+dx*.18}px`,top:`${sy+dy*.18}px`,transform:`translate(-50%,-50%) rotate(${angle}deg) scaleY(1.25)`,opacity:1},
+  {left:`${tx}px`,top:`${ty}px`,transform:`translate(-50%,-50%) rotate(${angle}deg) scaleY(.8)`,opacity:1}
+ ],{duration,easing:'cubic-bezier(.18,.72,.25,1)',fill:'forwards'});
+ anim.onfinish=()=>{bolt.remove();invadersImpactV623(tx,ty,enemy);onImpact()};
+}
+function invadersPlayerShotV623(drop,onImpact){
+ const ship=document.getElementById('invadersShipV623'),target=document.getElementById(`invaderDropV622_${drop.id}`);
+ if(ship){ship.classList.add('muzzle');setTimeout(()=>ship.classList.remove('muzzle'),150)}
+ if(target)target.classList.add('target-locked-v623');
+ invadersAimedShotV623(ship,target,false,()=>{target?.classList.remove('target-locked-v623');onImpact()});
+}
+function invadersEnemyShotV623(drop,onImpact){
+ const ship=document.getElementById('invadersShipV623'),target=document.getElementById(`invaderDropV622_${drop.id}`);
+ if(target)target.classList.add('target-locked-v623');
+ invadersAimedShotV623(target,ship,true,()=>{target?.classList.remove('target-locked-v623');if(ship){ship.classList.add('hit');setTimeout(()=>ship.classList.remove('hit'),390)}onImpact()});
+}
+invadersFireV621=function(){
+ const a=activeArcadeV610,s=a?.invaders;if(!a||!s||s.gameOver||s.shotBusy)return;
+ const target=invadersTargetV622(s);if(!target){s.message='Wait for the next sum to appear.';invadersPaintHudV622();return}
+ const value=Number(String(s.input).trim());if(!s.input||!Number.isFinite(value)){s.message='Type the answer to the highlighted sum first.';invadersPaintHudV622();return}
+ const ok=value===Number(target.q.answer);s.shotBusy=true;target.hitProgress=invadersProgressV623Base(target,performance.now());target.hitPending=true;
+ const fire=document.getElementById('invadersFireV621');if(fire)fire.disabled=true;
+ const finish=()=>{if(!activeArcadeV610||activeArcadeV610.game?.id!=='invaders')return;s.shotBusy=false;target.hitPending=false;delete target.hitProgress;if(fire)fire.disabled=false;invadersResolveDropV622(target,ok,'answer')};
+ if(ok){s.message='⚡ Laser locked — firing!';invadersPaintHudV622();invadersPlayerShotV623(target,finish)}
+ else{s.message='⚠️ Wrong answer — incoming fire!';invadersPaintHudV622();invadersEnemyShotV623(target,finish)}
+};
 </script></body></html>
