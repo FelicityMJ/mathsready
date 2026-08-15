@@ -3487,4 +3487,108 @@ renderArcadeHubV6101=function(){if(arcadeGateSyncV625())return renderArcadeGateL
 const renderArcadeGamePickerV625Base=renderArcadeGamePickerV610;
 renderArcadeGamePickerV610=function(levelId){if(arcadeGateSyncV625())return renderArcadeGateLockedV625();return renderArcadeGamePickerV625Base(levelId)};
 
+/* ================================================================
+   V6.26 MATHS SURFER
+   Replaces Lane Switch with a continuous three-lane runner.
+   - maths is answered by steering through one of three answer gates
+   - road keeps moving while the learner thinks
+   - coins are optional score bonuses
+   - barriers can be jumped/dodged; trains must be dodged
+   - obstacle collisions are game mistakes only, never maths errors
+   ================================================================ */
+(function addMathsSurferV626(){
+ const css=`
+ .surfer-stage-v626{position:relative;width:min(880px,98vw);height:min(540px,64dvh);min-height:400px;margin:0 auto;border-radius:30px;overflow:hidden;background:linear-gradient(180deg,#78c9ff 0 20%,#d9efff 20% 25%,#56606b 25% 100%);box-shadow:0 18px 44px rgba(25,31,39,.22);touch-action:none;user-select:none}
+ .surfer-sky-v626{position:absolute;left:0;right:0;top:0;height:27%;overflow:hidden;background:linear-gradient(180deg,#58baf6,#bfe8ff);pointer-events:none}
+ .surfer-sky-v626:before{content:'🏙️   🏢  🏬   🏢    🏙️   🏢';position:absolute;left:-2%;right:-2%;bottom:-7px;font-size:62px;letter-spacing:18px;white-space:nowrap;opacity:.82;filter:saturate(.85)}
+ .surfer-road-v626{position:absolute;left:5%;right:5%;top:24%;bottom:0;overflow:hidden;background:linear-gradient(90deg,#3e4853 0 32.8%,#46515d 32.8% 33.5%,#3e4853 33.5% 66.2%,#46515d 66.2% 66.9%,#3e4853 66.9% 100%);border-left:12px solid #80909d;border-right:12px solid #80909d;clip-path:polygon(26% 0,74% 0,100% 100%,0 100%)}
+ .surfer-road-lines-v626{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 32.8%,rgba(255,255,255,.82) 33%,rgba(255,255,255,.82) 33.35%,transparent 33.55%,transparent 66.1%,rgba(255,255,255,.82) 66.35%,rgba(255,255,255,.82) 66.7%,transparent 66.9%);mask-image:linear-gradient(180deg,rgba(0,0,0,.25),#000 40%)}
+ .surfer-ties-v626{position:absolute;left:8%;right:8%;top:26%;bottom:0;opacity:.22;background:repeating-linear-gradient(180deg,transparent 0 36px,#d9e0e5 37px 42px,transparent 43px 76px);pointer-events:none}
+ .surfer-question-v626{position:absolute;top:11px;left:50%;transform:translateX(-50%);z-index:20;min-width:min(560px,88%);padding:8px 16px;border-radius:18px;background:rgba(18,27,50,.91);color:white;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.22);font-weight:950;font-size:clamp(20px,3vw,31px)}
+ .surfer-question-v626 small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#bfe6ff;margin-bottom:1px}
+ .surfer-hud-v626{position:absolute;left:15px;top:74px;z-index:20;display:flex;gap:7px;flex-wrap:wrap;max-width:62%}
+ .surfer-chip-v626{background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:6px 10px;font-size:12px;font-weight:950;color:#243044;box-shadow:0 5px 14px rgba(0,0,0,.13)}
+ .surfer-player-v626{position:absolute;bottom:25px;z-index:14;width:76px;height:84px;display:grid;place-items:center;transform:translateX(-50%);transition:left .13s ease;filter:drop-shadow(0 8px 6px rgba(0,0,0,.32));font-size:54px}
+ .surfer-player-v626 .board{position:absolute;bottom:1px;font-size:39px;z-index:-1;transform:rotate(-8deg)}
+ .surfer-player-v626.jump{animation:surferJumpV626 .58s ease}
+ .surfer-player-v626.hit{animation:surferHitV626 .42s ease}
+ .surfer-gate-v626{position:absolute;left:0;right:0;height:92px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 10%;z-index:10;pointer-events:none}
+ .surfer-gate-card-v626{display:grid;place-items:center;border-radius:16px;border:4px solid rgba(255,255,255,.92);background:linear-gradient(180deg,#fff9b0,#ffc83e);color:#352900;font-size:clamp(20px,3vw,29px);font-weight:1000;box-shadow:0 9px 20px rgba(0,0,0,.25);position:relative}
+ .surfer-gate-card-v626:before{content:'';position:absolute;left:50%;top:100%;width:4px;height:34px;background:rgba(255,255,255,.72)}
+ .surfer-gate-v626.wrong .surfer-gate-card-v626{animation:surferGateShakeV626 .35s ease}
+ .surfer-object-v626{position:absolute;z-index:11;transform:translateX(-50%);display:grid;place-items:center;filter:drop-shadow(0 5px 4px rgba(0,0,0,.24));will-change:top}
+ .surfer-coin-v626{font-size:29px;animation:surferCoinSpinV626 .7s linear infinite}
+ .surfer-obstacle-v626.barrier{font-size:43px}.surfer-obstacle-v626.train{font-size:56px}
+ .surfer-pop-v626{position:absolute;z-index:30;transform:translate(-50%,-50%);font-size:27px;font-weight:1000;color:#fff;text-shadow:0 3px 10px #000;pointer-events:none;animation:surferPopV626 .7s ease forwards}
+ .surfer-go-v626{position:absolute;left:50%;top:51%;z-index:32;transform:translate(-50%,-50%);font-size:64px;font-weight:1000;color:white;text-shadow:0 7px 22px rgba(0,0,0,.5);animation:surferGoV626 .9s ease forwards;pointer-events:none}
+ .surfer-controls-v626{display:flex;justify-content:center;gap:10px;margin-top:10px}.surfer-controls-v626 button{border:0;border-radius:16px;background:linear-gradient(180deg,#fff,#e9f1ff);color:#283d79;font-size:24px;font-weight:1000;padding:9px 24px;box-shadow:0 7px 16px rgba(44,37,107,.11)}
+ .surfer-help-v626{text-align:center;margin-top:7px;font-size:12px;color:#667085;font-weight:750}
+ @keyframes surferJumpV626{0%,100%{transform:translateX(-50%) translateY(0) rotate(0)}48%{transform:translateX(-50%) translateY(-95px) rotate(-7deg)}}
+ @keyframes surferHitV626{20%{transform:translateX(-50%) rotate(-14deg) scale(.9)}45%{transform:translateX(-50%) rotate(14deg) scale(.9)}75%{transform:translateX(-50%) rotate(-8deg)}100%{transform:translateX(-50%) rotate(0)}}
+ @keyframes surferCoinSpinV626{50%{transform:translateX(-50%) scaleX(.35)}100%{transform:translateX(-50%) scaleX(1)}}
+ @keyframes surferPopV626{0%{opacity:1;transform:translate(-50%,-20%) scale(.65)}35%{transform:translate(-50%,-75%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-135%) scale(.9)}}
+ @keyframes surferGateShakeV626{25%{transform:translateX(-6px)}55%{transform:translateX(6px)}100%{transform:translateX(0)}}
+ @keyframes surferGoV626{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-65%) scale(.9)}}
+ @media(max-width:700px){.surfer-stage-v626{height:min(500px,62dvh);min-height:390px}.surfer-sky-v626:before{font-size:48px}.surfer-question-v626{font-size:21px}.surfer-hud-v626{top:68px;max-width:75%}.surfer-player-v626{font-size:48px}.surfer-controls-v626 button{padding:9px 20px}}
+ `;const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+})();
+
+// Replace the old Lane Switch card but leave the old implementation dormant for rollback safety.
+delete ARCADE_GAMES_V610.lane;
+ARCADE_GAMES_V610.surfer={id:'surfer',icon:'🏄',name:'Maths Surfer',blurb:'Race through a three-lane city, dodge obstacles, grab coins and steer through the correct answer gate.',tag:'Continuous runner + answer gates'};
+
+let arcadeSurferTimerV626=null;
+const arcadeCleanupV626Base=arcadeCleanupV610;
+arcadeCleanupV610=function(){if(arcadeSurferTimerV626){clearInterval(arcadeSurferTimerV626);arcadeSurferTimerV626=null}return arcadeCleanupV626Base()};
+
+function surferTierSpeedV626(a){const tier=clamp(Number(a?.challengeTier)||1,1,4),base=[4.2,4.7,5.2,5.7][tier-1];return base+Math.min(1.05,Math.max(0,Number(a?.index)||0)*.075)}
+function surferLaneLeftV626(lane){return[24.2,50,75.8][clamp(Number(lane)||0,0,2)]}
+function surferInitV626(){
+ const a=activeArcadeV610;if(!a)return;const now=Date.now();a.surfer={lane:1,gate:null,objects:[],coins:0,jumpingUntil:0,invulnerableUntil:0,started:false,waitingNext:false,lastCoinSpawn:now,lastObstacleSpawn:now,nextCoinDelay:900,nextObstacleDelay:1650,roadOffset:0,message:'Steer, jump and keep calculating — the road never stops.',resolved:false};
+}
+function surferMakeGateV626(){const a=activeArcadeV610,s=a?.surfer;if(!a||!s||!a.q)return;const choices=arcadeChoicesGuaranteedV613(a.q,a.level,3),correctLane=choices.findIndex(v=>Number(v)===Number(a.q.answer));s.gate={choices,correctLane:correctLane<0?1:correctLane,y:-105,resolved:false};s.waitingNext=false;}
+function surferSpawnCoinTrailV626(){const s=activeArcadeV610?.surfer;if(!s)return;const lane=rand(0,2),count=rand(2,4);for(let i=0;i<count;i++)s.objects.push({id:`c${Date.now()}${i}${Math.random()}`,kind:'coin',lane,y:-35-i*54,done:false});}
+function surferSpawnObstacleV626(){const s=activeArcadeV610?.surfer;if(!s)return;const lane=rand(0,2),kind=Math.random()<.68?'barrier':'train';s.objects.push({id:`o${Date.now()}${Math.random()}`,kind,lane,y:-72,done:false});}
+function surferStartLoopV626(){if(arcadeSurferTimerV626)clearInterval(arcadeSurferTimerV626);const s=activeArcadeV610?.surfer;if(!s)return;s.started=true;arcadeSurferTimerV626=setInterval(surferTickV626,30)}
+function surferPopV626(text,lane,good=true){const stage=document.getElementById('surferStageV626');if(!stage)return;const p=document.createElement('div');p.className='surfer-pop-v626';p.textContent=text;p.style.left=`${surferLaneLeftV626(lane)}%`;p.style.top='78%';if(!good)p.style.color='#ffd2d2';stage.appendChild(p);setTimeout(()=>p.remove(),720)}
+function surferRefreshHudV626(){const a=activeArcadeV610,s=a?.surfer;if(!a||!s)return;const q=document.getElementById('surferQuestionTextV626'),coins=document.getElementById('surferCoinsV626'),msg=document.getElementById('surferMessageV626');if(q)q.textContent=`${a.q?.prompt||''} = ?`;if(coins)coins.textContent=`🪙 ${s.coins}`;if(msg)msg.textContent=s.message||'';const prog=document.getElementById('arcadeProgressStat');if(prog)prog.textContent=`${Math.min(a.index+1,a.questions.length)}/${a.questions.length}`;}
+function surferPaintV626(){
+ const a=activeArcadeV610,s=a?.surfer,stage=document.getElementById('surferStageV626');if(!a||!s||!stage)return;const player=document.getElementById('surferPlayerV626');if(player){player.style.left=`${surferLaneLeftV626(s.lane)}%`;player.classList.toggle('jump',Date.now()<s.jumpingUntil)}
+ const ties=document.getElementById('surferTiesV626');if(ties)ties.style.backgroundPositionY=`${s.roadOffset}px`;
+ const old=new Map([...stage.querySelectorAll('[data-surfer-object]')].map(el=>[el.dataset.surferObject,el]));for(const o of s.objects){let el=old.get(o.id);if(!el){el=document.createElement('div');el.dataset.surferObject=o.id;el.className=`surfer-object-v626 ${o.kind==='coin'?'surfer-coin-v626':'surfer-obstacle-v626 '+o.kind}`;el.textContent=o.kind==='coin'?'🪙':o.kind==='train'?'🚆':'🚧';stage.appendChild(el)}old.delete(o.id);el.style.left=`${surferLaneLeftV626(o.lane)}%`;el.style.top=`${o.y}px`;}
+ old.forEach(el=>el.remove());let gate=document.getElementById('surferGateV626');if(s.gate){if(!gate){gate=document.createElement('div');gate.id='surferGateV626';gate.className='surfer-gate-v626';stage.appendChild(gate)}gate.innerHTML=s.gate.choices.map(v=>`<div class="surfer-gate-card-v626">${esc(v)}</div>`).join('');gate.style.top=`${s.gate.y}px`;gate.classList.toggle('wrong',!!s.gate.wrongFlash)}else if(gate)gate.remove();surferRefreshHudV626();
+}
+function surferMoveV626(dir){const s=activeArcadeV610?.surfer;if(!s||s.resolved)return;const delta=dir==='left'?-1:1;s.lane=clamp(s.lane+delta,0,2);surferPaintV626()}
+function surferJumpV626(){const s=activeArcadeV610?.surfer;if(!s||s.resolved)return;s.jumpingUntil=Date.now()+600;const p=document.getElementById('surferPlayerV626');if(p){p.classList.remove('jump');void p.offsetWidth;p.classList.add('jump')}}
+function surferGameHitV626(o){const a=activeArcadeV610,s=a?.surfer;if(!a||!s)return;const now=Date.now();if(now<s.invulnerableUntil)return;s.invulnerableUntil=now+700;arcadeWrongV610(o.kind==='train'?20:15,'game');const p=document.getElementById('surferPlayerV626');if(p){p.classList.remove('hit');void p.offsetWidth;p.classList.add('hit')}s.message=o.kind==='train'?'🚆 Train bump! Game points lost — maths accuracy unaffected.':'🚧 Barrier bump! Game points lost — maths accuracy unaffected.';surferPopV626(o.kind==='train'?'−20':'−15',s.lane,false);setArcadeFeedbackV610(s.message,false);}
+function surferResolveGateV626(){
+ const a=activeArcadeV610,s=a?.surfer,g=s?.gate;if(!a||!s||!g||g.resolved)return;g.resolved=true;const chosen=s.lane,ok=chosen===g.correctLane;s.gate=null;if(ok){s.message='✅ Correct gate — keep moving!';surferPopV626('+125',chosen,true);setArcadeFeedbackV610('🏄 Correct gate! +125 — keep surfing!',true);arcadeCorrectV610(25);s.waitingNext=true;}else{const picked=g.choices[chosen];arcadeWrongV610(25,'math');s.message=`❌ ${picked} was the wrong gate. Same fact coming again.`;surferPopV626('−25',chosen,false);setArcadeFeedbackV610(`Wrong gate: ${picked}. Keep moving — try the same fact again.`,false);setTimeout(()=>{const x=activeArcadeV610;if(!x||x.game?.id!=='surfer'||x.surfer?.resolved||x.surfer?.gate)return;surferMakeGateV626();surferPaintV626()},620)}
+}
+function surferTickV626(){
+ const a=activeArcadeV610,s=a?.surfer,stage=document.getElementById('surferStageV626');if(!a||!s||!stage||s.resolved)return;const now=Date.now(),speed=surferTierSpeedV626(a);s.roadOffset=(s.roadOffset+speed*1.9)%76;
+ if(s.gate){s.gate.y+=speed;if(s.gate.y>=stage.clientHeight-155)surferResolveGateV626()}
+ if(now-s.lastCoinSpawn>=s.nextCoinDelay){s.lastCoinSpawn=now;s.nextCoinDelay=850+Math.random()*650;surferSpawnCoinTrailV626()}
+ if(now-s.lastObstacleSpawn>=s.nextObstacleDelay){s.lastObstacleSpawn=now;s.nextObstacleDelay=1450+Math.random()*1000;const gateLow=s.gate&&s.gate.y>stage.clientHeight*.46;if(!gateLow)surferSpawnObstacleV626()}
+ const hitY=stage.clientHeight-115;for(const o of s.objects){if(o.done)continue;o.y+=speed*(o.kind==='coin'?1.0:1.05);if(o.y>=hitY&&!o.checked){o.checked=true;if(o.lane===s.lane){if(o.kind==='coin'){o.done=true;s.coins++;a.points+=5;refreshArcadeStatsV610();surferPopV626('+5',o.lane,true)}else{const canJump=o.kind==='barrier'&&now<s.jumpingUntil;if(!canJump){o.done=true;surferGameHitV626(o)}else{o.done=true;surferPopV626('JUMP!',o.lane,true)}}}}if(o.y>stage.clientHeight+80)o.done=true}
+ s.objects=s.objects.filter(o=>!o.done);surferPaintV626();
+}
+function surferBindV626(){
+ bindArcadeExitV610();document.querySelectorAll('[data-surfer-move]').forEach(b=>b.onclick=()=>{const d=b.dataset.surferMove;if(d==='jump')surferJumpV626();else surferMoveV626(d)});
+ arcadeKeyHandlerV610=e=>{if(activeArcadeV610?.game?.id!=='surfer')return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();surferMoveV626(e.key==='ArrowLeft'?'left':'right')}else if(e.key==='ArrowUp'||e.key===' '){e.preventDefault();surferJumpV626()}};window.addEventListener('keydown',arcadeKeyHandlerV610);
+ const stage=document.getElementById('surferStageV626');if(stage){let sx=0,sy=0;stage.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY});stage.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>38&&Math.abs(dx)>Math.abs(dy))surferMoveV626(dx<0?'left':'right');else if(dy<-38)surferJumpV626()})}
+}
+function renderSurferV626(){
+ const a=activeArcadeV610,s=a?.surfer;if(!a||!s)return;renderArcadeStableV614(`<div class="arcade-shell">${arcadeTopV610(a)}<section class="arcade-game-stage"><div class="qmeta">🏄 MATHS SURFER <span class="arcade-v2-badge">ARCADE 2.0</span></div><p class="arcade-instruction">Keep moving. Steer through the correct answer gate, grab coins and dodge the city obstacles.</p><div class="surfer-stage-v626" id="surferStageV626"><div class="surfer-sky-v626"></div><div class="surfer-road-v626"><div class="surfer-road-lines-v626"></div></div><div class="surfer-ties-v626" id="surferTiesV626"></div><div class="surfer-question-v626"><small>ANSWER GATE</small><span id="surferQuestionTextV626">${esc(a.q.prompt)} = ?</span></div><div class="surfer-hud-v626"><span class="surfer-chip-v626" id="surferCoinsV626">🪙 ${s.coins}</span><span class="surfer-chip-v626">🚧 jump or dodge</span><span class="surfer-chip-v626">🚆 change lane</span></div><div class="surfer-player-v626" id="surferPlayerV626">🧑<span class="board">🛹</span></div><div class="surfer-go-v626">GO!</div></div><div class="surfer-controls-v626"><button data-surfer-move="left">←</button><button data-surfer-move="jump">↑ JUMP</button><button data-surfer-move="right">→</button></div><div class="surfer-help-v626" id="surferMessageV626">${esc(s.message)}</div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);surferBindV626();surferMakeGateV626();surferPaintV626();setTimeout(()=>{if(activeArcadeV610?.game?.id==='surfer'&&!arcadeSurferTimerV626)surferStartLoopV626()},260);
+}
+
+// Use the existing adaptive/personal-best Arcade engine, but keep Surfer's playfield alive between facts.
+const finishArcadeV626Base=finishArcadeV610;
+finishArcadeV610=function(){const a=activeArcadeV610,isSurfer=a?.game?.id==='surfer',coins=isSurfer?Number(a.surfer?.coins||0):0;const r=finishArcadeV626Base();if(isSurfer){const stats=document.querySelector('.set-stats');if(stats)stats.insertAdjacentHTML('beforeend',`<div class="set-stat"><strong>${coins}</strong><span>coins collected</span></div>`)}return r};
+
+const renderArcadeQuestionV626Base=renderArcadeQuestionV610;
+renderArcadeQuestionV610=function(){
+ const a=activeArcadeV610;if(!a||a.game?.id!=='surfer')return renderArcadeQuestionV626Base();if(a.index>=a.questions.length){const s=a.surfer;if(s)s.resolved=true;if(arcadeSurferTimerV626){clearInterval(arcadeSurferTimerV626);arcadeSurferTimerV626=null}return finishArcadeV610()}
+ a.q=a.questions[a.index];a.questionWrong=0;a.mathQuestionWrong=0;if(!a.surfer){surferInitV626();return renderSurferV626()}const s=a.surfer;s.waitingNext=false;surferMakeGateV626();surferRefreshHudV626();surferPaintV626();
+};
+
 </script></body></html>
