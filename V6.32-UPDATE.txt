@@ -1,0 +1,43 @@
+SpeedyMaths V6.32 — Front Door, Free Games and Arcade Retheme
+16 August 2026
+
+PUBLIC FRONT DOOR
+- speedymaths.co.uk now opens to a public SpeedyMaths landing page.
+- Three routes: Family, School, Free Maths Games.
+- Family opens the existing Firebase-backed family product.
+- School opens the separate classroom site.
+
+FREE MATHS GAMES
+- No account or learner history required.
+- Two of the ten games are free each week; the other eight remain visible but locked.
+- The free pair changes automatically each Monday on a five-week rotation.
+- Visitors choose +, -, x or division and then a suitable fact/range/mix.
+- The last free selection is remembered locally in the browser only.
+- Anonymous free play does not save learner progress to Firestore.
+- If the browser is already signed into the Family product, the Free Games route directs the learner back to the Family Arcade so it cannot be used as an easy bypass of the Family Arcade learning break.
+
+ARCADE RETHEME / RENAMES
+- Whack-a-Chick -> Crack-a-Fact (eggs/chicks; hammer/BONK presentation removed)
+- Balloon Pop -> Balloon Pop
+- Astro Maze -> Planet Path
+- Maths Snake -> Maths Snake
+- Number Drop -> Stack Quest (small custom building pieces rather than the classic full tetromino set)
+- Flappy Facts -> Sky Sums (plane + cloud gates)
+- Sweet Match -> Number Gems (gem/crystal presentation; Number Storm)
+- Mathsweeper -> Grid Quest (hidden hazards / markers presentation)
+- Maths Surfer -> Maths Rapids (river/kayak/log/rock presentation)
+- Fact Invaders -> Meteor Shield (meteors + shield presentation)
+
+COMPATIBILITY
+- Internal game IDs are deliberately unchanged so existing Family personal-best/history keys continue to work.
+- Family Arcade remains adaptive and retains the existing 20-minute learning gate.
+- V6.31 Firestore write-efficiency changes are preserved.
+- Firestore rules were not changed.
+- CNAME remains speedymaths.co.uk.
+
+VALIDATION
+- Inline JavaScript syntax parsed successfully with Node.
+- Rotation check: 10 unique games across five weekly pairs.
+- Firestore rules compared byte-for-byte with the supplied source ZIP: unchanged.
+- CNAME compared with supplied source ZIP: unchanged.
+- A reliable visual Chromium render was not available in the working environment, so browser visual/runtime behaviour should be smoke-tested after deploying to GitHub Pages.
