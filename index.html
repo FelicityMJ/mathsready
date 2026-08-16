@@ -1015,7 +1015,7 @@ function startDiagnostic(){let ids=diagnosticSkills();activeSession={type:'Diagn
 function startSession(type,queue,opts={}){activeSession={type,queue,index:0,items:[],started:Date.now(),q:null,qStarted:0,diagnostic:false,...opts};renderSessionQuestion()}
 function renderSessionQuestion(){const a=activeSession;if(!a)return; if(a.index>=a.queue.length)return finishSession();const id=a.queue[a.index],q=makeQuestion(id);a.q=q;a.qStarted=Date.now();const pct=Math.round(a.index/a.queue.length*100),s=BY_ID[id];let input=q.choices?`<div class="mcq">${q.choices.map(c=>`<button data-answer="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:`<div class="answer-row"><input id="answer" autocomplete="off" inputmode="decimal" aria-label="Answer"><button class="cta" id="check">Answer</button></div>`;
  render(`<div class="question-wrap"><div class="session-top"><button class="back no-print" id="quit">← Exit</button><div class="progress"><span style="width:${pct}%"></span></div><div class="timer">${a.index+1}/${a.queue.length}</div></div><section class="card qcard"><div class="qmeta">${a.diagnostic?'Starting-point check':esc(s.name)}</div><div class="qprompt ${q.words?'words':''}">${esc(q.prompt)}</div>${input}<div class="feedback" id="feedback"></div><div class="hint">${a.diagnostic?'Have a go. Not knowing is useful information.':q.hint||'Take your time first. Speed comes after understanding.'}</div><div class="streakline"><span>⭐ ${state.stars}</span><span>${a.diagnostic?'No score shown':`Skill ${skillState(id).mastery}%`}</span></div></section></div>`,'practice');
- document.getElementById('quit').onclick=()=>{if(confirm('Exit this session? Progress from answered questions is already saved.'))route('practice')};if(q.choices)document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>submitAnswer(b.dataset.answer));else{const inp=document.getElementById('answer');inp.focus();inp.onkeydown=e=>{if(e.key==='Enter')submitAnswer(inp.value)};document.getElementById('check').onclick=()=>submitAnswer(inp.value)}
+ document.getElementById('quit').onclick=()=>{if(confirm('Exit this session? Progress from answered questions is already saved.')){save(true);route('practice')}};if(q.choices)document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>submitAnswer(b.dataset.answer));else{const inp=document.getElementById('answer');inp.focus();inp.onkeydown=e=>{if(e.key==='Enter')submitAnswer(inp.value)};document.getElementById('check').onclick=()=>submitAnswer(inp.value)}
 }
 function submitAnswer(raw){const a=activeSession,q=a.q;if(!q)return;const ms=Date.now()-a.qStarted,ok=isCorrect(raw,q);if(a.diagnostic)seedDiagnostic(q.skill,ok,ms);else updateMastery(q.skill,ok,ms);a.items.push({skill:q.skill,correct:ok,ms,prompt:q.prompt,answer:q.display,raw});const fb=document.getElementById('feedback');fb.className='feedback '+(ok?'ok':'no');fb.textContent=ok?pick(['✓ Nice one!','✓ Correct!','✓ Great work!']):`Not this time — answer: ${q.display}`;document.querySelectorAll('.mcq button,#check,#answer').forEach(el=>el.disabled=true);setTimeout(()=>{a.index++;renderSessionQuestion()},ok?550:1050)}
 function finishSession(){const a=activeSession;if(!a)return;const duration=Math.round((Date.now()-a.started)/1000),correct=a.items.filter(i=>i.correct).length;if(a.diagnostic){state.diagnosticDone=true;state.sessions.unshift({date:new Date().toISOString(),type:'Diagnostic',questions:a.items.length,correct,durationSec:duration});save();activeSession=null;const focus=weakestSkills(3);render(`<section class="card complete"><div class="score">Ready</div><h1>We found a starting point.</h1><p class="muted">There is no school-year grade here. The first mission will start with ${esc(focus[0]?.name||'number foundations')} and mix in easier successes.</p><button class="cta" id="go">See my maths path →</button></section>`,'home');document.getElementById('go').onclick=renderHome;return}
@@ -3891,4 +3891,126 @@ sweetRenderBoardV615=function(){const a=activeArcadeV610,s=a?.sweet,board=docume
 renderSweetV615=function(){const a=activeArcadeV610,s=a.sweet;renderArcadeStableV614(`<div class="arcade-shell"><section class="arcade-game-stage sweet-stage-v628">${v628PinnedHud(a,'🍬 Sweet Match')}<div class="sweet-target-v628">🎯 Make a line of 3 mathematically equivalent sweets that answers the question.</div><div class="sweet-hud-v615"><span class="sweet-chip-v615" id="sweetMultV615">Streak x1</span><span class="sweet-chip-v615 rush" id="sweetRushChipV615">Build 5 correct for Sugar Rush</span><span class="sweet-chip-v615">4 = striped • 5 = rainbow</span></div><div class="sweet-board-shell-v615"><div class="sweet-board-v615" id="sweetBoardV615"></div></div><div class="sweet-math-note-v628">Colours are decoration — use the maths on the sweets. Equivalent expressions count as the same value.</div><div class="sweet-message-v615" id="sweetMessageV615"></div><div class="arcade-feedback" id="arcadeFeedbackV610"></div></section></div>`);bindArcadeExitV610();sweetRenderBoardV615();};
 
 
+
+
+/* ================================================================
+   V6.31 FIRESTORE WRITE EFFICIENCY
+   - ordinary learner progress is cloud-batched (max ~15s while active)
+   - completed sessions/results force an immediate save
+   - visibility/page exit flushes only genuinely dirty child records
+   - mastery leaderboard entries sync only when that entry changed
+   - Face-Off live progress is throttled (roughly every 3 answers / 2.5s)
+   - Snake coins stay in memory and save with the run instead of per coin
+   ================================================================ */
+(function mathsReadyWriteEfficiencyV631(){
+ const NORMAL_SAVE_MS=15000;
+ cloudV5.dirtyChildrenV631=cloudV5.dirtyChildrenV631||new Set();
+ cloudV5.saveSeqV631=cloudV5.saveSeqV631||new Map();
+ cloudV5.writeStatsV631=cloudV5.writeStatsV631||{childWrites:0,leaderboardWrites:0,faceoffLiveWrites:0};
+ window.mathsReadyWriteStatsV631=cloudV5.writeStatsV631;
+
+ function persistSelectionCacheV631(){
+  try{localStorage.setItem('nat5ReadyMathsCloudV5Cache',JSON.stringify({activeFamilyId:platformV3.activeFamilyId,activeChildId:platformV3.activeChildId}))}catch(_){}
+ }
+ function markDirtyV631(c){
+  if(!c)return 0;const n=Number(cloudV5.saveSeqV631.get(c.id)||0)+1;cloudV5.saveSeqV631.set(c.id,n);cloudV5.dirtyChildrenV631.add(c.id);return n;
+ }
+ function leaderboardCacheKeyV631(c){return `mathsReadyLeaderboardSyncV631:${c.id}`}
+ function loadLeaderboardCacheV631(c){try{return JSON.parse(localStorage.getItem(leaderboardCacheKeyV631(c))||'{}')||{}}catch(_){return{}}}
+ function saveLeaderboardCacheV631(c,x){try{localStorage.setItem(leaderboardCacheKeyV631(c),JSON.stringify(x))}catch(_){}}
+ function leaderboardPayloadV631(c,levelId,rev,r){return{childId:c.id,familyId:c.familyId,alias:c.leaderboardAlias||'Maths Star',levelId,boardRevision:Number(rev),bestSec:Number(r.bestSec),masteredAt:r.achievedAt||'',courseVersion:Number(r.courseVersion)||1}}
+ function stableSigV631(x){try{return JSON.stringify(x,Object.keys(x).sort())}catch(_){return String(x)}}
+
+ cloudScheduleChildSaveV5=function(c,delay=NORMAL_SAVE_MS){
+  if(!cloudV5.ready||!cloudV5.user||!c)return;
+  markDirtyV631(c);
+  const immediate=Number(delay)<=0;
+  const old=cloudV5.saveTimers.get(c.id);
+  if(immediate&&old){clearTimeout(old);cloudV5.saveTimers.delete(c.id)}
+  if(!immediate&&old)return; // fixed batching window: repeated answers do not push the save forever
+  const wait=immediate?0:Math.max(1000,Number(delay)||NORMAL_SAVE_MS);
+  cloudV5.saveTimers.set(c.id,setTimeout(()=>{cloudV5.saveTimers.delete(c.id);cloudWriteChildV5(c)},wait));
+ };
+
+ cloudSyncLeaderboardsV5=async function(c){
+  if(!cloudV5.ready||!c?.progress?.fluency?.levels)return;
+  const {doc,setDoc,deleteDoc}=cloudV5.mods,cache=loadLeaderboardCacheV631(c);let changed=false;
+  for(const [levelId,x] of Object.entries(c.progress.fluency.levels)){
+   for(const [rev,r] of Object.entries(x?.boardResults||{})){
+    const entryKey=`${levelId}:${rev}`,ref=doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(levelId,rev),'entries',c.id);
+    const active=!!(c.leaderboardOptIn&&r?.bestSec!=null),payload=active?leaderboardPayloadV631(c,levelId,rev,r):null;
+    const wanted=active?stableSigV631(payload):'__deleted__';
+    if(cache[entryKey]===wanted)continue;
+    try{
+     if(active)await setDoc(ref,payload,{merge:true});else await deleteDoc(ref);
+     cache[entryKey]=wanted;changed=true;cloudV5.writeStatsV631.leaderboardWrites++;
+    }catch(e){console.warn('leaderboard sync',e)}
+   }
+  }
+  if(changed)saveLeaderboardCacheV631(c,cache);
+ };
+
+ cloudWriteChildV5=async function(c){
+  if(!cloudV5.ready||!cloudV5.user||!c)return;
+  const timer=cloudV5.saveTimers.get(c.id);if(timer){clearTimeout(timer);cloudV5.saveTimers.delete(c.id)}
+  const seqAtStart=Number(cloudV5.saveSeqV631.get(c.id)||0);
+  try{
+   const {setDoc,serverTimestamp}=cloudV5.mods;
+   await setDoc(cloudChildRefV5(c),{...deepClone(c),updatedAt:serverTimestamp()},{merge:true});
+   cloudV5.writeStatsV631.childWrites++;
+   await cloudSyncLeaderboardsV5(c);
+   const seqNow=Number(cloudV5.saveSeqV631.get(c.id)||0);
+   if(seqNow===seqAtStart)cloudV5.dirtyChildrenV631.delete(c.id);
+   else if(!cloudV5.saveTimers.get(c.id))cloudScheduleChildSaveV5(c,NORMAL_SAVE_MS);
+  }catch(e){console.error('child save',e);cloudV5.dirtyChildrenV631.add(c.id);if(!cloudV5.saveTimers.get(c.id))cloudScheduleChildSaveV5(c,NORMAL_SAVE_MS)}
+ };
+
+ cloudFlushSaveV5=async function(){
+  if(cloudV5.flushPromiseV631)return cloudV5.flushPromiseV631;
+  const run=(async()=>{
+   const ids=[...cloudV5.dirtyChildrenV631];
+   for(const id of ids){const t=cloudV5.saveTimers.get(id);if(t){clearTimeout(t);cloudV5.saveTimers.delete(id)}}
+   for(const id of ids){const c=platformV3.children?.[id];if(c)await cloudWriteChildV5(c)}
+  })();
+  cloudV5.flushPromiseV631=run;
+  try{await run}finally{cloudV5.flushPromiseV631=null}
+ };
+
+ persistPlatformV3=function(){
+  persistSelectionCacheV631();const c=activeChildV3();if(c){c.progress=state;c.updatedAt=new Date().toISOString();cloudScheduleChildSaveV5(c,NORMAL_SAVE_MS)}
+ };
+ save=function(immediate=false){
+  const c=activeChildV3();persistSelectionCacheV631();if(!c)return;
+  c.progress=state;c.updatedAt=new Date().toISOString();cloudScheduleChildSaveV5(c,immediate?0:NORMAL_SAVE_MS);
+ };
+
+ // Flush dirty progress when leaving the page/app. The existing visibility handler now calls this dirty-aware version too.
+ window.addEventListener('pagehide',()=>{cloudFlushSaveV5()});
+
+ // Face-Off: keep local UI instantly current, but do not write one Firestore document for every single answer.
+ submitFaceoffAnswerV4=function(value){
+  const a=activeFaceoffV4;if(!a)return;const room=faceoffRoomV4(a.roomId),round=faceoffRoundV4(room),q=a.questions[a.index],n=Number(String(value).trim().replace(',','.'));if(String(value).trim()===''||!Number.isFinite(n))return;
+  const ok=Math.abs(n-Number(q.answer))<1e-9,ms=Math.round(performance.now()-a.qStarted);a.items.push({prompt:q.prompt,answer:q.answer,given:n,correct:ok,ms});a.index++;
+  const p=room.players[platformV3.activeChildId];p.live={answered:a.index,round:round.number,started:true,finished:false};
+  const now=Date.now(),last=Number(a.lastLiveCloudAtV631||0),shouldWrite=a.index<a.questions.length&&(a.index===1||a.index%3===0||now-last>=2500);
+  if(shouldWrite){a.lastLiveCloudAtV631=now;cloudV5.mods.setDoc(cloudFaceoffPlayerRefV5(room.code,platformV3.activeChildId),{live:p.live},{merge:true}).then(()=>{cloudV5.writeStatsV631.faceoffLiveWrites++}).catch(console.warn)}
+  a.qStarted=performance.now();renderFaceoffQuestionV4();
+ };
+
+ // Snake coins are part of the in-memory run state and are persisted when the run finishes.
+ snakeCollectCoinV624=function(){
+  const a=activeArcadeV610,s=a?.snake;if(!a||!s||!s.coin)return;const store=snakeStoreV624(),before=Number(store.coins||0),beforeUnlocked=SNAKE_SKINS_V624.filter(x=>before>=x.coins).length;
+  s.coinsRun=(s.coinsRun||0)+1;store.coins=before+1;s.coin=null;a.points+=30;const afterUnlocked=SNAKE_SKINS_V624.filter(x=>store.coins>=x.coins).length;
+  if(afterUnlocked>beforeUnlocked){const sk=SNAKE_SKINS_V624[afterUnlocked-1];s.message=`🎉 ${sk.name} unlocked! Choose it in the Snake Locker next game.`}else{s.message='🪙 Coin collected! +30 points'}
+ };
+
+ // Completed learning units are important checkpoints: bypass the batching delay.
+ const finishSessionV631Base=finishSession;finishSession=function(){const had=!!activeSession,r=finishSessionV631Base.apply(this,arguments);if(had)save(true);return r};
+ const finishBeatV631Base=finishBeat;finishBeat=function(){const had=!!activeSession?.beat&&!activeSession?.ending,r=finishBeatV631Base.apply(this,arguments);if(had)save(true);return r};
+ const finishFluencyV631Base=finishFluencySet;finishFluencySet=function(){const had=!!activeFluency&&!activeFluency?.finished,r=finishFluencyV631Base.apply(this,arguments);if(had)save(true);return r};
+ if(typeof finishFluencyHelperV64==='function'){const finishHelperV631Base=finishFluencyHelperV64;finishFluencyHelperV64=function(){const had=!!activeFluencyHelperV64,r=finishHelperV631Base.apply(this,arguments);if(had)save(true);return r}}
+ if(typeof finishArcadeV610==='function'){const finishArcadeV631Base=finishArcadeV610;finishArcadeV610=function(){const had=!!activeArcadeV610,r=finishArcadeV631Base.apply(this,arguments);if(had)save(true);return r}}
+ if(typeof invadersFinishV621==='function'){const invadersFinishV631Base=invadersFinishV621;invadersFinishV621=function(){const had=!!activeArcadeV610,r=invadersFinishV631Base.apply(this,arguments);if(had)save(true);return r}}
+ if(typeof snakeFinishV624==='function'){const snakeFinishV631Base=snakeFinishV624;snakeFinishV624=function(){const had=!!activeArcadeV610,r=snakeFinishV631Base.apply(this,arguments);if(had)save(true);return r}}
+})();
 </script></body></html>

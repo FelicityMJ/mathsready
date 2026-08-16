@@ -1,0 +1,30 @@
+MathsReady V6.31 — Firestore write-efficiency update
+
+Purpose
+-------
+Reduce unnecessary Firestore writes without changing the learner-facing experience.
+
+Changes
+-------
+1. Ordinary child-progress saves are batched for up to ~15 seconds while activity continues.
+2. Completed practice sessions, Beat Your Best, Fluency mastery, Fluency helper and Arcade results force an immediate save.
+3. Visibility/page-exit flushes only children with genuinely unsaved changes, with duplicate flush protection.
+4. Public mastery leaderboard documents are only written/deleted when that specific leaderboard entry has changed.
+   A small per-browser localStorage signature cache prevents repeat writes of unchanged leaderboard results.
+5. Face-Off live-progress writes are throttled to approximately every 3 answers or 2.5 seconds, while final results still save immediately.
+6. Snake coin collection no longer writes to Firestore per coin; coins are persisted with the completed run/checkpoint save.
+7. Existing Firestore rules/data model are unchanged.
+
+Safety
+------
+- Learner state still updates immediately in memory/UI.
+- Important completed results bypass the batching delay.
+- Normal in-progress work gets periodic cloud checkpoints.
+- Existing visibility/page-exit handlers flush dirty progress.
+
+Developer diagnostic
+--------------------
+In the browser console, `window.mathsReadyWriteStatsV631` shows writes made by this optimisation layer for the current page session:
+  childWrites
+  leaderboardWrites
+  faceoffLiveWrites

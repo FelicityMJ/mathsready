@@ -1,11 +1,4 @@
-Nat5 Ready Maths — Cloud V6
-
-Files:
-- index.html       GitHub Pages app (replace your current root index.html with this)
-- firestore.rules  Same Firestore rules as V5; no republish needed if already done
-- SETUP-V6.txt     Upgrade notes
-- COURSE-V6.md     Summary of the new small-step mastery structure
-
-V6 focuses on automaticity: accuracy first, then speed, then progression.
-
-Worksheet refinement: see WORKSHEET-REFINEMENT.txt
+Developer note:
+The cloud layer is included here as readable source, but the deployable index.html
+already has this code bundled into its final <script>. Do not add cloud-layer-v5.js
+as a second script tag unless index.html is refactored first.
