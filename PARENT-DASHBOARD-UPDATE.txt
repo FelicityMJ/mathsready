@@ -1,0 +1,21 @@
+SpeedyMaths parent progress dashboard update
+============================================
+
+Added to index.html:
+- Parent-facing "Is it working?" progress summary.
+- Speed/fluency gain calculated only from comparable 100%-correct runs on the same fluency level, question count and recorded course/board revision.
+- First-perfect-run to best-perfect-run evidence.
+- Fluency levels mastered this week and all-time.
+- This week's accuracy and practice minutes.
+- Rolling four-week practice activity bars.
+- Strong skills, streak, total questions and recorded practice time.
+- Recent mastery milestones.
+- Clear next fluency goal and recommended routine.
+- Existing fluency gates, progression bands and recent learning retained.
+- Empty states for new learners so the dashboard explains what data is needed before claiming improvement.
+- "View progress" button added to each child card in the family area.
+
+Data/write behaviour:
+- The dashboard reads the progress data SpeedyMaths already stores.
+- No new Firebase write is required merely to view the dashboard.
+- Existing fluency history already stores boardRevision/bankVersion in the current implementation and these are used where available to keep speed comparisons fair.

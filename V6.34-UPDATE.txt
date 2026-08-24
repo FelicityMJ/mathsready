@@ -1,0 +1,15 @@
+SpeedyMaths V6.34 — Google Admin Confirmation
+
+Admin security
+- Replaced the email/password Admin prompt with Firebase Google re-authentication.
+- Opening Admin now asks the already signed-in admin to confirm with Google.
+- The confirmation must resolve to the same Firebase user account.
+- Existing owner/admin role checks and Firestore security rules remain unchanged.
+- Admin unlock remains temporary (15 minutes) and can be manually locked.
+- No Admin password is stored in the website source.
+
+Snake rewards from V6.33 are retained unchanged.
+
+Firebase rules
+- No Firestore rules update is required for this change.
+- Google sign-in must already be enabled in Firebase Authentication (it is already in use for the admin account).

@@ -1,0 +1,29 @@
+SpeedyMaths V6.33 — Admin Lock + Maths Snake progression
+
+ADMIN
+- Admin section now asks the signed-in owner to confirm their Firebase account password.
+- Password is reauthenticated directly with Firebase Authentication; no admin password is hard-coded into index.html.
+- Admin unlock lasts up to 15 minutes, then relocks.
+- A "Lock Admin" button lets the owner lock it immediately.
+- Existing Firebase owner/admin authorization and Firestore rules remain in place underneath the password gate.
+
+MATHS SNAKE
+- Losing a wall/tail life now removes at most one earned snake square instead of resetting the snake to its starting length.
+- Monster life loss also removes at most one earned square.
+- Wrong maths answers shrink the snake by one square maximum and never below the 3-square starter length.
+- New reward ladder:
+  0 Classic Green
+  75 Ocean Blue
+  150 Purple
+  225 Coral
+  300 Bronze Level
+  400 Sunset Orange
+  500 Silver Level
+  650 Aqua
+  800 Cool Shades
+  900 Rainbow
+  1000 Gold Level
+- Bronze/Silver/Gold milestone strip added to the Snake Locker.
+- Sunglasses are drawn across the snake's eyes.
+- Gold crown is drawn above/on the snake's head.
+- Additional skin colours added for the in-between unlocks.
