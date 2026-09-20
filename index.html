@@ -4349,75 +4349,117 @@ renderSweetV615=function(){const a=activeArcadeV610,s=a.sweet;renderArcadeStable
 
 
 <style id="speedymaths-v637-number-pad-style">
-/* V6.37: optional touch-friendly maths number pad for Practice + Fluency Mastery. */
-.math-pad-v637{position:fixed;right:18px;bottom:18px;z-index:2500;font-family:inherit}
-.math-pad-toggle-v637{border:1px solid #d8d4f4;border-radius:999px;background:#fff;color:#4f43b7;padding:11px 15px;font-weight:950;font-size:14px;box-shadow:0 10px 28px rgba(35,43,65,.18);cursor:pointer}
-.math-pad-panel-v637{width:min(360px,calc(100vw - 24px));border:1px solid #d9dcef;border-radius:22px;background:rgba(250,250,255,.98);box-shadow:0 18px 50px rgba(28,35,63,.25);padding:10px;backdrop-filter:blur(12px)}
-.math-pad-head-v637{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.math-pad-head-v637 strong{font-size:14px;color:#232b41}.math-pad-close-v637{border:0;border-radius:999px;background:#eceaf9;color:#5549b7;padding:7px 10px;font-weight:900;cursor:pointer}
-.math-pad-grid-v637{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.math-pad-key-v637{min-height:48px;border:1px solid #d9dced;border-radius:13px;background:#fff;color:#222c45;font-size:20px;font-weight:950;cursor:pointer;box-shadow:0 2px 6px rgba(25,33,58,.06);touch-action:manipulation}.math-pad-key-v637:active{transform:translateY(1px);background:#f0efff}.math-pad-key-v637.special{background:#eeeaff;color:#5142bf}.math-pad-key-v637.danger{background:#fff1f1;color:#aa3131}.math-pad-key-v637.nav{background:#eaf5ff;color:#275c8f;font-size:23px;grid-column:span 3}.math-pad-key-v637[disabled]{opacity:.38;cursor:not-allowed}
-.math-pad-target-v637{outline:3px solid rgba(103,87,217,.22)!important;outline-offset:2px}.math-pad-note-v637{margin:7px 3px 0;color:#6c7385;font-size:10px;font-weight:750;text-align:center;line-height:1.25}
-body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{padding-bottom:286px}
-@media(max-width:600px){.math-pad-v637{left:8px;right:8px;bottom:8px}.math-pad-panel-v637{width:auto}.math-pad-grid-v637{gap:6px}.math-pad-key-v637{min-height:44px;font-size:19px}body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{padding-bottom:272px}}
+/* V6.39: reliable touch-friendly maths number pad for Practice + Fluency Mastery. */
+.math-pad-v637{position:fixed;right:16px;bottom:max(16px,env(safe-area-inset-bottom));z-index:9999;font-family:inherit;touch-action:manipulation}
+.math-pad-toggle-v637{min-height:52px;border:2px solid #cfc9f5;border-radius:999px;background:#fff;color:#4f43b7;padding:13px 18px;font-weight:950;font-size:16px;box-shadow:0 12px 30px rgba(35,43,65,.22);cursor:pointer;touch-action:manipulation}
+.math-pad-panel-v637{width:min(390px,calc(100vw - 24px));max-height:min(78vh,520px);overflow:auto;border:1px solid #d9dcef;border-radius:22px;background:#fbfbff;box-shadow:0 18px 50px rgba(28,35,63,.28);padding:10px;touch-action:manipulation}
+.math-pad-head-v637{position:sticky;top:-10px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-10px -10px 8px;padding:10px;background:#fbfbff;border-radius:22px 22px 0 0;border-bottom:1px solid #ececf5}.math-pad-head-v637 strong{font-size:15px;color:#232b41}.math-pad-close-v637{min-height:44px;border:0;border-radius:999px;background:#e8e5fb;color:#4d40b7;padding:9px 13px;font-weight:950;font-size:14px;cursor:pointer;touch-action:manipulation}
+.math-pad-grid-v637{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}.math-pad-key-v637{min-height:50px;border:1px solid #d9dced;border-radius:13px;background:#fff;color:#222c45;font-size:21px;font-weight:950;cursor:pointer;box-shadow:0 2px 6px rgba(25,33,58,.06);touch-action:manipulation;-webkit-user-select:none;user-select:none}.math-pad-key-v637:active{transform:translateY(1px);background:#f0efff}.math-pad-key-v637.special{background:#eeeaff;color:#5142bf}.math-pad-key-v637.danger{background:#fff1f1;color:#aa3131}.math-pad-key-v637.nav{background:#eaf5ff;color:#275c8f;font-size:24px;grid-column:span 3}.math-pad-key-v637[disabled]{opacity:.38;cursor:not-allowed}
+.math-pad-target-v637{outline:3px solid rgba(103,87,217,.24)!important;outline-offset:2px}.math-pad-note-v637{margin:8px 3px 1px;color:#6c7385;font-size:11px;font-weight:750;text-align:center;line-height:1.3}
+.math-pad-v637[data-open="0"] .math-pad-panel-v637{display:none}.math-pad-v637[data-open="1"] .math-pad-toggle-v637{display:none}.math-pad-v637[hidden]{display:none!important}
+body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{padding-bottom:300px}
+@media(max-width:600px){.math-pad-v637{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom))}.math-pad-panel-v637{width:auto;max-height:72vh}.math-pad-grid-v637{gap:6px}.math-pad-key-v637{min-height:46px;font-size:20px}body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{padding-bottom:290px}}
 @media print{.math-pad-v637{display:none!important}body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{padding-bottom:0!important}}
 </style>
 <script id="speedymaths-v637-number-pad-script">
 (function(){
  'use strict';
- const V637='6.38';
+ const V637='6.39';
  const PREF='speedyMathsMathPadOpenV637';
  const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
  let padTarget=null,syncQueued=false;
  const coarse=()=>{try{return matchMedia('(pointer: coarse)').matches||navigator.maxTouchPoints>0}catch(_){return false}};
- function prefOpen(){const v=localStorage.getItem(PREF);return v===null?coarse():v==='1'}
- function setPref(open){localStorage.setItem(PREF,open?'1':'0')}
- function visibleInputs(){return [...document.querySelectorAll(INPUT_SELECTOR)].filter(x=>x instanceof HTMLInputElement&&x.isConnected&&x.offsetParent!==null&&!x.disabled)}
- function isRelevant(el){return el instanceof HTMLInputElement&&el.matches(INPUT_SELECTOR)&&(el.closest('.question-wrap')||el.closest('.mastery-session'))}
+ function prefOpen(){try{const v=localStorage.getItem(PREF);return v===null?coarse():v==='1'}catch(_){return coarse()}}
+ function setPref(open){try{localStorage.setItem(PREF,open?'1':'0')}catch(_){}}
+ function visibleInputs(){return [...document.querySelectorAll(INPUT_SELECTOR)].filter(x=>x instanceof HTMLInputElement&&x.isConnected&&x.offsetParent!==null&&!x.disabled&&!x.readOnly)}
+ function isRelevant(el){return el instanceof HTMLInputElement&&!el.readOnly&&el.matches(INPUT_SELECTOR)&&(el.closest('.question-wrap')||el.closest('.mastery-session'))}
+ function clearTargetMark(){document.querySelectorAll('.math-pad-target-v637').forEach(x=>x.classList.remove('math-pad-target-v637'))}
+ function currentTarget(){
+  const inputs=visibleInputs();
+  if(padTarget&&inputs.includes(padTarget))return padTarget;
+  if(document.activeElement instanceof HTMLInputElement&&inputs.includes(document.activeElement))return document.activeElement;
+  return inputs.find(x=>!String(x.value).trim())||inputs[0]||null;
+ }
  function setTarget(el,scroll=false){
-  if(!isRelevant(el))return;document.querySelectorAll('.math-pad-target-v637').forEach(x=>x.classList.remove('math-pad-target-v637'));padTarget=el;el.classList.add('math-pad-target-v637');
+  if(!isRelevant(el))return false;
+  clearTargetMark();padTarget=el;el.classList.add('math-pad-target-v637');
   if(prefOpen())el.setAttribute('inputmode','none');
-  try{el.focus({preventScroll:true})}catch(_){el.focus()}
-  if(scroll){const r=el.getBoundingClientRect(),low=window.innerHeight-295;if(r.top<90||r.bottom>low)el.scrollIntoView({block:'center',behavior:'auto'})}
-  updateNavState();
+  try{el.focus({preventScroll:true})}catch(_){try{el.focus()}catch(__){}}
+  if(scroll){const r=el.getBoundingClientRect(),low=window.innerHeight-315;if(r.top<80||r.bottom>low)el.scrollIntoView({block:'center',behavior:'auto'})}
+  updateNavState();return true;
+ }
+ function ensureTarget(){const t=currentTarget();if(t&&t!==padTarget)setTarget(t,false);return t}
+ function fireInput(el){
+  try{el.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertText',data:null}))}catch(_){el.dispatchEvent(new Event('input',{bubbles:true}))}
  }
  function insertText(text){
-  if(!padTarget||padTarget.disabled)return;const el=padTarget,start=Number.isInteger(el.selectionStart)?el.selectionStart:el.value.length,end=Number.isInteger(el.selectionEnd)?el.selectionEnd:start;el.value=el.value.slice(0,start)+text+el.value.slice(end);const pos=start+text.length;try{el.setSelectionRange(pos,pos)}catch(_){}el.dispatchEvent(new Event('input',{bubbles:true}));setTarget(el,false)
+  const el=ensureTarget();if(!el||el.disabled||el.readOnly)return;
+  let start=el.value.length,end=start;
+  try{if(Number.isInteger(el.selectionStart)){start=el.selectionStart;end=Number.isInteger(el.selectionEnd)?el.selectionEnd:start}}catch(_){}
+  el.value=el.value.slice(0,start)+text+el.value.slice(end);
+  const pos=start+text.length;try{el.setSelectionRange(pos,pos)}catch(_){}
+  fireInput(el);setTarget(el,false);updateNavState();
  }
  function backspace(){
-  if(!padTarget||padTarget.disabled)return;const el=padTarget,start=Number.isInteger(el.selectionStart)?el.selectionStart:el.value.length,end=Number.isInteger(el.selectionEnd)?el.selectionEnd:start;if(start!==end){el.value=el.value.slice(0,start)+el.value.slice(end);try{el.setSelectionRange(start,start)}catch(_){}}else if(start>0){el.value=el.value.slice(0,start-1)+el.value.slice(end);try{el.setSelectionRange(start-1,start-1)}catch(_){}}el.dispatchEvent(new Event('input',{bubbles:true}));setTarget(el,false)
+  const el=ensureTarget();if(!el||el.disabled||el.readOnly)return;
+  let start=el.value.length,end=start;try{if(Number.isInteger(el.selectionStart)){start=el.selectionStart;end=Number.isInteger(el.selectionEnd)?el.selectionEnd:start}}catch(_){}
+  if(start!==end){el.value=el.value.slice(0,start)+el.value.slice(end)}else if(start>0){el.value=el.value.slice(0,start-1)+el.value.slice(end);start--}
+  try{el.setSelectionRange(start,start)}catch(_){}fireInput(el);setTarget(el,false);updateNavState();
  }
- function clearValue(){if(!padTarget||padTarget.disabled)return;padTarget.value='';padTarget.dispatchEvent(new Event('input',{bubbles:true}));setTarget(padTarget,false)}
+ function clearValue(){const el=ensureTarget();if(!el||el.disabled||el.readOnly)return;el.value='';fireInput(el);setTarget(el,false);updateNavState()}
  function nav(delta){
-  const inputs=visibleInputs();if(!inputs.length)return;let i=inputs.indexOf(padTarget);if(i<0)i=0;
-  if(inputs.length>1){const ni=i+delta;if(ni>=0&&ni<inputs.length){setTarget(inputs[ni],true);return}if(delta>0&&i===inputs.length-1){const blank=inputs.find(x=>!String(x.value).trim());if(blank){setTarget(blank,true);return}const submit=document.getElementById('masterySubmit');if(submit&&!submit.disabled){submit.click();return}}return}
-  // Practice shows one question at a time. Right arrow acts as the quick Answer/Next control.
-  if(delta>0&&padTarget&&String(padTarget.value).trim()){const btn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');if(btn)btn.click()}
+  const inputs=visibleInputs();if(!inputs.length)return;let target=currentTarget(),i=inputs.indexOf(target);if(i<0)i=0;
+  if(inputs.length>1){
+   const ni=i+delta;if(ni>=0&&ni<inputs.length){setTarget(inputs[ni],true);return}
+   if(delta>0&&i===inputs.length-1){const blank=inputs.find(x=>!String(x.value).trim());if(blank){setTarget(blank,true);return}const submit=document.getElementById('masterySubmit');if(submit&&!submit.disabled){submit.click();return}}
+   return;
+  }
+  if(delta>0&&target&&String(target.value).trim()){const btn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');if(btn)btn.click()}
  }
- function updateNavState(){const root=document.getElementById('mathPadV637');if(!root)return;const inputs=visibleInputs(),left=root.querySelector('[data-pad-nav="-1"]'),right=root.querySelector('[data-pad-nav="1"]');const i=inputs.indexOf(padTarget);if(left)left.disabled=inputs.length<=1||i<=0;if(right)right.disabled=inputs.length===0||(inputs.length===1&&(!padTarget||!String(padTarget.value).trim()))}
+ function updateNavState(){
+  const root=document.getElementById('mathPadV637');if(!root)return;const inputs=visibleInputs(),target=currentTarget(),left=root.querySelector('[data-pad-nav="-1"]'),right=root.querySelector('[data-pad-nav="1"]'),i=inputs.indexOf(target);
+  if(left)left.disabled=inputs.length<=1||i<=0;
+  if(right)right.disabled=inputs.length===0||(inputs.length===1&&(!target||!String(target.value).trim()));
+ }
  function restoreInputModes(){document.querySelectorAll(INPUT_SELECTOR).forEach(el=>{if(el.dataset.padInputmodeV637!==undefined){const old=el.dataset.padInputmodeV637;if(old)el.setAttribute('inputmode',old);else el.removeAttribute('inputmode');delete el.dataset.padInputmodeV637}})}
- function applyInputModes(open){document.querySelectorAll(INPUT_SELECTOR).forEach(el=>{if(!(el instanceof HTMLInputElement))return;if(el.dataset.padInputmodeV637===undefined)el.dataset.padInputmodeV637=el.getAttribute('inputmode')||'';if(open)el.setAttribute('inputmode','none');else{const old=el.dataset.padInputmodeV637;if(old)el.setAttribute('inputmode',old);else el.removeAttribute('inputmode')}})}
- function padHtml(open){
-  if(!open)return '<button class="math-pad-toggle-v637" id="mathPadOpenV637" type="button" aria-label="Open number pad">🔢 Number pad</button>';
+ function applyInputModes(open){document.querySelectorAll(INPUT_SELECTOR).forEach(el=>{if(!(el instanceof HTMLInputElement)||el.readOnly)return;if(el.dataset.padInputmodeV637===undefined)el.dataset.padInputmodeV637=el.getAttribute('inputmode')||'';if(open)el.setAttribute('inputmode','none');else{const old=el.dataset.padInputmodeV637;if(old)el.setAttribute('inputmode',old);else el.removeAttribute('inputmode')}})}
+ function padHtml(){
   const keys=[['7','7'],['8','8'],['9','9'],[':',':'],['/','/'],['⌫','back'],['4','4'],['5','5'],['6','6'],['.','.'],['−','-'],['C','clear'],['1','1'],['2','2'],['3','3'],['x','x'],['y','y'],['^','^'],['0','0'],['+','+'],['(','('],[')',')'],['√','√'],['×','×']];
-  return `<div class="math-pad-panel-v637" role="group" aria-label="Maths number pad"><div class="math-pad-head-v637"><strong>🔢 Maths number pad</strong><button class="math-pad-close-v637" id="mathPadCloseV637" type="button">Hide pad ✕</button></div><div class="math-pad-grid-v637">${keys.map(([label,val])=>`<button type="button" class="math-pad-key-v637 ${val==='back'?'special':val==='clear'?'danger':''}" data-pad-key="${val}">${label.trim()}</button>`).join('')}<button type="button" class="math-pad-key-v637 nav" data-pad-nav="-1" title="Previous question" aria-label="Previous question">←</button><button type="button" class="math-pad-key-v637 nav" data-pad-nav="1" title="Next question" aria-label="Next question">→</button></div><div class="math-pad-note-v637">Use ← / → to move between mastery answers. On the final mastery answer, → submits when the whole sheet is complete. In one-question Practice, → checks the answer and moves on.</div></div>`;
+  return `<button class="math-pad-toggle-v637" data-pad-open type="button" aria-label="Open number pad">🔢 Open number pad</button><div class="math-pad-panel-v637" role="group" aria-label="Maths number pad"><div class="math-pad-head-v637"><strong>🔢 Maths number pad</strong><button class="math-pad-close-v637" data-pad-close type="button">✕ Close pad</button></div><div class="math-pad-grid-v637">${keys.map(([label,val])=>`<button type="button" class="math-pad-key-v637 ${val==='back'?'special':val==='clear'?'danger':''}" data-pad-key="${val}">${label}</button>`).join('')}<button type="button" class="math-pad-key-v637 nav" data-pad-nav="-1" aria-label="Previous question">←</button><button type="button" class="math-pad-key-v637 nav" data-pad-nav="1" aria-label="Next question">→</button></div><div class="math-pad-note-v637">Tap an answer box, then use the pad. ← / → moves between mastery answers; → on the final completed answer submits the sheet.</div></div>`;
+ }
+ function setOpen(open){
+  setPref(open);const root=document.getElementById('mathPadV637');if(!root)return;root.dataset.open=open?'1':'0';document.body.classList.toggle('math-pad-open-v637',open);applyInputModes(open);
+  if(open){const t=currentTarget();if(t)setTarget(t,true)}else{clearTargetMark();try{if(document.activeElement instanceof HTMLInputElement)document.activeElement.blur()}catch(_){}}
+  updateNavState();
+ }
+ function handlePadAction(btn){
+  if(btn.hasAttribute('data-pad-open')){setOpen(true);return}
+  if(btn.hasAttribute('data-pad-close')){setOpen(false);return}
+  if(btn.hasAttribute('data-pad-nav')){nav(Number(btn.dataset.padNav));return}
+  if(btn.hasAttribute('data-pad-key')){const k=btn.dataset.padKey;if(k==='back')backspace();else if(k==='clear')clearValue();else insertText(k)}
+ }
+ function bindRoot(root){
+  if(root.dataset.padEventsV639)return;root.dataset.padEventsV639='1';
+  root.addEventListener('pointerdown',e=>{const btn=e.target.closest('button[data-pad-open],button[data-pad-close],button[data-pad-key],button[data-pad-nav]');if(!btn||btn.disabled)return;e.preventDefault();e.stopPropagation();handlePadAction(btn)});
+  root.addEventListener('click',e=>{if(e.detail!==0)return;const btn=e.target.closest('button[data-pad-open],button[data-pad-close],button[data-pad-key],button[data-pad-nav]');if(!btn||btn.disabled)return;e.preventDefault();handlePadAction(btn)});
  }
  function renderPad(){
-  const inputs=visibleInputs();let root=document.getElementById('mathPadV637');if(!inputs.length){restoreInputModes();document.body.classList.remove('math-pad-open-v637');root?.remove();padTarget=null;return}
-  if(!root){root=document.createElement('div');root.id='mathPadV637';root.className='math-pad-v637 no-print';document.body.appendChild(root)}
-  const open=prefOpen();root.innerHTML=padHtml(open);document.body.classList.toggle('math-pad-open-v637',open);applyInputModes(open);
-  if(!padTarget||!padTarget.isConnected||!inputs.includes(padTarget))padTarget=document.activeElement instanceof HTMLInputElement&&inputs.includes(document.activeElement)?document.activeElement:inputs[0];
-  if(padTarget)padTarget.classList.add('math-pad-target-v637');
-  root.querySelector('#mathPadOpenV637')?.addEventListener('click',()=>{setPref(true);renderPad();if(padTarget)setTarget(padTarget,true)});
-  root.querySelector('#mathPadCloseV637')?.addEventListener('click',()=>{setPref(false);renderPad();padTarget?.focus()});
-  root.querySelectorAll('[data-pad-key]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.padKey;if(k==='back')backspace();else if(k==='clear')clearValue();else insertText(k)}));
-  root.querySelectorAll('[data-pad-nav]').forEach(b=>b.addEventListener('click',()=>nav(Number(b.dataset.padNav))));updateNavState();
+  const inputs=visibleInputs();let root=document.getElementById('mathPadV637');
+  if(!root){root=document.createElement('div');root.id='mathPadV637';root.className='math-pad-v637 no-print';root.innerHTML=padHtml();document.body.appendChild(root);bindRoot(root)}
+  if(!inputs.length){root.hidden=true;restoreInputModes();document.body.classList.remove('math-pad-open-v637');padTarget=null;return}
+  root.hidden=false;const open=prefOpen();root.dataset.open=open?'1':'0';document.body.classList.toggle('math-pad-open-v637',open);applyInputModes(open);
+  const t=currentTarget();if(t){padTarget=t;clearTargetMark();if(open)t.classList.add('math-pad-target-v637')}
+  updateNavState();
  }
- function sync(){syncQueued=false;const inputs=visibleInputs();inputs.forEach(el=>{if(el.dataset.padBoundV637)return;el.dataset.padBoundV637='1';el.addEventListener('focus',()=>{padTarget=el;document.querySelectorAll('.math-pad-target-v637').forEach(x=>x.classList.remove('math-pad-target-v637'));el.classList.add('math-pad-target-v637');if(prefOpen())el.setAttribute('inputmode','none');updateNavState()});el.addEventListener('input',updateNavState)});renderPad()}
+ function sync(){
+  syncQueued=false;const inputs=visibleInputs();inputs.forEach(el=>{if(el.dataset.padBoundV639)return;el.dataset.padBoundV639='1';el.addEventListener('focus',()=>{padTarget=el;if(prefOpen()){clearTargetMark();el.classList.add('math-pad-target-v637');el.setAttribute('inputmode','none')}updateNavState()});el.addEventListener('input',updateNavState)});renderPad();
+ }
  function scheduleSync(){if(syncQueued)return;syncQueued=true;requestAnimationFrame(sync)}
  const app=document.getElementById('app');if(app)new MutationObserver(scheduleSync).observe(app,{childList:true,subtree:true});
  document.addEventListener('focusin',e=>{if(isRelevant(e.target)){padTarget=e.target;scheduleSync()}});
  document.addEventListener('keydown',e=>{if(!isRelevant(e.target)||!prefOpen())return;if(e.key==='ArrowRight'&&e.altKey){e.preventDefault();nav(1)}else if(e.key==='ArrowLeft'&&e.altKey){e.preventDefault();nav(-1)}});
  scheduleSync();
- console.info('SpeedyMaths V'+V637+' maths pad + final-arrow mastery submit loaded');
+ console.info('SpeedyMaths V'+V637+' reliable maths pad loaded');
 })();
 </script>
 
