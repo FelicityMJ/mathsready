@@ -4686,7 +4686,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 
 </body></html>
 <style>
-/* V6.45: number-only device dictation with a persistent speech catcher. */
+/* V6.47: persistent hands-free device dictation for Windows/iPad. */
 .math-pad-dictation-v643{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px;border-radius:13px;background:#eef9f6;border:1px solid #ccebe2}
 .math-pad-dictation-btn-v643{flex:0 0 auto;min-height:44px;border:0;border-radius:11px;padding:9px 13px;background:#187865;color:#fff;font:inherit;font-weight:950;cursor:pointer;touch-action:manipulation}
 .math-pad-dictation-btn-v643.active{background:#a62d59}
@@ -4694,23 +4694,28 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 .math-pad-dictation-target-v643{box-shadow:0 0 0 4px rgba(24,120,101,.16)!important;border-color:#187865!important}
 .math-pad-dictation-tip-v643{display:block;margin-top:3px;font-weight:700;color:#667873}
 .math-pad-dictation-launch-v643{min-width:52px;min-height:52px;border:2px solid #b6dfd4;border-radius:999px;background:#fff;color:#187865;padding:11px 14px;font:inherit;font-weight:950;font-size:17px;box-shadow:0 12px 30px rgba(35,43,65,.22);cursor:pointer;touch-action:manipulation}
-.dictation-catcher-v645{margin:10px 0 14px;padding:12px 14px;border:2px solid #8fd0c0;border-radius:15px;background:#f4fffc}
-.dictation-catcher-v645 .dictation-catcher-label-v645{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:7px;color:#245f53;font-weight:950}
+.dictation-catcher-v645{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:10020;width:min(680px,calc(100% - 24px));box-sizing:border-box;padding:10px 12px;border:2px solid #8fd0c0;border-radius:16px;background:#f4fffc;box-shadow:0 10px 34px rgba(24,54,48,.22)}
+.dictation-catcher-v645 .dictation-catcher-label-v645{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;color:#245f53;font-weight:950}
 .dictation-catcher-v645 .dictation-catcher-label-v645 small{font-size:11px;color:#5e7771;font-weight:750}
-.dictation-catcher-v645 input{width:100%;box-sizing:border-box;padding:11px 13px;border:2px solid #9bd5c7;border-radius:11px;background:#fff;font:inherit;font-size:16px;outline:none}
+.dictation-catcher-v645 input{width:100%;box-sizing:border-box;padding:9px 11px;border:2px solid #9bd5c7;border-radius:10px;background:#fff;font:inherit;font-size:16px;outline:none}
 .dictation-catcher-v645 input:focus{border-color:#187865;box-shadow:0 0 0 3px rgba(24,120,101,.13)}
-.dictation-catcher-v645 .dictation-live-v645{min-height:18px;margin-top:6px;color:#456a62;font-size:12px;font-weight:800}
+.dictation-activate-v646{min-height:42px;border:0;border-radius:10px;background:#187865;color:#fff;font:inherit;font-weight:950;cursor:pointer;touch-action:manipulation;padding:8px 12px}
+.dictation-stop-v647{min-height:42px;border:1px solid #cbdad6;border-radius:10px;background:#fff;color:#315f56;font:inherit;font-weight:900;cursor:pointer;touch-action:manipulation;padding:8px 12px}
+.dictation-actions-v647{display:flex;gap:8px;align-items:center;margin-bottom:7px;flex-wrap:wrap}.dictation-actions-v647 .dictation-activate-v646{flex:1;min-width:210px}
+.dictation-activate-v646:focus-visible,.dictation-stop-v647:focus-visible{outline:3px solid rgba(24,120,101,.25);outline-offset:2px}
+.dictation-catcher-v645 .dictation-live-v645{min-height:18px;margin-top:5px;color:#456a62;font-size:12px;font-weight:850}
 .dictation-catcher-v645.bad{border-color:#e4a4b7;background:#fff7f9}.dictation-catcher-v645.bad .dictation-live-v645{color:#9b2850}
-@media(max-width:600px){.math-pad-dictation-v643{align-items:flex-start}.math-pad-dictation-btn-v643{min-height:48px;padding:10px 12px}.math-pad-dictation-launch-v643{min-width:48px;min-height:48px;padding:9px 12px}.math-pad-dictation-status-v643{padding-top:3px}.dictation-catcher-v645{padding:10px 11px}}
+body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
+@media(max-width:600px){.math-pad-dictation-v643{align-items:flex-start}.math-pad-dictation-btn-v643{min-height:48px;padding:10px 12px}.math-pad-dictation-launch-v643{min-width:48px;min-height:48px;padding:9px 12px}.math-pad-dictation-status-v643{padding-top:3px}.dictation-catcher-v645{bottom:8px;padding:9px 10px;width:calc(100% - 16px)}.dictation-actions-v647 .dictation-activate-v646{min-width:0}.dictation-catcher-v645 .dictation-catcher-label-v645 small{display:none}}
 @media print{.math-pad-dictation-v643,.dictation-catcher-v645{display:none!important}}
 </style>
 <script>
 (function speedyMathsDeviceDictationV645(){
  'use strict';
- const VERSION='6.45';
+ const VERSION='6.47';
  const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
- let mode=false,finaliseTimer=null,lastPointer=0,processing=false,currentAnswer=null;
- const IDLE_MS=360;
+ let mode=false,finaliseTimer=null,lastPointer=0,processing=false,currentAnswer=null,processedSnapshot='';
+ const IDLE_MS=160;
 
  function tools(){return window.SpeedyMathsVoiceToolsV643||null}
  function inputs(){
@@ -4785,26 +4790,38 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   const answerBtn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');
   if(answerBtn){setLive('Answer heard — checking…');answerBtn.click();setTimeout(()=>{if(!mode)return;const n=firstBlank();if(n){markAnswer(n,true);setLive('Next question — say a number.');focusCatcher()}},360)}
  }
+ function newDictationDelta(full){
+  full=String(full||'');let prev=String(processedSnapshot||'');
+  let i=0,lim=Math.min(full.length,prev.length);while(i<lim&&full[i]===prev[i])i++;
+  let delta=full.slice(i).replace(/^[\s,.;:!?]+/,'').trim();
+  return {full,delta};
+ }
  function finalise(){
   if(!mode||processing)return;const c=catcher();const el=answerTarget();if(!c||!el)return;
-  const raw=String(c.value||'').trim();if(!raw)return;
+  const part=newDictationDelta(c.value);const raw=part.delta;
+  if(!raw){processedSnapshot=part.full;return}
   processing=true;
   try{
    const value=numericOnly(raw,el);
-   c.value='';
-   if(!value){setLive('Only a number was accepted. Please say the number again.',true);setStatus('I did not hear a number — try again.');setTimeout(focusCatcher,30);return}
-   beginTimerOnFirstAcceptedAnswer();setValue(el,value);setLive(`Entered ${value}. Moving on…`);setStatus(`Entered ${value} — next answer.`);setTimeout(()=>{if(mode)moveToNextOrSubmit(el)},120);
-  }finally{setTimeout(()=>{processing=false},170)}
+   // Keep the dictation field untouched. Windows Voice Typing is much more likely to
+   // stay listening when the webpage does not clear or replace the field it is dictating into.
+   processedSnapshot=part.full;
+   if(!value){setLive(`Heard “${raw}” — please say a number only.`,true);setStatus('That was not recognised as a number.');setTimeout(focusCatcher,0);return}
+   beginTimerOnFirstAcceptedAnswer();setValue(el,value);setLive(`✓ ${value} — ready for the next answer.`);setStatus(`Entered ${value} — keep speaking.`);setTimeout(()=>{if(mode)moveToNextOrSubmit(el)},35);
+  }finally{setTimeout(()=>{processing=false},55)}
  }
  function schedule(){clearTimeout(finaliseTimer);if(!mode)return;finaliseTimer=setTimeout(finalise,IDLE_MS)}
  function ensureCatcher(){
   if(catcher())return catcher();
-  const session=document.querySelector('.mastery-session')||document.querySelector('.question-wrap');if(!session)return null;
   const host=document.createElement('div');host.id='dictationCatcherV645';host.className='dictation-catcher-v645 no-print';
-  host.innerHTML='<div class="dictation-catcher-label-v645"><span>🎙 Voice input — numbers only</span><small>Keep this box selected while dictating</small></div><input id="dictationCatcherInputV645" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Voice dictation input" placeholder="Tap the keyboard microphone, then say a number"><div class="dictation-live-v645" id="dictationCatcherLiveV645" aria-live="polite">Say the answer for the highlighted question.</div>';
-  const timePanel=session.querySelector('#masteryTimePanel');const head=session.querySelector('.mastery-session-head');
-  if(timePanel)timePanel.insertAdjacentElement('afterend',host);else if(head)head.insertAdjacentElement('afterend',host);else session.prepend(host);
+  host.innerHTML='<div class="dictation-catcher-label-v645"><span>🎙 Hands-free voice — numbers only</span><small>Keep this field selected</small></div><div class="dictation-actions-v647"><button type="button" class="dictation-activate-v646" id="dictationActivateV646">Windows: press Win + H once, then speak</button><button type="button" class="dictation-stop-v647" id="dictationStopV647">Stop voice mode</button></div><input id="dictationCatcherInputV645" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-label="Voice dictation input" placeholder="Your spoken numbers appear here — leave this box selected"><div class="dictation-live-v645" id="dictationCatcherLiveV645" aria-live="polite">Say the highlighted answer. SpeedyMaths will move on automatically.</div>';
+  // This dock deliberately lives OUTSIDE #app so question re-renders do not destroy the
+  // active Windows/iPad dictation target and force the pupil to restart the microphone.
+  document.body.appendChild(host);document.body.classList.add('speedymaths-dictation-v647');
   const c=host.querySelector('#dictationCatcherInputV645');
+  const activate=host.querySelector('#dictationActivateV646');const stopBtn=host.querySelector('#dictationStopV647');
+  if(activate)activate.addEventListener('click',()=>{focusCatcher();setLive('Field selected. Windows: press Win + H once if Voice Typing is not already listening.');});
+  if(stopBtn)stopBtn.addEventListener('click',()=>stop());
   c.addEventListener('input',schedule);c.addEventListener('compositionend',schedule);c.addEventListener('change',schedule);
   c.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(finaliseTimer);finalise()}else if(e.key==='Escape'){e.preventDefault();stop()}});
   return c;
@@ -4812,10 +4829,10 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  function start(options={}){
   const t=firstBlank();if(!t){setStatus('Open a Practice or Mastery question first.');return false}
   try{tools()?.stopBrowserVoice?.()}catch(_){}
-  mode=true;closeMathPadForKeyboard();markAnswer(t,false);ensureCatcher();setStatus('Ready — use device dictation and say numbers only.');setLive(options.deferTimer?'The timer will start with your first accepted number.':'Say the number for the highlighted question.');
-  setTimeout(()=>{focusCatcher();},80);return true;
+  mode=true;processedSnapshot='';closeMathPadForKeyboard();markAnswer(t,false);ensureCatcher();setStatus('Hands-free voice is ready — keep speaking numbers.');setLive(options.deferTimer?'Timer paused until the first accepted number. Press Win + H once, then speak.':'Press Win + H once, then keep speaking the highlighted answers.');
+  focusCatcher();return true;
  }
- function stop(show=true){mode=false;clearTimeout(finaliseTimer);finaliseTimer=null;processing=false;currentAnswer=null;clearMarks();catcherPanel()?.remove();if(show)setStatus('Device dictation stopped.');else setStatus('')}
+ function stop(show=true){mode=false;clearTimeout(finaliseTimer);finaliseTimer=null;processing=false;currentAnswer=null;processedSnapshot='';clearMarks();catcherPanel()?.remove();document.body.classList.remove('speedymaths-dictation-v647');if(show)setStatus('Device dictation stopped.');else setStatus('')}
  function toggle(){mode?stop():start()}
  function inject(){
   const root=document.getElementById('mathPadV637');if(!root||root.dataset.dictationV645)return false;
@@ -4832,7 +4849,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  // that first real answer also starts the timer.
  document.addEventListener('input',e=>{const a=typeof activeFluency!=='undefined'?activeFluency:null;if(!a?.dictationWaitingStart)return;const el=e.target;if(el instanceof HTMLInputElement&&el.matches('.mastery-answer')&&String(el.value).trim()){a.dictationWaitingStart=false;a.started=performance.now();a.answerTimes={};try{updateWorksheetTimerV61()}catch(_){}}},true);
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode)stop(false)});
- const app=document.getElementById('app');if(app)new MutationObserver(()=>requestAnimationFrame(()=>{inject();if(mode&&!catcher()){const t=firstBlank();if(t){markAnswer(t,false);ensureCatcher();setTimeout(focusCatcher,30)}}})).observe(app,{childList:true,subtree:true});
+ const app=document.getElementById('app');if(app)new MutationObserver(()=>requestAnimationFrame(()=>{inject();if(mode){const t=firstBlank();if(t&&!inputs().includes(currentAnswer))markAnswer(t,false);if(!catcher())ensureCatcher();focusCatcher()}})).observe(app,{childList:true,subtree:true});
  const obs=new MutationObserver(()=>{if(inject())obs.disconnect()});obs.observe(document.body,{childList:true,subtree:true});
  // Freeze the worksheet timer at 0 while microphone mode is being prepared. The first accepted
  // numeric answer becomes time zero, so iPad pupils do not lose time opening the keyboard mic.
@@ -4841,12 +4858,12 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   updateWorksheetTimerV61=function(){const a=typeof activeFluency!=='undefined'?activeFluency:null;if(a?.worksheet&&a.dictationWaitingStart){const fill=document.getElementById('masteryTimeFill'),panel=document.getElementById('masteryTimePanel'),st=document.getElementById('masteryTimeStatus');if(fill){fill.style.width='0%';fill.style.backgroundColor='';}if(panel)panel.classList.remove('overtime');if(st)st.textContent='Timer starts with first answer';return}return baseUpdateWorksheetTimerV645()};
  }
  window.SpeedyMathsDeviceDictationV645={version:VERSION,start,stop,isOn:()=>mode,focus:focusCatcher};
- inject();console.info('SpeedyMaths V'+VERSION+' number-only device dictation loaded');
+ inject();console.info('SpeedyMaths V'+VERSION+' persistent hands-free dictation loaded');
 })();
 </script>
 
 <style id="speedymaths-v644-input-ready-style">
-/* V6.45: choose answer input before a timed Fluency sheet starts. */
+/* V6.47: choose answer input before a timed Fluency sheet starts. */
 .input-ready-v644{max-width:820px;margin:26px auto}
 .input-ready-v644 h1{margin:4px 0 8px;font-size:clamp(31px,5vw,46px);letter-spacing:-.035em}
 .input-ready-v644 .intro-v644{color:var(--muted);font-size:15px;line-height:1.55;margin:0 0 18px}
@@ -4877,7 +4894,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 <script id="speedymaths-v644-input-ready-script">
 (function speedyMathsInputReadyV644(){
  'use strict';
- const VERSION='6.45';
+ const VERSION='6.46';
  const baseStart=startWorksheetFluencyV61;
  let pending=null,choice=null;
  function savedSide(){try{return localStorage.getItem('speedyMathsMathPadSideV640')==='left'?'left':'right'}catch(_){return'right'}}
@@ -4891,9 +4908,9 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   if(document.activeElement instanceof HTMLElement)try{document.activeElement.blur()}catch(_){}
   pending={id:l.id,mode,returnTo};choice=null;padSide=savedSide();
   const target=fluencyTarget(l),count=l.count;
-  render(`<section class="card input-ready-v644"><div class="pill">⏱ Ready screen • timer is NOT running</div><h1>${esc(l.name)}</h1><p class="intro-v644">Choose how you want to enter your answers. Your Standard Mastery Time does not start until you press <strong>Start sheet</strong>.</p><div class="qmeta">${esc(titleFor(mode))} • ${count} questions • SMT ${fmtSec(target)}</div><div class="input-choice-grid-v644"><button type="button" class="input-choice-v644" data-input-choice-v644="pad"><span class="ico-v644">🔢</span><strong>Open number pad</strong><small>Best for iPad/touch. Choose left or right before you start.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="mic"><span class="ico-v644">🎙️</span><strong>Open microphone</strong><small>Use device dictation. The timer waits until your first number is entered.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="none"><span class="ico-v644">⌨️</span><strong>No extra input</strong><small>Use the normal keyboard and answer boxes.</small></button></div><div class="pad-side-ready-v644" id="padSideReadyV644"><strong>Where should the number pad open?</strong><button type="button" data-ready-side-v644="left">◀ Left</button><button type="button" data-ready-side-v644="right">Right ▶</button></div><div class="dictation-ready-v644" id="dictationReadyV644"><strong>Microphone mode — the timer will wait for the first number.</strong><p><b>iPad:</b> press <b>Start sheet</b>. SpeedyMaths opens one Voice input and highlights Question 1. Tap the microphone on the iPad keyboard once, then keep saying each number. The focus stays in that Voice input while the highlighted answer moves on automatically.</p><p><b>Windows:</b> press <b>Start sheet</b>, then press <b>Windows + H</b> once in the Voice input. Keep saying the answers.</p><p><b>Numbers only:</b> non-number words are rejected. Common speech mistakes such as “turn” for “ten” are corrected before the answer is entered.</p></div><div class="start-row-v644"><button type="button" class="back" id="inputReadyExitV644">← Cancel</button><span class="tiny" id="inputReadyStatusV644">Choose one option above.</span><button type="button" class="cta start-sheet-v644" id="startSheetV644" disabled>Start sheet →</button></div></section>`,'fluency');
+  render(`<section class="card input-ready-v644"><div class="pill">⏱ Ready screen • timer is NOT running</div><h1>${esc(l.name)}</h1><p class="intro-v644">Choose how you want to enter your answers. Your Standard Mastery Time does not start until you press <strong>Start sheet</strong>.</p><div class="qmeta">${esc(titleFor(mode))} • ${count} questions • SMT ${fmtSec(target)}</div><div class="input-choice-grid-v644"><button type="button" class="input-choice-v644" data-input-choice-v644="pad"><span class="ico-v644">🔢</span><strong>Open number pad</strong><small>Best for iPad/touch. Choose left or right before you start.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="mic"><span class="ico-v644">🎙️</span><strong>Open microphone</strong><small>Hands-free numbers. Start Windows/iPad dictation once, then keep speaking.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="none"><span class="ico-v644">⌨️</span><strong>No extra input</strong><small>Use the normal keyboard and answer boxes.</small></button></div><div class="pad-side-ready-v644" id="padSideReadyV644"><strong>Where should the number pad open?</strong><button type="button" data-ready-side-v644="left">◀ Left</button><button type="button" data-ready-side-v644="right">Right ▶</button></div><div class="dictation-ready-v644" id="dictationReadyV644"><strong>Hands-free microphone mode — the timer waits for your first number.</strong><p><b>Windows laptop:</b> press <b>Start sheet</b>, then press <b>Windows + H once</b>. Leave Voice Typing listening and just say each highlighted answer. SpeedyMaths now keeps one permanent voice field active, so changing questions should not make you restart the microphone.</p><p><b>iPad:</b> press <b>Start sheet</b>, then tap <b>🎤 on the keyboard once</b> and keep saying the highlighted answers.</p><p><b>Faster:</b> accepted numbers move on almost immediately. <b>Numbers only:</b> other words are rejected, with common speech mistakes such as “turn” for “ten” corrected automatically.</p></div><div class="start-row-v644"><button type="button" class="back" id="inputReadyExitV644">← Cancel</button><span class="tiny" id="inputReadyStatusV644">Choose one option above.</span><button type="button" class="cta start-sheet-v644" id="startSheetV644" disabled>Start sheet →</button></div></section>`,'fluency');
   const cards=[...document.querySelectorAll('[data-input-choice-v644]')],padBox=document.getElementById('padSideReadyV644'),micBox=document.getElementById('dictationReadyV644'),start=document.getElementById('startSheetV644'),status=document.getElementById('inputReadyStatusV644');
-  function refresh(){cards.forEach(b=>b.classList.toggle('active',b.dataset.inputChoiceV644===choice));padBox.classList.toggle('show',choice==='pad');micBox.classList.toggle('show',choice==='mic');document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.classList.toggle('active',b.dataset.readySideV644===padSide));start.disabled=!choice;status.textContent=choice==='pad'?`Number pad will open on the ${padSide}.`:choice==='mic'?'Microphone selected. The timer will start with your first accepted number.':choice==='none'?'Normal keyboard selected.':'Choose one option above.'}
+  function refresh(){cards.forEach(b=>b.classList.toggle('active',b.dataset.inputChoiceV644===choice));padBox.classList.toggle('show',choice==='pad');micBox.classList.toggle('show',choice==='mic');document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.classList.toggle('active',b.dataset.readySideV644===padSide));start.disabled=!choice;status.textContent=choice==='pad'?`Number pad will open on the ${padSide}.`:choice==='mic'?'Hands-free microphone selected. Timer starts with your first accepted number.':choice==='none'?'Normal keyboard selected.':'Choose one option above.'}
   cards.forEach(b=>b.addEventListener('click',()=>{choice=b.dataset.inputChoiceV644;refresh()}));
   document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.addEventListener('click',()=>{choice='pad';padSide=b.dataset.readySideV644==='left'?'left':'right';refresh()}));
   document.getElementById('inputReadyExitV644').onclick=()=>{pending=null;returnTo==='parent'?renderParent('worksheet'):renderFluency(l.op)};
@@ -4901,12 +4918,11 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   refresh();
  }
  function enableDeviceDictationV645(){
+  // Call synchronously from the Start sheet click so iPadOS treats focus as user initiated
+  // and is allowed to open the software keyboard.
+  if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return}
   let tries=0;
-  const attempt=()=>{
-   tries++;
-   if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return}
-   if(tries<20)requestAnimationFrame(attempt);
-  };
+  const attempt=()=>{tries++;if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return}if(tries<20)requestAnimationFrame(attempt)};
   requestAnimationFrame(attempt);
  }
  function beginChosen(){
