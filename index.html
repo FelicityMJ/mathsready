@@ -4493,7 +4493,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 </style>
 <script>
 /* ================================================================
-   V6.41 VOICE ANSWER MODE
+   V6.42 VOICE ANSWER MODE
    - Uses browser SpeechRecognition / webkitSpeechRecognition when available.
    - One tap starts Voice mode; each recognised answer is entered into the
      currently selected answer box.
@@ -4504,10 +4504,10 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
    - No audio is saved by SpeedyMaths.
    ================================================================ */
 (function speedyMathsVoiceV641(){
- const VERSION='6.41';
+ const VERSION='6.42';
  const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
  const SpeechRecognitionCtor=window.SpeechRecognition||window.webkitSpeechRecognition||null;
- let voiceMode=false,listening=false,recognition=null,restartTimer=null,nextListenDelay=500,lastPointerToggle=0;
+ let voiceMode=false,listening=false,recognition=null,restartTimer=null,nextListenDelay=300,lastPointerToggle=0;
 
  function relevantInputs(){
   return [...document.querySelectorAll(INPUT_SELECTOR)].filter(el=>el instanceof HTMLInputElement&&!el.readOnly&&!el.disabled&&el.offsetParent!==null&&(el.closest('.question-wrap')||el.closest('.mastery-session')));
@@ -4582,16 +4582,19 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  }
  function spokenToAnswerV641(transcript,el){
   let s=String(transcript||'').trim();if(!s)return'';
-  const lower=s.toLowerCase().replace(/[?,!]/g,'').replace(/\s+/g,' ').trim();
-  const time=parseTimeV641(lower,promptLooksLikeTimeV641(el));if(time)return time;
+  // Speech services often add sentence punctuation to short number answers.
+  // Remove sentence-ending punctuation, but preserve a genuine decimal point.
+  let lower=s.toLowerCase().replace(/[?!,;]+$/g,'').replace(/\.(?=\s*$)/,'').replace(/\s+/g,' ').trim();
+  const isTime=promptLooksLikeTimeV641(el),time=parseTimeV641(lower,isTime);if(time)return time;
   const frac=parseFractionV641(lower);if(frac)return frac;
-  if(/^[-+]?\d+(?:[.:]\d+)?$/.test(lower))return lower;
+  // Normalise numeric transcripts: 27., 27.0 and 027 become 27; 3.5 stays 3.5.
+  if(/^[-+]?\d+(?:\.\d*)?$/.test(lower)){const n=Number(lower);if(Number.isFinite(n))return String(n)}
+  if(/^[-+]?\d+:\d+$/.test(lower)&&isTime)return lower;
   const num=wordsToNumberV641(lower);if(num!=null&&Number.isFinite(num))return String(num);
-  let algebra=lower.replace(/\bmultiplied by\b/g,'×').replace(/\btimes\b/g,'×').replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/').replace(/\bsquared\b/g,'^2').replace(/\bcubed\b/g,'^3').replace(/\bsquare root of\b/g,'√').replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\bnegative\s+/g,'-').replace(/\s+/g,'');
+  let algebra=lower.replace(/multiplied by/g,'×').replace(/times/g,'×').replace(/divided by/g,'/').replace(/over/g,'/').replace(/squared/g,'^2').replace(/cubed/g,'^3').replace(/square root of/g,'√').replace(/plus/g,'+').replace(/minus/g,'-').replace(/negative\s+/g,'-').replace(/\s+/g,'');
   const wordNumPrefix=algebra.match(/^([a-z]+)([xy])/);if(wordNumPrefix){const n=wordsToNumberV641(wordNumPrefix[1]);if(n!=null)algebra=String(n)+algebra.slice(wordNumPrefix[1].length)}
   return algebra||s;
- }
- function commandV641(transcript){
+ } function commandV641(transcript){
   const s=String(transcript||'').toLowerCase().replace(/[.,!?]/g,'').replace(/\s+/g,' ').trim();
   if(['back','go back','previous','previous question'].includes(s))return'back';
   if(['next','skip','next question'].includes(s))return'next';
@@ -4611,28 +4614,41 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  }
  function handleCommandV641(cmd){
   if(cmd==='stop'){stopVoiceV641();return true}
-  if(cmd==='clear'){const t=targetInput();if(t){setAnswer(t,'');updateVoiceUi('Answer cleared. Listening again…')}nextListenDelay=650;return true}
-  if(cmd==='back'){programmaticNavV641(-1);updateVoiceUi('Moved back one answer.');nextListenDelay=650;return true}
-  if(cmd==='next'){programmaticNavV641(1);updateVoiceUi('Moved to the next answer.');nextListenDelay=650;return true}
-  if(cmd==='submit'){submitVoiceV641();nextListenDelay=900;return true}
+  if(cmd==='clear'){const t=targetInput();if(t){setAnswer(t,'');updateVoiceUi('Answer cleared. Listening again…')}nextListenDelay=300;return true}
+  if(cmd==='back'){programmaticNavV641(-1);updateVoiceUi('Moved back one answer.');nextListenDelay=300;return true}
+  if(cmd==='next'){programmaticNavV641(1);updateVoiceUi('Moved to the next answer.');nextListenDelay=300;return true}
+  if(cmd==='submit'){submitVoiceV641();nextListenDelay=500;return true}
   return false;
- }
- function afterSpokenAnswerV641(transcript,value){
-  updateVoiceUi(`Heard “${transcript}” → ${value}. Moving on…`);nextListenDelay=1050;
-  setTimeout(()=>{if(!voiceMode)return;const inputs=relevantInputs();if(!inputs.length)return;const allFilled=inputs.length>1&&inputs.every(x=>String(x.value).trim()!=='');const submit=document.getElementById('masterySubmit');if(allFilled&&submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),260);return}programmaticNavV641(1)},600);
- }
- function queueRestartV641(ms=500){clearTimeout(restartTimer);if(!voiceMode)return;restartTimer=setTimeout(()=>{if(voiceMode)startListeningV641()},ms)}
- function startListeningV641(){
+ } function afterSpokenAnswerV641(transcript,value){
+  updateVoiceUi(`Heard “${transcript}” → ${value}. Moving on…`);nextListenDelay=420;
+  setTimeout(()=>{if(!voiceMode)return;const inputs=relevantInputs();if(!inputs.length)return;const allFilled=inputs.length>1&&inputs.every(x=>String(x.value).trim()!=='');const submit=document.getElementById('masterySubmit');if(allFilled&&submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),180);return}programmaticNavV641(1)},220);
+ } function queueRestartV641(ms=300){clearTimeout(restartTimer);if(!voiceMode)return;restartTimer=setTimeout(()=>{if(voiceMode)startListeningV641()},ms)} function startListeningV641(){
   clearTimeout(restartTimer);if(!voiceMode||listening)return;if(!SpeechRecognitionCtor){voiceMode=false;updateVoiceUi('Voice entry is not available in this browser.');return}
-  const t=targetInput();if(!t){queueRestartV641(700);return}setVoiceTarget(t,true);
-  const r=new SpeechRecognitionCtor();recognition=r;r.lang='en-GB';r.continuous=false;r.interimResults=false;r.maxAlternatives=1;let gotResult=false;
-  r.onstart=()=>{listening=true;updateVoiceUi('Listening for the highlighted answer…')};
-  r.onresult=e=>{gotResult=true;const transcript=[...e.results].map(x=>x[0]?.transcript||'').join(' ').trim();const cmd=commandV641(transcript);if(cmd){handleCommandV641(cmd);return}const el=targetInput();if(!el){updateVoiceUi('I heard you, but no answer box is selected.');nextListenDelay=750;return}const value=spokenToAnswerV641(transcript,el);if(!value){updateVoiceUi(`I could not turn “${transcript}” into an answer. Try again.`);nextListenDelay=650;return}if(setAnswer(el,value))afterSpokenAnswerV641(transcript,value)};
-  r.onerror=e=>{const code=String(e.error||'');if(code==='not-allowed'||code==='service-not-allowed'){voiceMode=false;updateVoiceUi('Microphone permission is blocked. Allow microphone access, then try Voice mode again.')}else if(code==='audio-capture'){voiceMode=false;updateVoiceUi('No microphone is available on this device.')}else if(code==='network'){updateVoiceUi('Voice recognition could not reach its speech service. Try again.');nextListenDelay=1200}else if(code!=='no-speech'&&code!=='aborted'){updateVoiceUi('I did not catch that. Try saying the answer again.');nextListenDelay=700}};
-  r.onend=()=>{listening=false;recognition=null;updateVoiceUi();if(voiceMode)queueRestartV641(gotResult?nextListenDelay:600);nextListenDelay=500};
-  try{r.start()}catch(_){recognition=null;listening=false;queueRestartV641(700)}
- }
- function startVoiceV641(){
+  const t=targetInput();if(!t){queueRestartV641(400);return}setVoiceTarget(t,true);
+  const r=new SpeechRecognitionCtor();recognition=r;r.lang='en-GB';r.continuous=false;r.interimResults=true;r.maxAlternatives=3;let gotResult=false,committed=false,lastInterim='';
+  r.onstart=()=>{listening=true;updateVoiceUi('Listening — say the answer now…')};
+  r.onspeechstart=()=>updateVoiceUi('I can hear you…');
+  r.onspeechend=()=>{if(committed)return;setTimeout(()=>{try{if(recognition===r)r.stop()}catch(_){}},70)};
+  r.onresult=e=>{
+   if(committed)return;
+   let finalText='',interimText='';
+   for(let i=e.resultIndex;i<e.results.length;i++){
+    const result=e.results[i],text=String(result[0]?.transcript||'').trim();
+    if(!text)continue;if(result.isFinal)finalText+=(finalText?' ':'')+text;else interimText+=(interimText?' ':'')+text;
+   }
+   if(!finalText){if(interimText&&interimText!==lastInterim){lastInterim=interimText;updateVoiceUi(`Hearing “${interimText}”…`)}return}
+   committed=true;gotResult=true;const transcript=finalText.trim();const cmd=commandV641(transcript);if(cmd){handleCommandV641(cmd);return}
+   const el=targetInput();if(!el){updateVoiceUi('I heard you, but no answer box is selected.');nextListenDelay=350;return}
+   let value=spokenToAnswerV641(transcript,el),chosen=transcript;
+   const result=e.results[e.results.length-1];
+   if((!value||/[a-z]{4,}/i.test(value))&&result){for(let i=1;i<result.length;i++){const alt=String(result[i]?.transcript||'').trim(),v=spokenToAnswerV641(alt,el);if(v&&(!/[a-z]{4,}/i.test(v)||i===result.length-1)){value=v;chosen=alt;break}}}
+   if(!value){updateVoiceUi(`I could not turn “${transcript}” into an answer. Try again.`);nextListenDelay=320;return}
+   if(setAnswer(el,value))afterSpokenAnswerV641(chosen,value)
+  };
+  r.onerror=e=>{const code=String(e.error||'');if(code==='not-allowed'||code==='service-not-allowed'){voiceMode=false;updateVoiceUi('Microphone permission is blocked. Allow microphone access, then try Voice mode again.')}else if(code==='audio-capture'){voiceMode=false;updateVoiceUi('No microphone is available on this device.')}else if(code==='network'){updateVoiceUi('Voice recognition could not reach its speech service. Try again.');nextListenDelay=750}else if(code!=='no-speech'&&code!=='aborted'){updateVoiceUi('I did not catch that. Try saying the answer again.');nextListenDelay=350}};
+  r.onend=()=>{listening=false;recognition=null;updateVoiceUi();if(voiceMode)queueRestartV641(gotResult?nextListenDelay:320);nextListenDelay=300};
+  try{r.start()}catch(_){recognition=null;listening=false;queueRestartV641(400)}
+ } function startVoiceV641(){
   if(!SpeechRecognitionCtor){updateVoiceUi('Voice entry is not available in this browser.');return}voiceMode=true;const t=targetInput();if(t)setVoiceTarget(t,true);updateVoiceUi('Voice mode is on — starting microphone…');startListeningV641();
  }
  function stopVoiceV641(showMessage=true){
