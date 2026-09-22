@@ -4474,4 +4474,189 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 })();
 </script>
 
+
+<style>
+/* V6.41: optional speech entry for Practice + Fluency Mastery. */
+.math-pad-voice-row-v641{display:flex;align-items:center;gap:8px;margin:8px 0 10px;padding:8px;border-radius:13px;background:#f6f4ff;border:1px solid #e2defd}
+.math-pad-voice-v641{flex:0 0 auto;min-height:44px;border:0;border-radius:11px;padding:9px 13px;background:#6254d6;color:#fff;font:inherit;font-weight:950;cursor:pointer;touch-action:manipulation}
+.math-pad-voice-launch-v641{min-width:52px;min-height:52px;border:2px solid #e5bfd0;border-radius:999px;background:#fff;color:#a62d59;padding:11px 14px;font:inherit;font-weight:950;font-size:18px;box-shadow:0 12px 30px rgba(35,43,65,.22);cursor:pointer;touch-action:manipulation}.math-pad-voice-launch-v641:disabled{opacity:.5;cursor:not-allowed}
+.math-pad-voice-v641.listening{background:#b92f55;box-shadow:0 0 0 4px rgba(185,47,85,.13)}
+.math-pad-voice-v641:disabled{opacity:.52;cursor:not-allowed}
+.math-pad-voice-status-v641{min-width:0;flex:1;color:#555d78;font-size:11px;font-weight:800;line-height:1.28}
+.math-pad-voice-status-v641 strong{color:#2f2a66}
+.math-pad-voice-dot-v641{display:inline-block;width:8px;height:8px;margin-right:5px;border-radius:50%;background:#b8b4cc;vertical-align:1px}
+.math-pad-voice-dot-v641.on{background:#d83462;animation:voicePulseV641 1s ease-in-out infinite}
+@keyframes voicePulseV641{0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.22);opacity:1}}
+.math-pad-voice-target-v641{box-shadow:0 0 0 4px rgba(216,52,98,.15)!important;border-color:#c72f5e!important}
+@media(max-width:600px){.math-pad-launcher-v640{flex-wrap:wrap}.math-pad-voice-row-v641{align-items:flex-start}.math-pad-voice-v641{min-height:48px;padding:10px 12px}.math-pad-voice-launch-v641{min-width:48px;min-height:48px;padding:9px 12px}.math-pad-voice-status-v641{padding-top:3px}}
+@media print{.math-pad-voice-row-v641{display:none!important}}
+</style>
+<script>
+/* ================================================================
+   V6.41 VOICE ANSWER MODE
+   - Uses browser SpeechRecognition / webkitSpeechRecognition when available.
+   - One tap starts Voice mode; each recognised answer is entered into the
+     currently selected answer box.
+   - The existing → control is triggered automatically after a short pause:
+       * worksheet/mastery: move to the next box; final complete box submits
+       * one-question Practice/Fluency: submit the answer and move on
+   - Voice commands: back/previous, next/skip, clear, submit/finish, stop voice.
+   - No audio is saved by SpeedyMaths.
+   ================================================================ */
+(function speedyMathsVoiceV641(){
+ const VERSION='6.41';
+ const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
+ const SpeechRecognitionCtor=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+ let voiceMode=false,listening=false,recognition=null,restartTimer=null,nextListenDelay=500,lastPointerToggle=0;
+
+ function relevantInputs(){
+  return [...document.querySelectorAll(INPUT_SELECTOR)].filter(el=>el instanceof HTMLInputElement&&!el.readOnly&&!el.disabled&&el.offsetParent!==null&&(el.closest('.question-wrap')||el.closest('.mastery-session')));
+ }
+ function targetInput(){
+  const inputs=relevantInputs();
+  if(!inputs.length)return null;
+  const marked=document.querySelector('.math-pad-target-v637');
+  if(marked instanceof HTMLInputElement&&inputs.includes(marked))return marked;
+  if(document.activeElement instanceof HTMLInputElement&&inputs.includes(document.activeElement))return document.activeElement;
+  return inputs.find(x=>!String(x.value).trim())||inputs[0];
+ }
+ function setVoiceTarget(el,scroll=false){
+  if(!(el instanceof HTMLInputElement)||el.readOnly||el.disabled)return;
+  document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>x.classList.remove('math-pad-voice-target-v641'));
+  el.classList.add('math-pad-voice-target-v641');
+  try{el.focus({preventScroll:true})}catch(_){try{el.focus()}catch(__){}}
+  if(scroll){const r=el.getBoundingClientRect(),safeBottom=window.innerHeight-315;if(r.top<80||r.bottom>safeBottom)el.scrollIntoView({block:'center',behavior:'smooth'})}
+ }
+ function voiceButton(){return document.querySelector('#mathPadV637 [data-pad-voice-v641]')}
+ function voiceStatus(){return document.querySelector('#mathPadV637 [data-pad-voice-status-v641]')}
+ function updateVoiceUi(message){
+  const b=voiceButton(),s=voiceStatus();
+  if(b){b.classList.toggle('listening',listening);b.setAttribute('aria-pressed',voiceMode?'true':'false');b.innerHTML=listening?'🎤 Listening…':voiceMode?'⏹ Stop voice':'🎤 Voice mode'}
+  if(s){const fallback=!SpeechRecognitionCtor?'Voice entry is not available in this browser.':voiceMode?(listening?'Listening for the highlighted answer…':'Voice mode is on.'): 'Tap once, say an answer, and it will move on automatically.';s.innerHTML=`<span class="math-pad-voice-dot-v641 ${listening?'on':''}"></span>${escapeHtmlV641(message||fallback)}`}
+  const t=targetInput();document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>{if(!voiceMode||x!==t)x.classList.remove('math-pad-voice-target-v641')});if(voiceMode&&t)t.classList.add('math-pad-voice-target-v641');
+ }
+ function escapeHtmlV641(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+ function fireInput(el){
+  try{el.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertReplacementText',data:el.value}))}catch(_){el.dispatchEvent(new Event('input',{bubbles:true}))}
+  try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(_){}
+ }
+ function setAnswer(el,value){
+  if(!el||el.disabled||el.readOnly)return false;
+  el.value=String(value);try{el.setSelectionRange(el.value.length,el.value.length)}catch(_){}fireInput(el);setVoiceTarget(el,false);return true;
+ }
+
+ const SMALL={zero:0,oh:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+ function wordsToNumberV641(text){
+  let s=String(text||'').toLowerCase().replace(/-/g,' ').replace(/\band\b/g,' ').replace(/\s+/g,' ').trim();
+  if(!s)return null;
+  let sign=1;if(/^(minus|negative)\b/.test(s)){sign=-1;s=s.replace(/^(minus|negative)\s+/,'')}
+  if(/^[-+]?\d+(?:\.\d+)?$/.test(s))return sign*Number(s);
+  const pointParts=s.split(/\bpoint\b/);if(pointParts.length>2)return null;
+  const intWords=pointParts[0].trim().split(/\s+/).filter(Boolean);let total=0,current=0,used=false;
+  for(const w of intWords){if(Object.prototype.hasOwnProperty.call(SMALL,w)){current+=SMALL[w];used=true}else if(w==='hundred'){current=(current||1)*100;used=true}else if(w==='thousand'){total+=(current||1)*1000;current=0;used=true}else if(w==='million'){total+=(current||1)*1000000;current=0;used=true}else return null}
+  if(!used&&pointParts.length===1)return null;let value=total+current;
+  if(pointParts.length===2){const decWords=pointParts[1].trim().split(/\s+/).filter(Boolean);let digits='';for(const w of decWords){if(/^\d$/.test(w))digits+=w;else if(Object.prototype.hasOwnProperty.call(SMALL,w)&&SMALL[w]>=0&&SMALL[w]<=9)digits+=String(SMALL[w]);else return null}if(!digits)return null;value+=Number('0.'+digits)}
+  return sign*value;
+ }
+ function promptLooksLikeTimeV641(el){
+  const q=el?.closest('.question-wrap')?.querySelector('.qprompt')?.textContent||el?.closest('.mastery-q')?.querySelector('.mastery-expression')?.textContent||el?.getAttribute('aria-label')||'';
+  return /\b(clock|time|quarter|half past|o['’]?clock|finish time|start(?:s| time)?|am|pm)\b/i.test(q)||/\b\d{1,2}:\d{2}\b/.test(q);
+ }
+ function parseHourV641(s){const n=wordsToNumberV641(s);return n!=null&&n>=0&&n<=24?Math.round(n):null}
+ function parseTimeV641(text,force=false){
+  let s=String(text||'').toLowerCase().replace(/[–—-]/g,' ').replace(/\bo['’]?clock\b/g,' oclock').replace(/\s+/g,' ').trim();
+  let m=s.match(/^quarter\s+to\s+(.+)$/);if(m){const h=parseHourV641(m[1]);if(h!=null){const prev=h===1?12:h-1;return `${prev}:45`}}
+  m=s.match(/^quarter\s+past\s+(.+)$/);if(m){const h=parseHourV641(m[1]);if(h!=null)return `${h}:15`}
+  m=s.match(/^half\s+past\s+(.+)$/);if(m){const h=parseHourV641(m[1]);if(h!=null)return `${h}:30`}
+  m=s.match(/^(.+?)\s+oclock$/);if(m){const h=parseHourV641(m[1]);if(h!=null)return `${h}:00`}
+  if(!force)return null;
+  m=s.match(/^(\d{1,2})\s*[:.]\s*(\d{1,2})$/);if(m)return `${Number(m[1])}:${String(Number(m[2])).padStart(2,'0')}`;
+  m=s.match(/^(\d{1,2})\s+(\d{1,2})$/);if(m&&Number(m[2])<60)return `${Number(m[1])}:${String(Number(m[2])).padStart(2,'0')}`;
+  const parts=s.split(' ');if(parts.length>=2){const h=parseHourV641(parts[0]);const mins=wordsToNumberV641(parts.slice(1).join(' '));if(h!=null&&mins!=null&&mins>=0&&mins<60)return `${h}:${String(Math.round(mins)).padStart(2,'0')}`}
+  return null;
+ }
+ function parseFractionV641(text){
+  const s=String(text||'').toLowerCase().replace(/-/g,' ').replace(/^a\s+/,'one ').replace(/\s+/g,' ').trim();
+  const denoms={half:2,halves:2,third:3,thirds:3,quarter:4,quarters:4,fourth:4,fourths:4,fifth:5,fifths:5,sixth:6,sixths:6,seventh:7,sevenths:7,eighth:8,eighths:8,ninth:9,ninths:9,tenth:10,tenths:10};
+  const m=s.match(/^(.+?)\s+(half|halves|third|thirds|quarter|quarters|fourth|fourths|fifth|fifths|sixth|sixths|seventh|sevenths|eighth|eighths|ninth|ninths|tenth|tenths)$/);if(!m)return null;const num=wordsToNumberV641(m[1]);const den=denoms[m[2]];if(num==null||!den)return null;return `${num}/${den}`;
+ }
+ function spokenToAnswerV641(transcript,el){
+  let s=String(transcript||'').trim();if(!s)return'';
+  const lower=s.toLowerCase().replace(/[?,!]/g,'').replace(/\s+/g,' ').trim();
+  const time=parseTimeV641(lower,promptLooksLikeTimeV641(el));if(time)return time;
+  const frac=parseFractionV641(lower);if(frac)return frac;
+  if(/^[-+]?\d+(?:[.:]\d+)?$/.test(lower))return lower;
+  const num=wordsToNumberV641(lower);if(num!=null&&Number.isFinite(num))return String(num);
+  let algebra=lower.replace(/\bmultiplied by\b/g,'×').replace(/\btimes\b/g,'×').replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/').replace(/\bsquared\b/g,'^2').replace(/\bcubed\b/g,'^3').replace(/\bsquare root of\b/g,'√').replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\bnegative\s+/g,'-').replace(/\s+/g,'');
+  const wordNumPrefix=algebra.match(/^([a-z]+)([xy])/);if(wordNumPrefix){const n=wordsToNumberV641(wordNumPrefix[1]);if(n!=null)algebra=String(n)+algebra.slice(wordNumPrefix[1].length)}
+  return algebra||s;
+ }
+ function commandV641(transcript){
+  const s=String(transcript||'').toLowerCase().replace(/[.,!?]/g,'').replace(/\s+/g,' ').trim();
+  if(['back','go back','previous','previous question'].includes(s))return'back';
+  if(['next','skip','next question'].includes(s))return'next';
+  if(['clear','clear answer','delete answer'].includes(s))return'clear';
+  if(['submit','submit sheet','finish','finished','done'].includes(s))return'submit';
+  if(['stop voice','stop listening','voice off'].includes(s))return'stop';
+  return null;
+ }
+ function programmaticNavV641(delta){
+  const btn=document.querySelector(`#mathPadV637 [data-pad-nav="${delta}"]`);if(btn&&!btn.disabled){btn.click();return true}
+  const inputs=relevantInputs(),t=targetInput(),i=inputs.indexOf(t),n=i+delta;if(n>=0&&n<inputs.length){setVoiceTarget(inputs[n],true);return true}return false;
+ }
+ function submitVoiceV641(){
+  const inputs=relevantInputs(),blank=inputs.find(x=>!String(x.value).trim());if(blank){setVoiceTarget(blank,true);updateVoiceUi('There is still a blank answer. Moved to it.');return false}
+  const submit=document.getElementById('masterySubmit');if(submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),220);return true}
+  const answerBtn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');if(answerBtn){answerBtn.click();return true}return false;
+ }
+ function handleCommandV641(cmd){
+  if(cmd==='stop'){stopVoiceV641();return true}
+  if(cmd==='clear'){const t=targetInput();if(t){setAnswer(t,'');updateVoiceUi('Answer cleared. Listening again…')}nextListenDelay=650;return true}
+  if(cmd==='back'){programmaticNavV641(-1);updateVoiceUi('Moved back one answer.');nextListenDelay=650;return true}
+  if(cmd==='next'){programmaticNavV641(1);updateVoiceUi('Moved to the next answer.');nextListenDelay=650;return true}
+  if(cmd==='submit'){submitVoiceV641();nextListenDelay=900;return true}
+  return false;
+ }
+ function afterSpokenAnswerV641(transcript,value){
+  updateVoiceUi(`Heard “${transcript}” → ${value}. Moving on…`);nextListenDelay=1050;
+  setTimeout(()=>{if(!voiceMode)return;const inputs=relevantInputs();if(!inputs.length)return;const allFilled=inputs.length>1&&inputs.every(x=>String(x.value).trim()!=='');const submit=document.getElementById('masterySubmit');if(allFilled&&submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),260);return}programmaticNavV641(1)},600);
+ }
+ function queueRestartV641(ms=500){clearTimeout(restartTimer);if(!voiceMode)return;restartTimer=setTimeout(()=>{if(voiceMode)startListeningV641()},ms)}
+ function startListeningV641(){
+  clearTimeout(restartTimer);if(!voiceMode||listening)return;if(!SpeechRecognitionCtor){voiceMode=false;updateVoiceUi('Voice entry is not available in this browser.');return}
+  const t=targetInput();if(!t){queueRestartV641(700);return}setVoiceTarget(t,true);
+  const r=new SpeechRecognitionCtor();recognition=r;r.lang='en-GB';r.continuous=false;r.interimResults=false;r.maxAlternatives=1;let gotResult=false;
+  r.onstart=()=>{listening=true;updateVoiceUi('Listening for the highlighted answer…')};
+  r.onresult=e=>{gotResult=true;const transcript=[...e.results].map(x=>x[0]?.transcript||'').join(' ').trim();const cmd=commandV641(transcript);if(cmd){handleCommandV641(cmd);return}const el=targetInput();if(!el){updateVoiceUi('I heard you, but no answer box is selected.');nextListenDelay=750;return}const value=spokenToAnswerV641(transcript,el);if(!value){updateVoiceUi(`I could not turn “${transcript}” into an answer. Try again.`);nextListenDelay=650;return}if(setAnswer(el,value))afterSpokenAnswerV641(transcript,value)};
+  r.onerror=e=>{const code=String(e.error||'');if(code==='not-allowed'||code==='service-not-allowed'){voiceMode=false;updateVoiceUi('Microphone permission is blocked. Allow microphone access, then try Voice mode again.')}else if(code==='audio-capture'){voiceMode=false;updateVoiceUi('No microphone is available on this device.')}else if(code==='network'){updateVoiceUi('Voice recognition could not reach its speech service. Try again.');nextListenDelay=1200}else if(code!=='no-speech'&&code!=='aborted'){updateVoiceUi('I did not catch that. Try saying the answer again.');nextListenDelay=700}};
+  r.onend=()=>{listening=false;recognition=null;updateVoiceUi();if(voiceMode)queueRestartV641(gotResult?nextListenDelay:600);nextListenDelay=500};
+  try{r.start()}catch(_){recognition=null;listening=false;queueRestartV641(700)}
+ }
+ function startVoiceV641(){
+  if(!SpeechRecognitionCtor){updateVoiceUi('Voice entry is not available in this browser.');return}voiceMode=true;const t=targetInput();if(t)setVoiceTarget(t,true);updateVoiceUi('Voice mode is on — starting microphone…');startListeningV641();
+ }
+ function stopVoiceV641(showMessage=true){
+  voiceMode=false;clearTimeout(restartTimer);restartTimer=null;try{if(recognition)recognition.abort()}catch(_){}recognition=null;listening=false;document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>x.classList.remove('math-pad-voice-target-v641'));updateVoiceUi(showMessage?'Voice mode stopped.':'');
+ }
+ function toggleVoiceV641(){voiceMode?stopVoiceV641():startVoiceV641()}
+ function injectUiV641(){
+  const root=document.getElementById('mathPadV637');if(!root||root.dataset.voiceV641)return false;const panel=root.querySelector('.math-pad-panel-v637');if(!panel)return false;root.dataset.voiceV641='1';const head=panel.querySelector('.math-pad-head-v637');if(!head)return false;
+  const row=document.createElement('div');row.className='math-pad-voice-row-v641';row.innerHTML=`<button type="button" class="math-pad-voice-v641" data-pad-voice-v641 aria-pressed="false" ${SpeechRecognitionCtor?'':'disabled'}>🎤 Voice mode</button><div class="math-pad-voice-status-v641" data-pad-voice-status-v641 aria-live="polite"></div>`;head.insertAdjacentElement('afterend',row);
+  const launcher=root.querySelector('.math-pad-launcher-v640');if(launcher&&!launcher.querySelector('[data-pad-voice-launch-v641]'))launcher.insertAdjacentHTML('beforeend',`<button type="button" class="math-pad-voice-launch-v641" data-pad-voice-launch-v641 aria-label="Open Voice mode" ${SpeechRecognitionCtor?'':'disabled'}>🎤</button>`);
+  const voiceBtn=row.querySelector('[data-pad-voice-v641]');voiceBtn.addEventListener('pointerdown',e=>{if(voiceBtn.disabled)return;e.preventDefault();e.stopPropagation();lastPointerToggle=Date.now();toggleVoiceV641()});voiceBtn.addEventListener('click',e=>{if(voiceBtn.disabled)return;if(Date.now()-lastPointerToggle<450)return;if(e.detail!==0)return;e.preventDefault();toggleVoiceV641()});
+  const launchBtn=root.querySelector('[data-pad-voice-launch-v641]');if(launchBtn){const launch=()=>{if(launchBtn.disabled)return;const side=root.dataset.side==='left'?'left':'right';root.querySelector(`[data-pad-open-side="${side}"]`)?.click();if(!voiceMode)startVoiceV641()};launchBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();lastPointerToggle=Date.now();launch()});launchBtn.addEventListener('click',e=>{if(Date.now()-lastPointerToggle<450)return;if(e.detail!==0)return;e.preventDefault();launch()})}
+  updateVoiceUi();return true;
+ }
+ function syncV641(){
+  injectUiV641();if(voiceMode){const t=targetInput();if(t)t.classList.add('math-pad-voice-target-v641');const root=document.getElementById('mathPadV637');if(root?.hidden){setTimeout(()=>{const r=document.getElementById('mathPadV637');if(voiceMode&&r?.hidden)stopVoiceV641(false)},1400)}}
+ }
+ document.addEventListener('pointerdown',e=>{if(e.target.closest?.('[data-pad-close]')&&voiceMode)stopVoiceV641(false)},true);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&voiceMode)stopVoiceV641(false)});
+ const app=document.getElementById('app');if(app)new MutationObserver(()=>requestAnimationFrame(syncV641)).observe(app,{childList:true,subtree:true});
+ const bodyObs=new MutationObserver(()=>{if(injectUiV641())bodyObs.disconnect()});bodyObs.observe(document.body,{childList:true,subtree:true});
+ syncV641();
+ console.info('SpeedyMaths V'+VERSION+' voice answer mode loaded');
+})();
+</script>
+
 </body></html>
