@@ -4591,7 +4591,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   if(/^[-+]?\d+(?:\.\d*)?$/.test(lower)){const n=Number(lower);if(Number.isFinite(n))return String(n)}
   if(/^[-+]?\d+:\d+$/.test(lower)&&isTime)return lower;
   const num=wordsToNumberV641(lower);if(num!=null&&Number.isFinite(num))return String(num);
-  let algebra=lower.replace(/multiplied by/g,'×').replace(/times/g,'×').replace(/divided by/g,'/').replace(/over/g,'/').replace(/squared/g,'^2').replace(/cubed/g,'^3').replace(/square root of/g,'√').replace(/plus/g,'+').replace(/minus/g,'-').replace(/negative\s+/g,'-').replace(/\s+/g,'');
+  let algebra=lower.replace(/\bmultiplied by\b/g,'×').replace(/\btimes\b/g,'×').replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/').replace(/\bsquared\b/g,'^2').replace(/\bcubed\b/g,'^3').replace(/\bsquare root of\b/g,'√').replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-').replace(/\bnegative\s+/g,'-').replace(/\s+/g,'');
   const wordNumPrefix=algebra.match(/^([a-z]+)([xy])/);if(wordNumPrefix){const n=wordsToNumberV641(wordNumPrefix[1]);if(n!=null)algebra=String(n)+algebra.slice(wordNumPrefix[1].length)}
   return algebra||s;
  } function commandV641(transcript){
@@ -4671,8 +4671,221 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  const app=document.getElementById('app');if(app)new MutationObserver(()=>requestAnimationFrame(syncV641)).observe(app,{childList:true,subtree:true});
  const bodyObs=new MutationObserver(()=>{if(injectUiV641())bodyObs.disconnect()});bodyObs.observe(document.body,{childList:true,subtree:true});
  syncV641();
+ window.SpeedyMathsVoiceToolsV643={
+  normalize:spokenToAnswerV641,
+  relevantInputs,
+  targetInput,
+  setAnswer,
+  setVoiceTarget,
+  programmaticNav:programmaticNavV641,
+  stopBrowserVoice:()=>stopVoiceV641(false)
+ };
  console.info('SpeedyMaths V'+VERSION+' voice answer mode loaded');
 })();
 </script>
 
 </body></html>
+<style>
+/* V6.43: reliable native-device dictation fallback. */
+.math-pad-dictation-v643{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px;border-radius:13px;background:#eef9f6;border:1px solid #ccebe2}
+.math-pad-dictation-btn-v643{flex:0 0 auto;min-height:44px;border:0;border-radius:11px;padding:9px 13px;background:#187865;color:#fff;font:inherit;font-weight:950;cursor:pointer;touch-action:manipulation}
+.math-pad-dictation-btn-v643.active{background:#a62d59}
+.math-pad-dictation-status-v643{min-width:0;flex:1;color:#405d58;font-size:11px;font-weight:800;line-height:1.28}
+.math-pad-dictation-target-v643{box-shadow:0 0 0 4px rgba(24,120,101,.16)!important;border-color:#187865!important}
+.math-pad-dictation-tip-v643{display:block;margin-top:3px;font-weight:700;color:#667873}
+.math-pad-dictation-launch-v643{min-width:52px;min-height:52px;border:2px solid #b6dfd4;border-radius:999px;background:#fff;color:#187865;padding:11px 14px;font:inherit;font-weight:950;font-size:17px;box-shadow:0 12px 30px rgba(35,43,65,.22);cursor:pointer;touch-action:manipulation}
+@media(max-width:600px){.math-pad-dictation-v643{align-items:flex-start}.math-pad-dictation-btn-v643{min-height:48px;padding:10px 12px}.math-pad-dictation-launch-v643{min-width:48px;min-height:48px;padding:9px 12px}.math-pad-dictation-status-v643{padding-top:3px}}
+@media print{.math-pad-dictation-v643{display:none!important}}
+</style>
+<script>
+(function speedyMathsDeviceDictationV643(){
+ const VERSION='6.43';
+ const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
+ let mode=false,finaliseTimer=null,lastPointer=0,processing=false;
+ const IDLE_MS=850;
+
+ function tools(){return window.SpeedyMathsVoiceToolsV643||null}
+ function inputs(){
+  const t=tools();
+  if(t?.relevantInputs)return t.relevantInputs();
+  return [...document.querySelectorAll(INPUT_SELECTOR)].filter(el=>el instanceof HTMLInputElement&&!el.readOnly&&!el.disabled&&el.offsetParent!==null);
+ }
+ function target(){
+  const t=tools();
+  if(t?.targetInput)return t.targetInput();
+  const all=inputs();
+  return all.find(x=>x===document.activeElement)||all.find(x=>!String(x.value).trim())||all[0]||null;
+ }
+ function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+ function btn(){return document.querySelector('#mathPadV637 [data-pad-dictation-v643]')}
+ function status(){return document.querySelector('#mathPadV637 [data-pad-dictation-status-v643]')}
+ function clearMarks(){document.querySelectorAll('.math-pad-dictation-target-v643').forEach(x=>x.classList.remove('math-pad-dictation-target-v643'))}
+ function mark(el,scroll=false){
+  if(!(el instanceof HTMLInputElement))return;
+  clearMarks();el.classList.add('math-pad-dictation-target-v643');
+  if(el.dataset.padInputmodeV637!==undefined){
+   const original=el.dataset.padInputmodeV637;
+   if(original)el.setAttribute('inputmode',original);else el.removeAttribute('inputmode');
+  }else if(el.getAttribute('inputmode')==='none'){el.setAttribute('inputmode','text')}
+  try{el.focus({preventScroll:true})}catch(_){try{el.focus()}catch(__){}}
+  if(scroll){const r=el.getBoundingClientRect();if(r.top<80||r.bottom>window.innerHeight-150)el.scrollIntoView({block:'center',behavior:'smooth'})}
+ }
+ function setStatus(message){
+  const b=btn(),s=status();
+  if(b){b.classList.toggle('active',mode);b.setAttribute('aria-pressed',mode?'true':'false');b.textContent=mode?'⏹ Stop dictation':'🎙 Device dictation'}
+  if(s){
+   const fallback=mode?'Ready. Press Win + H on Windows, or tap the keyboard microphone on iPad.':'Uses the device’s own dictation when browser Voice mode does not hear you.';
+   s.innerHTML=escapeHtml(message||fallback)+(mode?'<span class="math-pad-dictation-tip-v643">Once dictation is running, just say each answer. SpeedyMaths will move the focus for you.</span>':'');
+  }
+ }
+ function closeMathPadForKeyboard(){
+  const root=document.getElementById('mathPadV637');if(!root)return;
+  const close=root.querySelector('[data-pad-close]');
+  if(root.dataset.open==='1'&&close)close.click();
+ }
+ function setValue(el,value){
+  const t=tools();if(t?.setAnswer)return t.setAnswer(el,value);
+  el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));return true;
+ }
+ function normalise(raw,el){const t=tools();return t?.normalize?t.normalize(raw,el):String(raw||'').trim().replace(/[?!,;]+$/g,'').replace(/\.(?=\s*$)/,'')}
+ function moveToNextOrSubmit(el){
+  const all=inputs();if(!all.length)return;
+  const submit=document.getElementById('masterySubmit');
+  const allFilled=all.length>1&&all.every(x=>String(x.value).trim()!=='');
+  if(allFilled&&submit&&!submit.disabled){stop(false);setStatus('All answers complete — submitting…');setTimeout(()=>submit.click(),180);return}
+  const i=all.indexOf(el);let next=null;
+  for(let n=i+1;n<all.length;n++){if(!String(all[n].value).trim()){next=all[n];break}}
+  if(!next)next=all.find(x=>!String(x.value).trim())||all[i+1]||null;
+  if(next){mark(next,true);setStatus('Next answer — keep dictating.');return}
+  const answerBtn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');
+  if(answerBtn){setStatus('Answer heard — checking…');answerBtn.click();setTimeout(()=>{if(!mode)return;const n=target();if(n){mark(n,true);setStatus('Next question — keep dictating.')}},420)}
+ }
+ function finalise(el){
+  if(!mode||processing||!(el instanceof HTMLInputElement)||el.readOnly||el.disabled)return;
+  const raw=String(el.value||'').trim();if(!raw)return;
+  processing=true;
+  try{
+   const value=normalise(raw,el);
+   if(value&&value!==raw)setValue(el,value);else{try{el.dispatchEvent(new Event('change',{bubbles:true}))}catch(_){}}
+   setStatus(`Heard “${raw}”${value&&value!==raw?' → '+value:''}.`);
+   setTimeout(()=>{if(mode)moveToNextOrSubmit(el)},180);
+  }finally{setTimeout(()=>{processing=false},240)}
+ }
+ function schedule(el){clearTimeout(finaliseTimer);if(!mode)return;finaliseTimer=setTimeout(()=>finalise(el),IDLE_MS)}
+ function start(){
+  const t=target();if(!t){setStatus('Open a Practice or Mastery question first.');return}
+  try{tools()?.stopBrowserVoice?.()}catch(_){}
+  mode=true;closeMathPadForKeyboard();
+  setTimeout(()=>{const current=target()||t;mark(current,true);setStatus('Ready — press Win + H now (Windows), or tap the keyboard microphone on iPad.');},80);
+ }
+ function stop(show=true){mode=false;clearTimeout(finaliseTimer);finaliseTimer=null;processing=false;clearMarks();if(show)setStatus('Device dictation stopped.');else setStatus('')}
+ function toggle(){mode?stop():start()}
+ function inject(){
+  const root=document.getElementById('mathPadV637');if(!root||root.dataset.dictationV643)return false;
+  const panel=root.querySelector('.math-pad-panel-v637'),voiceRow=root.querySelector('.math-pad-voice-row-v641');if(!panel)return false;
+  root.dataset.dictationV643='1';
+  const row=document.createElement('div');row.className='math-pad-dictation-v643';
+  row.innerHTML='<button type="button" class="math-pad-dictation-btn-v643" data-pad-dictation-v643 aria-pressed="false">🎙 Device dictation</button><div class="math-pad-dictation-status-v643" data-pad-dictation-status-v643 aria-live="polite"></div>';
+  if(voiceRow)voiceRow.insertAdjacentElement('afterend',row);else panel.querySelector('.math-pad-head-v637')?.insertAdjacentElement('afterend',row);
+  const launcher=root.querySelector('.math-pad-launcher-v640');
+  if(launcher&&!launcher.querySelector('[data-pad-dictation-launch-v643]'))launcher.insertAdjacentHTML('beforeend','<button type="button" class="math-pad-dictation-launch-v643" data-pad-dictation-launch-v643 aria-label="Use device dictation">🎙</button>');
+  const main=row.querySelector('[data-pad-dictation-v643]');
+  main.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();lastPointer=Date.now();toggle()});
+  main.addEventListener('click',e=>{if(Date.now()-lastPointer<450)return;if(e.detail!==0)return;e.preventDefault();toggle()});
+  const launch=root.querySelector('[data-pad-dictation-launch-v643]');
+  if(launch){
+   launch.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();lastPointer=Date.now();toggle()});
+   launch.addEventListener('click',e=>{if(Date.now()-lastPointer<450)return;if(e.detail!==0)return;e.preventDefault();toggle()});
+  }
+  setStatus();return true;
+ }
+ document.addEventListener('input',e=>{if(!mode)return;const el=e.target;if(el instanceof HTMLInputElement&&inputs().includes(el))schedule(el)},true);
+ document.addEventListener('focusin',e=>{if(!mode)return;const el=e.target;if(el instanceof HTMLInputElement&&inputs().includes(el))mark(el,false)},true);
+ document.addEventListener('keydown',e=>{if(!mode)return;if(e.key==='Escape'){e.preventDefault();stop();return}if(e.key==='Enter'&&document.activeElement instanceof HTMLInputElement&&inputs().includes(document.activeElement)){e.preventDefault();clearTimeout(finaliseTimer);finalise(document.activeElement)}},true);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode)stop(false)});
+ const app=document.getElementById('app');if(app)new MutationObserver(()=>requestAnimationFrame(()=>{inject();if(mode){const t=target();if(t)mark(t,false)}})).observe(app,{childList:true,subtree:true});
+ const obs=new MutationObserver(()=>{if(inject())obs.disconnect()});obs.observe(document.body,{childList:true,subtree:true});
+ inject();console.info('SpeedyMaths V'+VERSION+' device dictation fallback loaded');
+})();
+</script>
+
+<style id="speedymaths-v644-input-ready-style">
+/* V6.44: choose answer input before a timed Fluency sheet starts. */
+.input-ready-v644{max-width:820px;margin:26px auto}
+.input-ready-v644 h1{margin:4px 0 8px;font-size:clamp(31px,5vw,46px);letter-spacing:-.035em}
+.input-ready-v644 .intro-v644{color:var(--muted);font-size:15px;line-height:1.55;margin:0 0 18px}
+.input-choice-grid-v644{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.input-choice-v644{border:2px solid #e1e4ed;background:#fff;border-radius:19px;padding:17px;text-align:left;color:var(--ink);cursor:pointer;min-height:150px;touch-action:manipulation}
+.input-choice-v644:hover{border-color:#cfc7ff;background:#fbfaff}
+.input-choice-v644.active{border-color:var(--primary);background:#f4f1ff;box-shadow:0 0 0 3px rgba(103,87,217,.10)}
+.input-choice-v644 .ico-v644{font-size:31px;display:block;margin-bottom:8px}
+.input-choice-v644 strong{display:block;font-size:17px;margin-bottom:5px}
+.input-choice-v644 small{display:block;color:var(--muted);line-height:1.4;font-weight:650}
+.pad-side-ready-v644{display:none;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 14px;padding:12px 13px;border-radius:14px;background:#f6f4ff;border:1px solid #ddd8fb}
+.pad-side-ready-v644.show{display:flex}
+.pad-side-ready-v644 strong{font-size:13px;margin-right:auto}
+.pad-side-ready-v644 button{min-height:42px;border:1px solid #d2ccf3;border-radius:999px;background:#fff;color:#5145b8;padding:8px 13px;font-weight:900;cursor:pointer}
+.pad-side-ready-v644 button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.dictation-ready-v644{display:none;margin:2px 0 14px;padding:14px;border-radius:15px;background:#eef9f6;border:1px solid #ccebe2}
+.dictation-ready-v644.show{display:block}
+.dictation-ready-v644 strong{display:block;color:#285e53;margin-bottom:5px}
+.dictation-ready-v644 p{margin:4px 0;color:#486d65;font-size:13px;line-height:1.45}
+.dictation-test-v644{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.dictation-test-v644 input{flex:1;min-width:220px;padding:12px 13px;border:2px solid #add8cd;border-radius:12px;font-size:16px;outline:none;background:#fff}
+.dictation-test-v644 input:focus{border-color:#187865;box-shadow:0 0 0 3px rgba(24,120,101,.12)}
+.start-row-v644{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+.start-row-v644 .tiny{max-width:480px}
+.start-sheet-v644{min-width:190px}
+@media(max-width:720px){.input-choice-grid-v644{grid-template-columns:1fr}.input-choice-v644{min-height:0}.start-sheet-v644{width:100%}}
+</style>
+<script id="speedymaths-v644-input-ready-script">
+(function speedyMathsInputReadyV644(){
+ 'use strict';
+ const VERSION='6.44';
+ const baseStart=startWorksheetFluencyV61;
+ let pending=null,choice=null;
+ function savedSide(){try{return localStorage.getItem('speedyMathsMathPadSideV640')==='left'?'left':'right'}catch(_){return'right'}}
+ let padSide=savedSide();
+ function setPadPref(open,side){try{localStorage.setItem('speedyMathsMathPadOpenV637',open?'1':'0');if(side)localStorage.setItem('speedyMathsMathPadSideV640',side==='left'?'left':'right')}catch(_){}}
+ function titleFor(mode){return mode==='mastery'?'Official mastery set':'Timed practice'}
+ function renderReady(id,mode,returnTo){
+  const l=effectiveFluencyV3(id);if(!l)return;if(mode==='mastery'&&!fluencyUnlocked(l))return;
+  clearInterval(fluencyTimer);fluencyTimer=null;
+  try{window.SpeedyMathsVoiceToolsV643?.stopBrowserVoice?.()}catch(_){}
+  if(document.activeElement instanceof HTMLElement)try{document.activeElement.blur()}catch(_){}
+  pending={id:l.id,mode,returnTo};choice=null;padSide=savedSide();
+  const target=fluencyTarget(l),count=l.count;
+  render(`<section class="card input-ready-v644"><div class="pill">⏱ Ready screen • timer is NOT running</div><h1>${esc(l.name)}</h1><p class="intro-v644">Choose how you want to enter your answers. Your Standard Mastery Time does not start until you press <strong>Start sheet</strong>.</p><div class="qmeta">${esc(titleFor(mode))} • ${count} questions • SMT ${fmtSec(target)}</div><div class="input-choice-grid-v644"><button type="button" class="input-choice-v644" data-input-choice-v644="pad"><span class="ico-v644">🔢</span><strong>Open number pad</strong><small>Best for iPad/touch. Choose left or right before you start.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="mic"><span class="ico-v644">🎙️</span><strong>Open microphone</strong><small>Use Windows Voice Typing / device dictation. Turn it on here before the clock starts.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="none"><span class="ico-v644">⌨️</span><strong>No extra input</strong><small>Use the normal keyboard and answer boxes.</small></button></div><div class="pad-side-ready-v644" id="padSideReadyV644"><strong>Where should the number pad open?</strong><button type="button" data-ready-side-v644="left">◀ Left</button><button type="button" data-ready-side-v644="right">Right ▶</button></div><div class="dictation-ready-v644" id="dictationReadyV644"><strong>Prepare dictation now — this setup time is not counted.</strong><p><b>Windows:</b> click the box below and press <b>Windows + H</b> once. When the dictation bar says it is listening, press <b>Start sheet</b>. You should then be able to say each answer without pressing Windows + H again.</p><p><b>iPad:</b> tap the box and use the keyboard microphone to start dictation, then start the sheet.</p><div class="dictation-test-v644"><input id="dictationTestV644" autocomplete="off" inputmode="text" placeholder="Optional test: say ‘ready’ here"><span class="tiny">If Windows stops dictation later, Win + H restarts it.</span></div></div><div class="start-row-v644"><button type="button" class="back" id="inputReadyExitV644">← Cancel</button><span class="tiny" id="inputReadyStatusV644">Choose one option above.</span><button type="button" class="cta start-sheet-v644" id="startSheetV644" disabled>Start sheet →</button></div></section>`,'fluency');
+  const cards=[...document.querySelectorAll('[data-input-choice-v644]')],padBox=document.getElementById('padSideReadyV644'),micBox=document.getElementById('dictationReadyV644'),start=document.getElementById('startSheetV644'),status=document.getElementById('inputReadyStatusV644');
+  function refresh(){cards.forEach(b=>b.classList.toggle('active',b.dataset.inputChoiceV644===choice));padBox.classList.toggle('show',choice==='pad');micBox.classList.toggle('show',choice==='mic');document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.classList.toggle('active',b.dataset.readySideV644===padSide));start.disabled=!choice;status.textContent=choice==='pad'?`Number pad will open on the ${padSide}.`:choice==='mic'?'Microphone/dictation selected. Start dictation before pressing Start sheet.':choice==='none'?'Normal keyboard selected.':'Choose one option above.'}
+  cards.forEach(b=>b.addEventListener('click',()=>{choice=b.dataset.inputChoiceV644;refresh();if(choice==='mic')setTimeout(()=>document.getElementById('dictationTestV644')?.focus(),50)}));
+  document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.addEventListener('click',()=>{choice='pad';padSide=b.dataset.readySideV644==='left'?'left':'right';refresh()}));
+  document.getElementById('inputReadyExitV644').onclick=()=>{pending=null;returnTo==='parent'?renderParent('worksheet'):renderFluency(l.op)};
+  start.onclick=()=>beginChosen();
+  refresh();
+ }
+ function enableDeviceDictationBeforeTimer(){
+  let tries=0;
+  const attempt=()=>{
+   tries++;
+   const b=document.querySelector('#mathPadV637 [data-pad-dictation-v643]');
+   if(b){if(b.getAttribute('aria-pressed')!=='true')b.click();return}
+   if(tries<6)requestAnimationFrame(attempt);
+  };
+  requestAnimationFrame(attempt);
+ }
+ function beginChosen(){
+  if(!pending||!choice)return;
+  const p=pending,c=choice;pending=null;
+  if(c==='pad')setPadPref(true,padSide);else setPadPref(false);
+  baseStart(p.id,p.mode,p.returnTo);
+  if(c==='mic')enableDeviceDictationBeforeTimer();
+ }
+ startWorksheetFluencyV61=function(id,mode='mastery',returnTo='fluency'){
+  if(mode==='parentPractice')return baseStart(id,mode,returnTo);
+  return renderReady(id,mode,returnTo);
+ };
+ window.SpeedyMathsInputReadyV644={version:VERSION,open:(id,mode='mastery',returnTo='fluency')=>renderReady(id,mode,returnTo)};
+ console.info('SpeedyMaths V'+VERSION+' pre-timer input chooser loaded');
+})();
+</script>
