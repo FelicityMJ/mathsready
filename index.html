@@ -1244,7 +1244,7 @@ route=function(name){clearInterval(beatTimer);beatTimer=null;clearInterval(fluen
 renderSetup=function(){return renderAddChildV3()};
 
 // Parent settings reset only the selected child's learning data; never the family, codes or other children.
-parentSettings=function(){const c=activeChildV3();return `<div class="section-head"><div><h2>Settings & data</h2><p>These settings belong only to ${esc(state.profile.name)}.</p></div></div><div class="grid"><section class="card span6"><h3 style="margin-top:0">Practice settings</h3><div class="field"><label>Daily mission length</label><select id="dailyLen"><option value="10" ${state.settings.dailyQuestions===10?'selected':''}>10 questions</option><option value="15" ${state.settings.dailyQuestions===15?'selected':''}>15 questions</option><option value="20" ${state.settings.dailyQuestions===20?'selected':''}>20 questions</option></select></div><div class="field"><label>Learner stage</label><select id="editStage">${['P1','P2','P3','P4','P5','P6','P7','S1','S2','S3','S4','S5','S6'].map(x=>`<option ${x===state.profile.stage?'selected':''}>${x}</option>`).join('')}</select></div><button class="cta" id="saveSettings">Save settings</button><div class="divider"></div><button class="cta secondary small" id="leaderPrivacy">Leaderboard privacy</button></section><section class="card span6"><h3 style="margin-top:0">Backup this learner</h3><p class="note">Exporting a learner backup includes their progress record only. Course changes are stored separately.</p><div class="button-row"><button class="cta secondary" id="exportData">Export progress</button><label class="cta secondary" style="cursor:pointer">Import progress<input type="file" id="importData" accept="application/json" hidden></label></div><div class="divider"></div><div class="danger-zone"><strong>Reset learner progress</strong><p class="note">Keeps the child profile but clears their answers, timings and mastery.</p><button class="cta danger small" id="resetData">Reset progress</button></div></section></div>`};
+parentSettings=function(){const c=activeChildV3();return `<div class="section-head"><div><h2>Settings & data</h2><p>These settings belong only to ${esc(state.profile.name)}.</p></div></div><div class="grid"><section class="card span6"><h3 style="margin-top:0">Practice settings</h3><div class="field"><label>Daily mission length</label><select id="dailyLen"><option value="10" ${state.settings.dailyQuestions===10?'selected':''}>10 questions</option><option value="15" ${state.settings.dailyQuestions===15?'selected':''}>15 questions</option><option value="20" ${state.settings.dailyQuestions===20?'selected':''}>20 questions</option></select></div><div class="field"><label>Learner stage</label><select id="editStage">${['P1','P2','P3','P4','P5','P6','P7','S1','S2','S3','S4','S5','S6'].map(x=>`<option ${x===state.profile.stage?'selected':''}>${x}</option>`).join('')}</select></div><button class="cta" id="saveSettings">Save settings</button><div class="divider"></div><button class="cta secondary small" id="leaderPrivacy">Leaderboard privacy</button></section><section class="card span6"><h3 style="margin-top:0">Backup this learner</h3><p class="note">Exporting a learner backup includes their progress record only. Course changes are stored separately.</p><div class="button-row"><button class="cta secondary" id="exportData">Export progress</button><label class="cta secondary" style="cursor:pointer">Import progress<input type="file" id="importData" accept="application/json" hidden></label></div><div class="divider"></div><div class="danger-zone"><strong>Reset learner progress</strong><p class="note">Keeps the child profile but clears their answers, timings, mastery and leaderboard times.</p><button class="cta danger small" id="resetData">Reset progress</button></div></section></div>`};
 bindParentActions=function(tab){if(tab==='overview'){const p=document.getElementById('printReport');if(p)p.onclick=()=>window.print()}if(tab==='worksheet'){const m=document.getElementById('makeSheet');if(m)m.onclick=makeWorksheet}if(tab==='settings'){document.getElementById('saveSettings').onclick=()=>{state.settings.dailyQuestions=Number(document.getElementById('dailyLen').value);state.profile.stage=document.getElementById('editStage').value;save();toast('Settings saved')};document.getElementById('exportData').onclick=exportData;document.getElementById('importData').onchange=importData;document.getElementById('leaderPrivacy').onclick=()=>renderChildPrivacyV3(platformV3.activeChildId);document.getElementById('resetData').onclick=()=>{if(confirm(`Clear ${state.profile.name}’s learning progress? Their family profile will stay.`)){const profile=deepClone(state.profile);state=freshState();state.profile=profile;activeChildV3().progress=state;save();renderParent('overview')}}}};
 
 function ensureDraftV3(){if(!platformV3.courseDraft||platformV3.courseDraft.version!==platformV3.course.version)platformV3.courseDraft=deepClone(platformV3.course);return platformV3.courseDraft}
@@ -4681,6 +4681,243 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   stopBrowserVoice:()=>stopVoiceV641(false)
  };
  console.info('SpeedyMaths V'+VERSION+' voice answer mode loaded');
+})();
+</script>
+
+
+<script id="speedymaths-v648-fluency-sync-script">
+/* ================================================================
+   V6.48 — FLUENCY MASTERY SYNC DURABILITY
+   - mastery is monotonic inside a reset generation
+   - bestPerfectSec and board bestSec can only improve
+   - current-revision leaderboard mastery can repair a stale child record
+   - deliberate Reset progress increments a generation and clears boards
+   - stale tabs/devices from an older generation cannot restore reset data
+   ================================================================ */
+(function speedyMathsFluencySyncV648(){
+ 'use strict';
+ const VERSION='6.48';
+ const BOARD_EPS=0.0001;
+ cloudV5.repairCheckedV648=cloudV5.repairCheckedV648||new Set();
+
+ function n(v){const x=Number(v);return Number.isFinite(x)?x:null}
+ function minNumber(){const vals=[...arguments].map(n).filter(v=>v!=null);return vals.length?Math.min(...vals):null}
+ function maxNumber(){const vals=[...arguments].map(n).filter(v=>v!=null);return vals.length?Math.max(...vals):null}
+ function resetVersion(c){return Math.max(0,Number(c?.progressResetVersion)||0)}
+ function isoValue(v){try{return cloudIsoV5(v)||v||null}catch(_){return v||null}}
+ function laterIso(a,b){const ta=a?new Date(a).getTime():0,tb=b?new Date(b).getTime():0;return tb>ta?b:a}
+ function earlierIso(a,b){if(!a)return b||null;if(!b)return a;return new Date(a).getTime()<=new Date(b).getTime()?a:b}
+
+ function mergeBoardResultsV648(remote,local){
+  const out={...(remote||{})};
+  for(const [rev,lr] of Object.entries(local||{})){
+   if(!lr)continue;const rr=out[rev];
+   if(!rr){out[rev]=deepClone(lr);continue}
+   const lb=n(lr.bestSec),rb=n(rr.bestSec);
+   if(lb!=null&&(rb==null||lb<rb-BOARD_EPS))out[rev]=deepClone(lr);
+   else if(rb!=null&&(lb==null||rb<lb-BOARD_EPS))out[rev]=deepClone(rr);
+   else out[rev]={...deepClone(rr),...deepClone(lr),bestSec:rb??lb,achievedAt:earlierIso(isoValue(rr.achievedAt),isoValue(lr.achievedAt))};
+  }
+  return out;
+ }
+
+ function mergeFluencyLevelV648(remote,local){
+  const r=remote||{},l=local||{},rd=isoValue(r.lastDate),ld=isoValue(l.lastDate),localLast=(!rd)||(ld&&new Date(ld).getTime()>=new Date(rd).getTime());
+  const out={...deepClone(r),...deepClone(l)};
+  out.mastered=!!(r.mastered||l.mastered);
+  out.attempts=maxNumber(r.attempts,l.attempts)||0;
+  out.bestCorrect=maxNumber(r.bestCorrect,l.bestCorrect)||0;
+  out.bestPerfectSec=minNumber(r.bestPerfectSec,l.bestPerfectSec);
+  out.boardResults=mergeBoardResultsV648(r.boardResults,l.boardResults);
+  if(localLast){out.lastDate=ld||rd||null;out.lastSec=l.lastSec??r.lastSec??null;out.lastCorrect=l.lastCorrect??r.lastCorrect??0}
+  else{out.lastDate=rd||ld||null;out.lastSec=r.lastSec??l.lastSec??null;out.lastCorrect=r.lastCorrect??l.lastCorrect??0}
+  if(out.mastered){
+   out.masteredAt=earlierIso(isoValue(r.masteredAt),isoValue(l.masteredAt));
+   out.masteredTimeSec=minNumber(r.masteredTimeSec,l.masteredTimeSec,out.bestPerfectSec);
+   const preferred=(n(r.masteredTimeSec)!=null&&n(r.masteredTimeSec)===(out.masteredTimeSec))?r:l;
+   out.masteredCourseVersion=preferred.masteredCourseVersion??r.masteredCourseVersion??l.masteredCourseVersion??null;
+   out.masteredTargetSec=preferred.masteredTargetSec??r.masteredTargetSec??l.masteredTargetSec??null;
+   out.masteredQuestionCount=preferred.masteredQuestionCount??r.masteredQuestionCount??l.masteredQuestionCount??null;
+  }
+  return out;
+ }
+
+ function mergeFactsV648(remote,local){
+  const out={...(remote||{})};
+  for(const [key,lf] of Object.entries(local||{})){
+   const rf=out[key];if(!rf){out[key]=deepClone(lf);continue}
+   const ra=Number(rf.attempts)||0,la=Number(lf.attempts)||0,base=la>=ra?lf:rf,other=la>=ra?rf:lf;
+   out[key]={...deepClone(other),...deepClone(base),bestMs:minNumber(rf.bestMs,lf.bestMs)};
+  }
+  return out;
+ }
+
+ function mergeHistoryV648(remote,local){
+  const seen=new Set(),rows=[];
+  for(const h of [...(Array.isArray(local)?local:[]),...(Array.isArray(remote)?remote:[])]){
+   if(!h)continue;const key=[h.date,h.levelId,h.questions,h.correct,h.seconds,h.passed].join('|');if(seen.has(key))continue;seen.add(key);rows.push(deepClone(h));
+  }
+  rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));return rows.slice(0,300);
+ }
+
+ function mergeProgressV648(remoteProgress,localProgress){
+  const r=normaliseProgressV3(remoteProgress||{}),l=normaliseProgressV3(localProgress||{}),out={...deepClone(r),...deepClone(l)};
+  out.fluency={...deepClone(r.fluency),...deepClone(l.fluency)};
+  const levels={},ids=new Set([...Object.keys(r.fluency?.levels||{}),...Object.keys(l.fluency?.levels||{})]);
+  for(const id of ids)levels[id]=mergeFluencyLevelV648(r.fluency?.levels?.[id],l.fluency?.levels?.[id]);
+  out.fluency.levels=levels;
+  out.fluency.facts=mergeFactsV648(r.fluency?.facts,l.fluency?.facts);
+  out.fluency.history=mergeHistoryV648(r.fluency?.history,l.fluency?.history);
+  out.fluency.placement={...(r.fluency?.placement||{}),...(l.fluency?.placement||{})};
+  return normaliseProgressV3(out);
+ }
+
+ function mergeChildV648(remoteRaw,localRaw){
+  const remote=remoteRaw||{},local=localRaw||{},rv=resetVersion(remote),lv=resetVersion(local);
+  if(rv>lv){
+   const out={...deepClone(remote),...deepClone(local),progressResetVersion:rv,progress:normaliseProgressV3(remote.progress)};
+   out.progressResetAt=remote.progressResetAt||local.progressResetAt||null;return out;
+  }
+  if(lv>rv)return{...deepClone(remote),...deepClone(local),progressResetVersion:lv,progress:normaliseProgressV3(local.progress)};
+  return{...deepClone(remote),...deepClone(local),progressResetVersion:lv,progress:mergeProgressV648(remote.progress,local.progress)};
+ }
+
+ function boardPayloadV648(c,levelId,rev,r){return{
+  childId:c.id,familyId:c.familyId,alias:c.leaderboardAlias||'Maths Star',levelId,boardRevision:Number(rev),
+  bestSec:Number(r.bestSec),masteredAt:r.achievedAt||'',courseVersion:Number(r.courseVersion)||1,progressResetVersion:resetVersion(c)
+ }}
+ function sigV648(x){try{return JSON.stringify(x,Object.keys(x).sort())}catch(_){return String(x)}}
+ function cacheKeyV648(c){return`mathsReadyLeaderboardSyncV648:${c.id}`}
+ function loadCacheV648(c){try{return JSON.parse(localStorage.getItem(cacheKeyV648(c))||'{}')||{}}catch(_){return{}}}
+ function saveCacheV648(c,x){try{localStorage.setItem(cacheKeyV648(c),JSON.stringify(x))}catch(_){}}
+
+ async function syncBoardRefV648(ref,payload,active){
+  const {runTransaction}=cloudV5.mods,localGen=Number(payload?.progressResetVersion)||0;
+  let canonical=active?payload:null;
+  await runTransaction(cloudV5.db,async tx=>{
+   const snap=await tx.get(ref),old=snap.exists()?snap.data():null,oldGen=Number(old?.progressResetVersion)||0;
+   if(!active){if(!snap.exists()||oldGen>localGen)return;tx.delete(ref);canonical=null;return}
+   if(oldGen>localGen){canonical=old;return}
+   if(oldGen<localGen||!old){tx.set(ref,payload,{merge:true});canonical=payload;return}
+   const oldSec=n(old.bestSec),newSec=n(payload.bestSec);
+   if(newSec!=null&&(oldSec==null||newSec<oldSec-BOARD_EPS)){tx.set(ref,payload,{merge:true});canonical=payload;return}
+   const keep={...payload,...old,bestSec:oldSec??newSec,progressResetVersion:localGen,alias:payload.alias,familyId:payload.familyId,childId:payload.childId,levelId:payload.levelId,boardRevision:payload.boardRevision};
+   if(sigV648(keep)!==sigV648(old))tx.set(ref,keep,{merge:true});canonical=keep;
+  });
+  return canonical;
+ }
+
+ cloudSyncLeaderboardsV5=async function(c){
+  if(!cloudV5.ready||!c?.progress?.fluency?.levels)return;
+  const cache=loadCacheV648(c),familyCircles=typeof familyCircleIdsV67==='function'?familyCircleIdsV67(c.familyId):[],selected=new Set(typeof childCircleIdsV67==='function'?childCircleIdsV67(c):[]);let changed=false;
+  for(const [levelId,x] of Object.entries(c.progress.fluency.levels||{})){
+   for(const [rev,r] of Object.entries(x?.boardResults||{})){
+    if(r?.bestSec==null)continue;const payload=boardPayloadV648(c,levelId,rev,r),publicActive=!!c.leaderboardOptIn;
+    const pubKey=`public:${levelId}:${rev}`,pubWanted=publicActive?sigV648(payload):'__deleted__';
+    if(cache[pubKey]!==pubWanted){try{const ref=cloudV5.mods.doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(levelId,rev),'entries',c.id),actual=await syncBoardRefV648(ref,payload,publicActive);cache[pubKey]=actual?sigV648(actual):'__deleted__';changed=true;if(cloudV5.writeStatsV631)cloudV5.writeStatsV631.leaderboardWrites++}catch(e){console.warn('leaderboard sync v6.48',e)}}
+    if(typeof circleBoardRefV67==='function')for(const circleId of familyCircles){
+     const active=selected.has(circleId),key=`circle:${circleId}:${levelId}:${rev}`,wanted=active?sigV648(payload):'__deleted__';if(cache[key]===wanted)continue;
+     try{const actual=await syncBoardRefV648(circleBoardRefV67(circleId,levelId,rev,c.id),payload,active);cache[key]=actual?sigV648(actual):'__deleted__';changed=true;if(cloudV5.writeStatsV631)cloudV5.writeStatsV631.leaderboardWrites++}catch(e){console.warn('circle leaderboard sync v6.48',e)}
+    }
+   }
+  }
+  if(changed)saveCacheV648(c,cache);
+ };
+
+ cloudWriteChildV5=async function(c){
+  if(!cloudV5.ready||!cloudV5.user||!c)return;
+  const timer=cloudV5.saveTimers.get(c.id);if(timer){clearTimeout(timer);cloudV5.saveTimers.delete(c.id)}
+  const seqAtStart=Number(cloudV5.saveSeqV631?.get(c.id)||0),local=deepClone(c),ref=cloudChildRefV5(c);let merged=local;
+  try{
+   const {runTransaction,serverTimestamp}=cloudV5.mods;
+   await runTransaction(cloudV5.db,async tx=>{const snap=await tx.get(ref);merged=mergeChildV648(snap.exists()?snap.data():null,local);tx.set(ref,{...deepClone(merged),updatedAt:serverTimestamp()},{merge:true})});
+   Object.keys(c).forEach(k=>{if(!(k in merged))delete c[k]});Object.assign(c,merged);c.progress=normaliseProgressV3(c.progress);c.progressResetVersion=resetVersion(c);
+   if(platformV3.activeChildId===c.id)state=c.progress;
+   if(cloudV5.writeStatsV631)cloudV5.writeStatsV631.childWrites++;
+   await cloudSyncLeaderboardsV5(c);
+   const seqNow=Number(cloudV5.saveSeqV631?.get(c.id)||0);if(seqNow===seqAtStart)cloudV5.dirtyChildrenV631?.delete(c.id);else if(!cloudV5.saveTimers.get(c.id))cloudScheduleChildSaveV5(c,15000);
+  }catch(e){console.error('child save v6.48',e);cloudV5.dirtyChildrenV631?.add(c.id);if(!cloudV5.saveTimers.get(c.id))cloudScheduleChildSaveV5(c,15000)}
+ };
+
+ function validRepairEntryV648(c,level,data,source){
+  if(!data)return null;const rev=Number(level.boardRevision)||1,sec=n(data.bestSec),target=n(fluencyTarget(level)),entryGen=Number(data.progressResetVersion)||0;
+  if(sec==null||sec<=0||target==null||sec>target+BOARD_EPS)return null;
+  if(Number(data.boardRevision||rev)!==rev||entryGen!==resetVersion(c))return null;
+  if(data.familyId&&c.familyId&&data.familyId!==c.familyId)return null;
+  return{bestSec:sec,achievedAt:isoValue(data.masteredAt)||new Date().toISOString(),courseVersion:Number(data.courseVersion)||1,source};
+ }
+ async function findRepairEntryV648(c,level){
+  const rev=Number(level.boardRevision)||1,{doc,getDoc}=cloudV5.mods,candidates=[];
+  try{const s=await getDoc(doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(level.id,rev),'entries',c.id));if(s.exists()){const x=validRepairEntryV648(c,level,s.data(),'public');if(x)candidates.push(x)}}catch(e){console.warn('public repair lookup',e)}
+  if(typeof circleBoardRefV67==='function')for(const circleId of (typeof childCircleIdsV67==='function'?childCircleIdsV67(c):[])){
+   try{const s=await getDoc(circleBoardRefV67(circleId,level.id,rev,c.id));if(s.exists()){const x=validRepairEntryV648(c,level,s.data(),`circle:${circleId}`);if(x)candidates.push(x)}}catch(e){console.warn('circle repair lookup',e)}
+  }
+  return candidates.sort((a,b)=>a.bestSec-b.bestSec)[0]||null;
+ }
+ function applyRepairV648(c,level,hit){
+  const x=c.progress.fluency.levels[level.id]||(c.progress.fluency.levels[level.id]={}),rev=Number(level.boardRevision)||1,oldBest=n(x.bestPerfectSec),oldBoard=n(x.boardResults?.[rev]?.bestSec);
+  if(x.mastered&&oldBest!=null&&oldBest<=hit.bestSec+BOARD_EPS&&oldBoard!=null&&oldBoard<=hit.bestSec+BOARD_EPS)return false;
+  x.mastered=true;x.bestPerfectSec=minNumber(x.bestPerfectSec,hit.bestSec);x.bestCorrect=Math.max(Number(x.bestCorrect)||0,Number(level.count)||0);
+  x.masteredAt=x.masteredAt||hit.achievedAt;x.masteredTimeSec=minNumber(x.masteredTimeSec,hit.bestSec);x.masteredTargetSec=x.masteredTargetSec||fluencyTarget(level);x.masteredQuestionCount=x.masteredQuestionCount||level.count;x.masteredCourseVersion=x.masteredCourseVersion||hit.courseVersion;
+  x.boardResults=x.boardResults||{};const old=x.boardResults[rev];if(!old||n(old.bestSec)==null||hit.bestSec<n(old.bestSec)-BOARD_EPS)x.boardResults[rev]={boardRevision:rev,bestSec:hit.bestSec,questionCount:level.count,targetSec:fluencyTarget(level),achievedAt:hit.achievedAt,courseVersion:hit.courseVersion,repairedFromLeaderboard:true};
+  x.repairedFromLeaderboardAt=new Date().toISOString();return true;
+ }
+ async function repairChildFromBoardsV648(c){
+  if(!cloudV5.ready||!c?.progress?.fluency?.levels)return false;const key=`${c.id}:${resetVersion(c)}:${currentCourseV3().version}`;if(cloudV5.repairCheckedV648.has(key))return false;cloudV5.repairCheckedV648.add(key);let changed=false;
+  // Follow each ladder from the bottom. Once an unmastered step has no valid board
+  // result, later steps in that same ladder cannot legitimately unlock from board data.
+  for(const op of FLUENCY_OPERATIONS.map(o=>o.id)){
+   for(const level of courseLevelsV3(op)){
+    const x=c.progress.fluency.levels[level.id]||{};if(x.mastered)continue;
+    const hit=await findRepairEntryV648(c,level);if(!hit)break;if(applyRepairV648(c,level,hit))changed=true;
+   }
+  }
+  if(changed){if(platformV3.activeChildId===c.id)state=c.progress;await cloudWriteChildV5(c)}return changed;
+ }
+
+ async function deleteRefsInChunksV648(refs){
+  const unique=[...new Map(refs.map(r=>[r.path,r])).values()];for(let i=0;i<unique.length;i+=400){const b=cloudV5.mods.writeBatch(cloudV5.db);unique.slice(i,i+400).forEach(r=>b.delete(r));await b.commit()}
+ }
+ async function resetLearnerProgressV648(c){
+  if(!cloudV5.ready||!cloudV5.user||!c)return;
+  const timer=cloudV5.saveTimers.get(c.id);if(timer){clearTimeout(timer);cloudV5.saveTimers.delete(c.id)}cloudV5.dirtyChildrenV631?.delete(c.id);
+  const ref=cloudChildRefV5(c),profile=deepClone(c.progress?.profile||state.profile||{});let oldRemote=null,newGen=resetVersion(c)+1,circleIds=[];
+  const {runTransaction,serverTimestamp}=cloudV5.mods;
+  await runTransaction(cloudV5.db,async tx=>{const snap=await tx.get(ref);oldRemote=snap.exists()?snap.data():deepClone(c);const remoteGen=resetVersion(oldRemote);newGen=Math.max(remoteGen,resetVersion(c))+1;circleIds=[...new Set([...(oldRemote?.leaderboardCircleIds||[]),...(c.leaderboardCircleIds||[])])];const fresh=freshState();fresh.profile=profile;tx.update(ref,{progress:fresh,progressResetVersion:newGen,progressResetAt:serverTimestamp(),updatedAt:serverTimestamp()})});
+  const revisions=new Map();for(const level of FLUENCY_LEVELS){const e=effectiveFluencyV3(level);if(e)revisions.set(`${e.id}:${Number(e.boardRevision)||1}`,[e.id,Number(e.boardRevision)||1])}
+  for(const [levelId,x] of Object.entries(oldRemote?.progress?.fluency?.levels||{}))for(const rev of Object.keys(x?.boardResults||{}))revisions.set(`${levelId}:${rev}`,[levelId,Number(rev)||1]);
+  const refs=[];for(const [levelId,rev] of revisions.values()){
+   refs.push(cloudV5.mods.doc(cloudV5.db,'leaderboards',cloudBoardKeyV5(levelId,rev),'entries',c.id));if(typeof circleBoardRefV67==='function')for(const circleId of circleIds)refs.push(circleBoardRefV67(circleId,levelId,rev,c.id));
+  }
+  try{await deleteRefsInChunksV648(refs)}catch(e){console.warn('board cleanup after reset',e)}
+  const fresh=freshState();fresh.profile=profile;c.progress=fresh;c.progressResetVersion=newGen;c.progressResetAt=new Date().toISOString();state=fresh;
+  try{localStorage.removeItem(cacheKeyV648(c));localStorage.removeItem(`mathsReadyLeaderboardSyncV631:${c.id}`)}catch(_){}delete cloudV5.circleSyncSignatures?.[c.id];
+  for(const key of Object.keys(cloudV5.leaderboards||{}))cloudV5.leaderboards[key]=(cloudV5.leaderboards[key]||[]).filter(r=>r.childId!==c.id);
+  for(const key of Object.keys(cloudV5.circleLeaderboards||{}))cloudV5.circleLeaderboards[key]=(cloudV5.circleLeaderboards[key]||[]).filter(r=>r.childId!==c.id);
+  cloudV5.repairCheckedV648=new Set([...cloudV5.repairCheckedV648].filter(k=>!k.startsWith(`${c.id}:`)));
+ }
+
+ const bindParentActionsV648Base=bindParentActions;
+ bindParentActions=function(tab){
+  bindParentActionsV648Base(tab);if(tab!=='settings')return;const b=document.getElementById('resetData');if(!b)return;
+  b.onclick=async()=>{const c=activeChildV3();if(!c)return;if(!confirm(`Clear ${state.profile.name}’s learning progress? Their family profile will stay.\n\nThis also removes their leaderboard times so old results cannot restore the reset.`))return;b.disabled=true;b.textContent='Resetting…';try{await resetLearnerProgressV648(c);toast('Progress and leaderboard times reset');renderParent('overview')}catch(e){b.disabled=false;b.textContent='Reset progress';alert(cloudErrV5(e))}};
+ };
+
+ const cloudLoadAccountV648Base=cloudLoadAccountV5;
+ cloudLoadAccountV5=async function(user){
+  await cloudLoadAccountV648Base(user);const c=activeChildV3();if(!c)return;
+  try{const changed=await repairChildFromBoardsV648(c);if(changed)renderHome()}catch(e){console.warn('fluency board repair v6.48',e)}
+ };
+
+ // Also repair on demand when a different child is opened after the initial account load.
+ const renderFluencyV648Base=renderFluency;
+ renderFluency=function(op=activeFluencyOp){
+  renderFluencyV648Base(op);const c=activeChildV3();if(!c||!cloudV5.ready)return;
+  repairChildFromBoardsV648(c).then(changed=>{if(changed&&platformV3.activeChildId===c.id&&document.querySelector('[data-nav=\"fluency\"].active'))renderFluencyV648Base(op)}).catch(e=>console.warn('fluency on-demand repair v6.48',e));
+ };
+
+ window.SpeedyMathsFluencySyncV648={version:VERSION,mergeProgress:mergeProgressV648,repairActive:async()=>{const c=activeChildV3();return c?repairChildFromBoardsV648(c):false},resetActive:async()=>{const c=activeChildV3();if(c)await resetLearnerProgressV648(c)}};
+ console.info('SpeedyMaths V'+VERSION+' fluency sync durability loaded');
 })();
 </script>
 
