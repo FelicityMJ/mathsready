@@ -1439,7 +1439,7 @@ function renderCloudUnlinkedV5(user){bareV3(`<section class="card access-card"><
 function renderCloudAccountProblemV5(user,e){bareV3(`<section class="card access-card"><div class="pill">⚠️ Account loading</div><h1>We couldn't load this account.</h1><p class="muted">${esc(cloudErrV5(e))}</p><button class="cta secondary" id="problemLogout">Log out</button></section>`);document.getElementById('problemLogout').onclick=()=>cloudV5.mods.signOut(cloudV5.auth)}
 
 // Cloud-aware shell and gateway helpers.
-bareV3=function(content){document.getElementById('app').innerHTML=`<div class="platform-shell"><div class="platform-brand"><div class="logo">∑</div><div><strong style="font-size:21px">Nat5 Ready Maths</strong><div class="tiny">Cloud V6.7 • ${cloudV5.user?esc(cloudV5.user.email||'signed in'):'secure family access'}</div></div></div>${content}<div class="footer">Nat5 Ready Maths Cloud V6.7 • Firebase Authentication + Firestore • GitHub Pages front end</div></div>`;window.scrollTo({top:0,behavior:'smooth'})};
+bareV3=function(content){document.getElementById('app').innerHTML=`<div class="platform-shell"><div class="platform-brand"><div class="logo">∑</div><div><strong style="font-size:21px">Nat5 Ready Maths</strong><div class="tiny">Cloud V6.48.2 • ${cloudV5.user?esc(cloudV5.user.email||'signed in'):'secure family access'}</div></div></div>${content}<div class="footer">Nat5 Ready Maths Cloud V6.48.2 • Firebase Authentication + Firestore • GitHub Pages front end</div></div>`;window.scrollTo({top:0,behavior:'smooth'})};
 renderGatewayV3=renderCloudGatewayV5;
 logoutFamilyV3=async function(){try{await cloudFlushSaveV5();await cloudV5.mods.signOut(cloudV5.auth)}catch(e){alert(cloudErrV5(e))}};
 
@@ -4507,7 +4507,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  const VERSION='6.42';
  const INPUT_SELECTOR='#answer,#banswer,#fanswer,.mastery-answer';
  const SpeechRecognitionCtor=window.SpeechRecognition||window.webkitSpeechRecognition||null;
- let voiceMode=false,listening=false,recognition=null,restartTimer=null,nextListenDelay=300,lastPointerToggle=0;
+ let voiceMode=false,listening=false,recognition=null,restartTimer=null,nextListenDelay=180,lastPointerToggle=0,voiceTarget=null;
 
  function relevantInputs(){
   return [...document.querySelectorAll(INPUT_SELECTOR)].filter(el=>el instanceof HTMLInputElement&&!el.readOnly&&!el.disabled&&el.offsetParent!==null&&(el.closest('.question-wrap')||el.closest('.mastery-session')));
@@ -4515,6 +4515,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  function targetInput(){
   const inputs=relevantInputs();
   if(!inputs.length)return null;
+  if(voiceTarget&&inputs.includes(voiceTarget)&&!voiceTarget.disabled&&!voiceTarget.readOnly)return voiceTarget;
   const marked=document.querySelector('.math-pad-target-v637');
   if(marked instanceof HTMLInputElement&&inputs.includes(marked))return marked;
   if(document.activeElement instanceof HTMLInputElement&&inputs.includes(document.activeElement))return document.activeElement;
@@ -4522,6 +4523,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
  }
  function setVoiceTarget(el,scroll=false){
   if(!(el instanceof HTMLInputElement)||el.readOnly||el.disabled)return;
+  voiceTarget=el;
   document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>x.classList.remove('math-pad-voice-target-v641'));
   el.classList.add('math-pad-voice-target-v641');
   try{el.focus({preventScroll:true})}catch(_){try{el.focus()}catch(__){}}
@@ -4604,8 +4606,14 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   return null;
  }
  function programmaticNavV641(delta){
-  const btn=document.querySelector(`#mathPadV637 [data-pad-nav="${delta}"]`);if(btn&&!btn.disabled){btn.click();return true}
-  const inputs=relevantInputs(),t=targetInput(),i=inputs.indexOf(t),n=i+delta;if(n>=0&&n<inputs.length){setVoiceTarget(inputs[n],true);return true}return false;
+  const all=relevantInputs();if(!all.length)return false;
+  const t=targetInput();let i=all.indexOf(t);if(i<0)i=0;
+  if(delta>0){
+   for(let n=i+1;n<all.length;n++){if(!String(all[n].value).trim()){setVoiceTarget(all[n],true);return true}}
+   const blank=all.find(x=>!String(x.value).trim());if(blank){setVoiceTarget(blank,true);return true}
+   if(i+1<all.length){setVoiceTarget(all[i+1],true);return true}
+  }else if(delta<0&&i>0){setVoiceTarget(all[i-1],true);return true}
+  return false;
  }
  function submitVoiceV641(){
   const inputs=relevantInputs(),blank=inputs.find(x=>!String(x.value).trim());if(blank){setVoiceTarget(blank,true);updateVoiceUi('There is still a blank answer. Moved to it.');return false}
@@ -4619,9 +4627,30 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   if(cmd==='next'){programmaticNavV641(1);updateVoiceUi('Moved to the next answer.');nextListenDelay=300;return true}
   if(cmd==='submit'){submitVoiceV641();nextListenDelay=500;return true}
   return false;
- } function afterSpokenAnswerV641(transcript,value){
-  updateVoiceUi(`Heard “${transcript}” → ${value}. Moving on…`);nextListenDelay=420;
-  setTimeout(()=>{if(!voiceMode)return;const inputs=relevantInputs();if(!inputs.length)return;const allFilled=inputs.length>1&&inputs.every(x=>String(x.value).trim()!=='');const submit=document.getElementById('masterySubmit');if(allFilled&&submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),180);return}programmaticNavV641(1)},220);
+ } function beginDeferredVoiceTimerV6482(){
+  const a=typeof activeFluency!=='undefined'?activeFluency:null;
+  if(!a?.worksheet||!a.dictationWaitingStart)return;
+  a.dictationWaitingStart=false;a.started=performance.now();a.answerTimes={};
+  try{updateWorksheetTimerV61()}catch(_){}
+ }
+ function advanceAfterVoiceV6482(answeredEl){
+  const all=relevantInputs();if(!all.length)return false;
+  const submit=document.getElementById('masterySubmit');
+  const allFilled=all.every(x=>String(x.value).trim()!=='');
+  if(allFilled&&submit&&!submit.disabled){stopVoiceV641(false);updateVoiceUi('All answers complete — submitting…');setTimeout(()=>submit.click(),120);return true}
+  let i=all.indexOf(answeredEl);if(i<0)i=all.indexOf(targetInput());
+  let next=null;
+  for(let n=Math.max(0,i+1);n<all.length;n++){if(!String(all[n].value).trim()){next=all[n];break}}
+  if(!next)next=all.find(x=>!String(x.value).trim())||null;
+  if(next){setVoiceTarget(next,true);updateVoiceUi('Next answer — listening…');return true}
+  const answerBtn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');
+  if(answerBtn){answerBtn.click();return true}
+  return false;
+ }
+ function afterSpokenAnswerV641(transcript,value,answeredEl){
+  beginDeferredVoiceTimerV6482();
+  updateVoiceUi(`Heard “${transcript}” → ${value}. Moving on…`);nextListenDelay=140;
+  setTimeout(()=>{if(voiceMode)advanceAfterVoiceV6482(answeredEl)},45);
  } function queueRestartV641(ms=300){clearTimeout(restartTimer);if(!voiceMode)return;restartTimer=setTimeout(()=>{if(voiceMode)startListeningV641()},ms)} function startListeningV641(){
   clearTimeout(restartTimer);if(!voiceMode||listening)return;if(!SpeechRecognitionCtor){voiceMode=false;updateVoiceUi('Voice entry is not available in this browser.');return}
   const t=targetInput();if(!t){queueRestartV641(400);return}setVoiceTarget(t,true);
@@ -4643,16 +4672,16 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
    const result=e.results[e.results.length-1];
    if((!value||/[a-z]{4,}/i.test(value))&&result){for(let i=1;i<result.length;i++){const alt=String(result[i]?.transcript||'').trim(),v=spokenToAnswerV641(alt,el);if(v&&(!/[a-z]{4,}/i.test(v)||i===result.length-1)){value=v;chosen=alt;break}}}
    if(!value){updateVoiceUi(`I could not turn “${transcript}” into an answer. Try again.`);nextListenDelay=320;return}
-   if(setAnswer(el,value))afterSpokenAnswerV641(chosen,value)
+   if(setAnswer(el,value))afterSpokenAnswerV641(chosen,value,el)
   };
   r.onerror=e=>{const code=String(e.error||'');if(code==='not-allowed'||code==='service-not-allowed'){voiceMode=false;updateVoiceUi('Microphone permission is blocked. Allow microphone access, then try Voice mode again.')}else if(code==='audio-capture'){voiceMode=false;updateVoiceUi('No microphone is available on this device.')}else if(code==='network'){updateVoiceUi('Voice recognition could not reach its speech service. Try again.');nextListenDelay=750}else if(code!=='no-speech'&&code!=='aborted'){updateVoiceUi('I did not catch that. Try saying the answer again.');nextListenDelay=350}};
-  r.onend=()=>{listening=false;recognition=null;updateVoiceUi();if(voiceMode)queueRestartV641(gotResult?nextListenDelay:320);nextListenDelay=300};
+  r.onend=()=>{listening=false;recognition=null;updateVoiceUi();if(voiceMode)queueRestartV641(gotResult?nextListenDelay:220);nextListenDelay=180};
   try{r.start()}catch(_){recognition=null;listening=false;queueRestartV641(400)}
  } function startVoiceV641(){
   if(!SpeechRecognitionCtor){updateVoiceUi('Voice entry is not available in this browser.');return}voiceMode=true;const t=targetInput();if(t)setVoiceTarget(t,true);updateVoiceUi('Voice mode is on — starting microphone…');startListeningV641();
  }
  function stopVoiceV641(showMessage=true){
-  voiceMode=false;clearTimeout(restartTimer);restartTimer=null;try{if(recognition)recognition.abort()}catch(_){}recognition=null;listening=false;document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>x.classList.remove('math-pad-voice-target-v641'));updateVoiceUi(showMessage?'Voice mode stopped.':'');
+  voiceMode=false;voiceTarget=null;clearTimeout(restartTimer);restartTimer=null;try{if(recognition)recognition.abort()}catch(_){}recognition=null;listening=false;document.querySelectorAll('.math-pad-voice-target-v641').forEach(x=>x.classList.remove('math-pad-voice-target-v641'));updateVoiceUi(showMessage?'Voice mode stopped.':'');
  }
  function toggleVoiceV641(){voiceMode?stopVoiceV641():startVoiceV641()}
  function injectUiV641(){
@@ -4678,7 +4707,9 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   setAnswer,
   setVoiceTarget,
   programmaticNav:programmaticNavV641,
-  stopBrowserVoice:()=>stopVoiceV641(false)
+  startBrowserVoice:startVoiceV641,
+  stopBrowserVoice:()=>stopVoiceV641(false),
+  isBrowserVoiceOn:()=>voiceMode
  };
  console.info('SpeedyMaths V'+VERSION+' voice answer mode loaded');
 })();
@@ -4687,7 +4718,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 
 <script id="speedymaths-v648-fluency-sync-script">
 /* ================================================================
-   V6.48 — FLUENCY MASTERY SYNC DURABILITY
+   V6.48.1 — FLUENCY MASTERY SYNC DURABILITY
    - mastery is monotonic inside a reset generation
    - bestPerfectSec and board bestSec can only improve
    - current-revision leaderboard mastery can repair a stale child record
@@ -4696,7 +4727,7 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
    ================================================================ */
 (function speedyMathsFluencySyncV648(){
  'use strict';
- const VERSION='6.48';
+ const VERSION='6.48.1';
  const BOARD_EPS=0.0001;
  cloudV5.repairCheckedV648=cloudV5.repairCheckedV648||new Set();
 
@@ -4863,15 +4894,32 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
   x.repairedFromLeaderboardAt=new Date().toISOString();return true;
  }
  async function repairChildFromBoardsV648(c){
-  if(!cloudV5.ready||!c?.progress?.fluency?.levels)return false;const key=`${c.id}:${resetVersion(c)}:${currentCourseV3().version}`;if(cloudV5.repairCheckedV648.has(key))return false;cloudV5.repairCheckedV648.add(key);let changed=false;
-  // Follow each ladder from the bottom. Once an unmastered step has no valid board
-  // result, later steps in that same ladder cannot legitimately unlock from board data.
+  if(!cloudV5.ready||!c?.progress?.fluency?.levels)return false;
+  const key=`${c.id}:${resetVersion(c)}:${currentCourseV3().version}`,previouslyChecked=cloudV5.repairCheckedV648.has(key);let changed=false;
+  // Check EACH level independently. A valid result for the same child + stable level ID +
+  // current board revision is authoritative mastery evidence even if an unrelated earlier
+  // step has no leaderboard entry. This is the Julia 2:13 -> 1:38 repair case.
   for(const op of FLUENCY_OPERATIONS.map(o=>o.id)){
    for(const level of courseLevelsV3(op)){
-    const x=c.progress.fluency.levels[level.id]||{};if(x.mastered)continue;
-    const hit=await findRepairEntryV648(c,level);if(!hit)break;if(applyRepairV648(c,level,hit))changed=true;
+    const x=c.progress.fluency.levels[level.id]||{};
+    const rev=Number(level.boardRevision)||1;
+    // First honour a valid current-revision board result already stored on the child record.
+    const localBoard=x.boardResults?.[rev];
+    const localHit=validRepairEntryV648(c,level,localBoard,'child-board-result');
+    if(localHit&&applyRepairV648(c,level,localHit))changed=true;
+    // If the level is still not mastered (or has a slower perfect time), ask Firestore boards.
+    // Repeat the remote check when opening Fluency until the level is reconciled; this avoids
+    // a transient failed lookup becoming permanently cached for the browser session.
+    const current=c.progress.fluency.levels[level.id]||{};
+    if(!current.mastered||n(current.bestPerfectSec)==null||n(current.bestPerfectSec)>n(localHit?.bestSec)){
+     const hit=await findRepairEntryV648(c,level);if(hit&&applyRepairV648(c,level,hit))changed=true;
+    }else if(!previouslyChecked){
+     // A mastered level can still have a faster leaderboard PB than the child record.
+     const hit=await findRepairEntryV648(c,level);if(hit&&applyRepairV648(c,level,hit))changed=true;
+    }
    }
   }
+  cloudV5.repairCheckedV648.add(key);
   if(changed){if(platformV3.activeChildId===c.id)state=c.progress;await cloudWriteChildV5(c)}return changed;
  }
 
@@ -4921,6 +4969,10 @@ body.math-pad-open-v637 .mastery-session,body.math-pad-open-v637 .question-wrap{
 })();
 </script>
 
+
+<script id="speedymaths-v6482-voice-fix-marker">
+console.info('SpeedyMaths V6.48.2 continuous voice advance fix loaded');
+</script>
 </body></html>
 <style>
 /* V6.47: persistent hands-free device dictation for Windows/iPad. */
@@ -5023,9 +5075,9 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
   const i=all.indexOf(el);let next=null;
   for(let n=i+1;n<all.length;n++){if(!String(all[n].value).trim()){next=all[n];break}}
   if(!next)next=all.find(x=>!String(x.value).trim())||all[i+1]||null;
-  if(next){markAnswer(next,true);setLive('Next question — say a number.');focusCatcher();return}
+  if(next){markAnswer(next,true);const pos=all.indexOf(next)+1;setLive(`Question ${pos} is ready — say the next number.`);if(document.activeElement!==catcher())focusCatcher();return}
   const answerBtn=document.querySelector('#check:not(:disabled),#bcheck:not(:disabled),#fcheck:not(:disabled)');
-  if(answerBtn){setLive('Answer heard — checking…');answerBtn.click();setTimeout(()=>{if(!mode)return;const n=firstBlank();if(n){markAnswer(n,true);setLive('Next question — say a number.');focusCatcher()}},360)}
+  if(answerBtn){setLive('Answer heard — checking…');answerBtn.click();setTimeout(()=>{if(!mode)return;const n=firstBlank();if(n){markAnswer(n,true);setLive('Next question — say a number.');if(document.activeElement!==catcher())focusCatcher()}},360)}
  }
  function newDictationDelta(full){
   full=String(full||'');let prev=String(processedSnapshot||'');
@@ -5044,7 +5096,7 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
    // stay listening when the webpage does not clear or replace the field it is dictating into.
    processedSnapshot=part.full;
    if(!value){setLive(`Heard “${raw}” — please say a number only.`,true);setStatus('That was not recognised as a number.');setTimeout(focusCatcher,0);return}
-   beginTimerOnFirstAcceptedAnswer();setValue(el,value);setLive(`✓ ${value} — ready for the next answer.`);setStatus(`Entered ${value} — keep speaking.`);setTimeout(()=>{if(mode)moveToNextOrSubmit(el)},35);
+   beginTimerOnFirstAcceptedAnswer();setValue(el,value);setLive(`✓ ${value} — ready for the next answer.`);setStatus(`Entered ${value} — keep speaking.`);requestAnimationFrame(()=>{if(mode)moveToNextOrSubmit(el)});
   }finally{setTimeout(()=>{processing=false},55)}
  }
  function schedule(){clearTimeout(finaliseTimer);if(!mode)return;finaliseTimer=setTimeout(finalise,IDLE_MS)}
@@ -5131,7 +5183,7 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
 <script id="speedymaths-v644-input-ready-script">
 (function speedyMathsInputReadyV644(){
  'use strict';
- const VERSION='6.46';
+ const VERSION='6.48.2';
  const baseStart=startWorksheetFluencyV61;
  let pending=null,choice=null;
  function savedSide(){try{return localStorage.getItem('speedyMathsMathPadSideV640')==='left'?'left':'right'}catch(_){return'right'}}
@@ -5145,7 +5197,7 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
   if(document.activeElement instanceof HTMLElement)try{document.activeElement.blur()}catch(_){}
   pending={id:l.id,mode,returnTo};choice=null;padSide=savedSide();
   const target=fluencyTarget(l),count=l.count;
-  render(`<section class="card input-ready-v644"><div class="pill">⏱ Ready screen • timer is NOT running</div><h1>${esc(l.name)}</h1><p class="intro-v644">Choose how you want to enter your answers. Your Standard Mastery Time does not start until you press <strong>Start sheet</strong>.</p><div class="qmeta">${esc(titleFor(mode))} • ${count} questions • SMT ${fmtSec(target)}</div><div class="input-choice-grid-v644"><button type="button" class="input-choice-v644" data-input-choice-v644="pad"><span class="ico-v644">🔢</span><strong>Open number pad</strong><small>Best for iPad/touch. Choose left or right before you start.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="mic"><span class="ico-v644">🎙️</span><strong>Open microphone</strong><small>Hands-free numbers. Start Windows/iPad dictation once, then keep speaking.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="none"><span class="ico-v644">⌨️</span><strong>No extra input</strong><small>Use the normal keyboard and answer boxes.</small></button></div><div class="pad-side-ready-v644" id="padSideReadyV644"><strong>Where should the number pad open?</strong><button type="button" data-ready-side-v644="left">◀ Left</button><button type="button" data-ready-side-v644="right">Right ▶</button></div><div class="dictation-ready-v644" id="dictationReadyV644"><strong>Hands-free microphone mode — the timer waits for your first number.</strong><p><b>Windows laptop:</b> press <b>Start sheet</b>, then press <b>Windows + H once</b>. Leave Voice Typing listening and just say each highlighted answer. SpeedyMaths now keeps one permanent voice field active, so changing questions should not make you restart the microphone.</p><p><b>iPad:</b> press <b>Start sheet</b>, then tap <b>🎤 on the keyboard once</b> and keep saying the highlighted answers.</p><p><b>Faster:</b> accepted numbers move on almost immediately. <b>Numbers only:</b> other words are rejected, with common speech mistakes such as “turn” for “ten” corrected automatically.</p></div><div class="start-row-v644"><button type="button" class="back" id="inputReadyExitV644">← Cancel</button><span class="tiny" id="inputReadyStatusV644">Choose one option above.</span><button type="button" class="cta start-sheet-v644" id="startSheetV644" disabled>Start sheet →</button></div></section>`,'fluency');
+  render(`<section class="card input-ready-v644"><div class="pill">⏱ Ready screen • timer is NOT running</div><h1>${esc(l.name)}</h1><p class="intro-v644">Choose how you want to enter your answers. Your Standard Mastery Time does not start until you press <strong>Start sheet</strong>.</p><div class="qmeta">${esc(titleFor(mode))} • ${count} questions • SMT ${fmtSec(target)}</div><div class="input-choice-grid-v644"><button type="button" class="input-choice-v644" data-input-choice-v644="pad"><span class="ico-v644">🔢</span><strong>Open number pad</strong><small>Best for iPad/touch. Choose left or right before you start.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="mic"><span class="ico-v644">🎙️</span><strong>Open microphone</strong><small>Hands-free numbers. Start Windows/iPad dictation once, then keep speaking.</small></button><button type="button" class="input-choice-v644" data-input-choice-v644="none"><span class="ico-v644">⌨️</span><strong>No extra input</strong><small>Use the normal keyboard and answer boxes.</small></button></div><div class="pad-side-ready-v644" id="padSideReadyV644"><strong>Where should the number pad open?</strong><button type="button" data-ready-side-v644="left">◀ Left</button><button type="button" data-ready-side-v644="right">Right ▶</button></div><div class="dictation-ready-v644" id="dictationReadyV644"><strong>Hands-free microphone mode — the timer waits for your first number.</strong><p><b>Chrome/Edge laptop:</b> press <b>Start sheet</b>. The browser microphone starts automatically. Say one number at a time — after each accepted number the next answer box is selected and listening restarts automatically.</p><p><b>iPad:</b> press <b>Start sheet</b>, tap <b>🎤 on the keyboard once</b>, then keep saying the highlighted answers. The app keeps the dictation field selected while it advances the answer target.</p><p><b>No repeated clicking:</b> you should not need to click the next box or restart the MathsReady mic between answers. <b>Numbers only:</b> other words are rejected, with common speech mistakes such as “turn” for “ten” corrected automatically.</p></div><div class="start-row-v644"><button type="button" class="back" id="inputReadyExitV644">← Cancel</button><span class="tiny" id="inputReadyStatusV644">Choose one option above.</span><button type="button" class="cta start-sheet-v644" id="startSheetV644" disabled>Start sheet →</button></div></section>`,'fluency');
   const cards=[...document.querySelectorAll('[data-input-choice-v644]')],padBox=document.getElementById('padSideReadyV644'),micBox=document.getElementById('dictationReadyV644'),start=document.getElementById('startSheetV644'),status=document.getElementById('inputReadyStatusV644');
   function refresh(){cards.forEach(b=>b.classList.toggle('active',b.dataset.inputChoiceV644===choice));padBox.classList.toggle('show',choice==='pad');micBox.classList.toggle('show',choice==='mic');document.querySelectorAll('[data-ready-side-v644]').forEach(b=>b.classList.toggle('active',b.dataset.readySideV644===padSide));start.disabled=!choice;status.textContent=choice==='pad'?`Number pad will open on the ${padSide}.`:choice==='mic'?'Hands-free microphone selected. Timer starts with your first accepted number.':choice==='none'?'Normal keyboard selected.':'Choose one option above.'}
   cards.forEach(b=>b.addEventListener('click',()=>{choice=b.dataset.inputChoiceV644;refresh()}));
@@ -5154,13 +5206,19 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
   start.onclick=()=>beginChosen();
   refresh();
  }
- function enableDeviceDictationV645(){
-  // Call synchronously from the Start sheet click so iPadOS treats focus as user initiated
-  // and is allowed to open the software keyboard.
-  if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return}
+ function enableChosenMicV6482(){
+  const isiPad=/iPad|iPhone|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const hasBrowserSpeech=!!(window.SpeechRecognition||window.webkitSpeechRecognition);
+  // On desktop Chrome/Edge prefer browser speech recognition: it can restart itself after
+  // each answer, so pupils do not need Win+H or another microphone click.
+  if(!isiPad&&hasBrowserSpeech&&window.SpeedyMathsVoiceToolsV643?.startBrowserVoice){
+   window.SpeedyMathsVoiceToolsV643.startBrowserVoice();return 'browser';
+  }
+  // iPad/device fallback keeps one permanent dictation field focused.
+  if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return 'device'}
   let tries=0;
   const attempt=()=>{tries++;if(window.SpeedyMathsDeviceDictationV645?.start){window.SpeedyMathsDeviceDictationV645.start({deferTimer:true});return}if(tries<20)requestAnimationFrame(attempt)};
-  requestAnimationFrame(attempt);
+  requestAnimationFrame(attempt);return 'device';
  }
  function beginChosen(){
   if(!pending||!choice)return;
@@ -5169,7 +5227,7 @@ body.speedymaths-dictation-v647 #app{padding-bottom:112px!important}
   baseStart(p.id,p.mode,p.returnTo);
   if(c==='mic'){
    if(typeof activeFluency!=='undefined'&&activeFluency?.worksheet)activeFluency.dictationWaitingStart=true;
-   enableDeviceDictationV645();
+   enableChosenMicV6482();
   }
  }
  startWorksheetFluencyV61=function(id,mode='mastery',returnTo='fluency'){
